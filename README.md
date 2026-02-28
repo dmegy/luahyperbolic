@@ -19,7 +19,7 @@ If you wish to install the package manually, follow these steps:
 
 ### Example Usage
 
-See the [package manual (pdf)](doc/documentation-luahyperbolic.pdf) for numerous examples.
+See the [package manual (pdf)](doc/documentation-luahyperbolicv1.pdf) for numerous examples.
 
 More examples in [examples/](examples/)
 
