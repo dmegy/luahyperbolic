@@ -1,0 +1,48 @@
+\directlua{t0 = os.clock()}
+\documentclass[margin=.2cm,multi,tikz]{standalone}
+%\usepackage{fontspec}
+%\setmainfont{Libertinus Serif}
+%\usepackage{mathtools,unicode-math}
+%\setmainfont{Libertinus Math}
+%\usepackage[dvipsnames]{xcolor}
+\usepackage{luacode}
+\usepackage{../luahyperbolic}
+
+\providecommand{\angleB}{3}
+\providecommand{\angleC}{9}
+\providecommand{\point}{C}
+\providecommand{\depth}{28}
+
+
+\begin{document}
+\directlua{
+A, B, C = hyper.fundamentalRightTriangle(\angleB,\angleC)
+local phi = hyper.automorphism(\point,0)
+A,B,C = phi(A), phi(B), phi(C)
+local geodesics = {
+	{hyper.endpoints(A,B)},
+	{hyper.endpoints(B,C)},
+	{hyper.endpoints(C,A)}
+}
+geodesics = hyper.propagate_geodesics(geodesics, \depth, 0.005)
+local shapes={}
+local count = 0
+for k,pair in ipairs(geodesics) do
+	count = count + 1
+	table.insert(shapes,hyper.shape_closed_line(pair[1], pair[2]))
+end
+shapes_string = table.concat(shapes, " ")
+texio.write_nl( (os.clock() - t0) .. " s : added " .. count .. " geodesics")
+}
+
+\begin{hyperbolicdisk}[scale=5]
+\fill[even odd rule]
+(0,0) circle (1)
+\directlua{tex.print(shapes_string)}
+;
+\end{hyperbolicdisk}
+\begin{luacode*}
+texio.write_nl(string.format("%.2f s: after tikz picture", os.clock() - t0))
+
+\end{luacode*}
+\end{document}

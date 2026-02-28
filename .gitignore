@@ -1,0 +1,35 @@
+# -----------------------
+# LaTeX / LuaLaTeX
+# -----------------------
+
+references/
+
+.vscode/
+*.DS_Store
+Thumbs.db
+
+
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+*.dvi
+*.pdf  # si tu ne veux pas versionner les PDFs finaux
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+.listing
+
+# LaTeX temporary folders
+build/
+tmp/
+*.latexmkrc

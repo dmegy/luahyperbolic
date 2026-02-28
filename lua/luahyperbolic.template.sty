@@ -1,0 +1,28 @@
+%===========================================================================
+% luahyperbolic.sty
+% LuaLaTeX package for hyperbolic geometry
+% Automatically generated from the following files:
+% - complex.lua
+% - luahyperbolic-core.lua
+% - luahyperbolic-tikz.lua
+% -- 2026 Damien Mégy
+%===========================================================================
+
+\ProvidesPackage{luahyperbolic}[2026/01/01 Lua hyperbolic geometry package]
+
+\RequirePackage{luacode}
+
+\begin{luacode*}
+-- ===PLACEHOLDER===
+\end{luacode*}
+
+
+\newenvironment{hyperbolicdisk}[1][scale=3]{%
+  \begin{tikzpicture}[#1]
+    \draw[very thick] (0,0) circle (1);
+    \clip (0,0) circle (1);
+}{%
+  \end{tikzpicture}
+}
+
+% End of luahyperbolic.sty

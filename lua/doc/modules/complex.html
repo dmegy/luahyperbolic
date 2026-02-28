@@ -1,0 +1,1119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Lua Complex & Hyperbolic Geometry Modules</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Hyperbolic Geometry Library</h1>
+
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Fields">Fields</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><strong>complex</strong></li>
+  <li><a href="../modules/luahyperbolic-core.html">luahyperbolic-core</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>complex</code></h1>
+<p>
+
+</p>
+<p>
+
+</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#m.polar">m.polar (r, theta)</a></td>
+	<td class="summary">Polar constructor.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.__eq">m.__eq (a, b)</a></td>
+	<td class="summary">Exact equality test (no tolerance).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.__add">m.__add (a, b)</a></td>
+	<td class="summary">Addition metamethod.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.__sub">m.__sub (a, b)</a></td>
+	<td class="summary">Subtraction metamethod.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.__mul">m.__mul (a, b)</a></td>
+	<td class="summary">Multiplication metamethod.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.__div">m.__div (a, b)</a></td>
+	<td class="summary">Division metamethod.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.__unm">m.__unm (a)</a></td>
+	<td class="summary">Unary minus metamethod.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.__tostring">m.__tostring (z)</a></td>
+	<td class="summary">Convert to string in the form <code>a+bi</code>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.isClose">m.isClose (a, b, eps)</a></td>
+	<td class="summary">Approximate equality (L¹ norm).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.isClosePair">m.isClosePair (a, b, c, d)</a></td>
+	<td class="summary">Compare unordered pairs with tolerance.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.distinct">m.distinct (a, b)</a></td>
+	<td class="summary">Test whether two numbers are distinct (tolerant).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.nonzero">m.nonzero (z)</a></td>
+	<td class="summary">Test whether a complex number is nonzero (tolerant).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.det">m.det (a, b)</a></td>
+	<td class="summary">Determinant</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.dot">m.dot (a, b)</a></td>
+	<td class="summary">Scalar (dot) product.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.unit">m.unit (z)</a></td>
+	<td class="summary">Normalize to unit modulus.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.conj">m.conj (z)</a></td>
+	<td class="summary">Complex conjugate.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.abs2">m.abs2 (z)</a></td>
+	<td class="summary">Squared modulus.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.abs">m.abs (z)</a></td>
+	<td class="summary">Modulus.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.arg">m.arg (z)</a></td>
+	<td class="summary">Argument (principal value).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.invert">m.invert (z, center, R)</a></td>
+	<td class="summary">Complex inversion in circle.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m:isNear">m:isNear (w, eps)</a></td>
+	<td class="summary">Approximate equality (method form).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m:isNot">m:isNot (w, eps)</a></td>
+	<td class="summary">Negated approximate comparison (method form).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m:isReal">m:isReal (eps)</a></td>
+	<td class="summary">Test whether imaginary part is approx.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m:isImag">m:isImag (eps)</a></td>
+	<td class="summary">Test whether real part is approx.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m:isUnit">m:isUnit (eps)</a></td>
+	<td class="summary">Test whether modulus is approx.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m:isColinear">m:isColinear (other, eps)</a></td>
+	<td class="summary">Test approx.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m:toPolar">m:toPolar ()</a></td>
+	<td class="summary">Convert to polar coordinates.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m:clone">m:clone ()</a></td>
+	<td class="summary">Clone the complex number.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.exp_i">m.exp_i (theta)</a></td>
+	<td class="summary">e^{iθ}</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m:rotate90">m:rotate90 ()</a></td>
+	<td class="summary">Rotate by 90 degrees.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m:rotate">m:rotate (theta)</a></td>
+	<td class="summary">Rotate by angle θ (radians).</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.exp">m.exp (z)</a></td>
+	<td class="summary">Complex exponential.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.log">m.log (z)</a></td>
+	<td class="summary">Principal complex logarithm.</td>
+	</tr>
+</table>
+<h2><a href="#Fields">Fields</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#m.ONE">m.ONE</a></td>
+	<td class="summary">1 + 0i</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.ZERO">m.ZERO</a></td>
+	<td class="summary">0 + 0i</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.I">m.I</a></td>
+	<td class="summary">i</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#m.J">m.J</a></td>
+	<td class="summary">Primitive cube root of unity.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "m.polar"></a>
+    <strong>m.polar (r, theta)</strong>
+    </dt>
+    <dd>
+    Polar constructor.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">r</span>
+
+
+
+        </li>
+        <li><span class="parameter">theta</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.__eq"></a>
+    <strong>m.__eq (a, b)</strong>
+    </dt>
+    <dd>
+    Exact equality test (no tolerance).
+ Use <a href="../modules/complex.html#m.isClose">isClose</a> for numerical comparisons.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+
+
+
+        </li>
+        <li><span class="parameter">b</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.__add"></a>
+    <strong>m.__add (a, b)</strong>
+    </dt>
+    <dd>
+    Addition metamethod.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+
+
+
+        </li>
+        <li><span class="parameter">b</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.__sub"></a>
+    <strong>m.__sub (a, b)</strong>
+    </dt>
+    <dd>
+    Subtraction metamethod.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+
+
+
+        </li>
+        <li><span class="parameter">b</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.__mul"></a>
+    <strong>m.__mul (a, b)</strong>
+    </dt>
+    <dd>
+    Multiplication metamethod.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+
+
+
+        </li>
+        <li><span class="parameter">b</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.__div"></a>
+    <strong>m.__div (a, b)</strong>
+    </dt>
+    <dd>
+    Division metamethod.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+
+
+
+        </li>
+        <li><span class="parameter">b</span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">nil</span></span>
+
+
+</li>
+        <li>
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
+        Division by zero.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.__unm"></a>
+    <strong>m.__unm (a)</strong>
+    </dt>
+    <dd>
+    Unary minus metamethod.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.__tostring"></a>
+    <strong>m.__tostring (z)</strong>
+    </dt>
+    <dd>
+    Convert to string in the form <code>a+bi</code>.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">z</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.isClose"></a>
+    <strong>m.isClose (a, b, eps)</strong>
+    </dt>
+    <dd>
+    Approximate equality (L¹ norm).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+         complex
+        </li>
+        <li><span class="parameter">b</span>
+         complex
+        </li>
+        <li><span class="parameter">eps</span>
+         number optional tolerance
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        boolean
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.isClosePair"></a>
+    <strong>m.isClosePair (a, b, c, d)</strong>
+    </dt>
+    <dd>
+    Compare unordered pairs with tolerance.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+
+
+
+        </li>
+        <li><span class="parameter">b</span>
+
+
+
+        </li>
+        <li><span class="parameter">c</span>
+
+
+
+        </li>
+        <li><span class="parameter">d</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.distinct"></a>
+    <strong>m.distinct (a, b)</strong>
+    </dt>
+    <dd>
+    Test whether two numbers are distinct (tolerant).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+
+
+
+        </li>
+        <li><span class="parameter">b</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.nonzero"></a>
+    <strong>m.nonzero (z)</strong>
+    </dt>
+    <dd>
+    Test whether a complex number is nonzero (tolerant).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">z</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.det"></a>
+    <strong>m.det (a, b)</strong>
+    </dt>
+    <dd>
+    Determinant
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+
+
+
+        </li>
+        <li><span class="parameter">b</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.dot"></a>
+    <strong>m.dot (a, b)</strong>
+    </dt>
+    <dd>
+    Scalar (dot) product.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+
+
+
+        </li>
+        <li><span class="parameter">b</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.unit"></a>
+    <strong>m.unit (z)</strong>
+    </dt>
+    <dd>
+    Normalize to unit modulus.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">z</span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        complex|nil nil if zero
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.conj"></a>
+    <strong>m.conj (z)</strong>
+    </dt>
+    <dd>
+    Complex conjugate.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">z</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.abs2"></a>
+    <strong>m.abs2 (z)</strong>
+    </dt>
+    <dd>
+    Squared modulus.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">z</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.abs"></a>
+    <strong>m.abs (z)</strong>
+    </dt>
+    <dd>
+    Modulus.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">z</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.arg"></a>
+    <strong>m.arg (z)</strong>
+    </dt>
+    <dd>
+    Argument (principal value).
+ Returns angle in radians in (-π, π].
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">z</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.invert"></a>
+    <strong>m.invert (z, center, R)</strong>
+    </dt>
+    <dd>
+    Complex inversion in circle.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">z</span>
+         complex
+        </li>
+        <li><span class="parameter">center</span>
+         complex optional
+        </li>
+        <li><span class="parameter">R</span>
+         number optional radius
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m:isNear"></a>
+    <strong>m:isNear (w, eps)</strong>
+    </dt>
+    <dd>
+    Approximate equality (method form).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">w</span>
+
+
+
+        </li>
+        <li><span class="parameter">eps</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m:isNot"></a>
+    <strong>m:isNot (w, eps)</strong>
+    </dt>
+    <dd>
+    Negated approximate comparison (method form).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">w</span>
+
+
+
+        </li>
+        <li><span class="parameter">eps</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m:isReal"></a>
+    <strong>m:isReal (eps)</strong>
+    </dt>
+    <dd>
+    Test whether imaginary part is approx.  zero (method form).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">eps</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m:isImag"></a>
+    <strong>m:isImag (eps)</strong>
+    </dt>
+    <dd>
+    Test whether real part is approx.  zero (method form).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">eps</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m:isUnit"></a>
+    <strong>m:isUnit (eps)</strong>
+    </dt>
+    <dd>
+    Test whether modulus is approx.  1 (method form).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">eps</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m:isColinear"></a>
+    <strong>m:isColinear (other, eps)</strong>
+    </dt>
+    <dd>
+    Test approx.  colinearity with other number (method form).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">other</span>
+
+
+
+        </li>
+        <li><span class="parameter">eps</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m:toPolar"></a>
+    <strong>m:toPolar ()</strong>
+    </dt>
+    <dd>
+    Convert to polar coordinates.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+        r number</li>
+        <li>
+        theta number</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m:clone"></a>
+    <strong>m:clone ()</strong>
+    </dt>
+    <dd>
+    Clone the complex number.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.exp_i"></a>
+    <strong>m.exp_i (theta)</strong>
+    </dt>
+    <dd>
+    e^{iθ}
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">theta</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m:rotate90"></a>
+    <strong>m:rotate90 ()</strong>
+    </dt>
+    <dd>
+    Rotate by 90 degrees.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m:rotate"></a>
+    <strong>m:rotate (theta)</strong>
+    </dt>
+    <dd>
+    Rotate by angle θ (radians).
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">theta</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.exp"></a>
+    <strong>m.exp (z)</strong>
+    </dt>
+    <dd>
+    Complex exponential.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">z</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.log"></a>
+    <strong>m.log (z)</strong>
+    </dt>
+    <dd>
+    Principal complex logarithm.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">z</span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">nil</span></span>
+
+
+</li>
+        <li>
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.4/manual.html#6.4">string</a></span>
+        undefined for 0</li>
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Fields"></a>Fields</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "m.ONE"></a>
+    <strong>m.ONE</strong>
+    </dt>
+    <dd>
+    1 + 0i
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.ZERO"></a>
+    <strong>m.ZERO</strong>
+    </dt>
+    <dd>
+    0 + 0i
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.I"></a>
+    <strong>m.I</strong>
+    </dt>
+    <dd>
+    i
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "m.J"></a>
+    <strong>m.J</strong>
+    </dt>
+    <dd>
+    Primitive cube root of unity.
+
+
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2026-02-28 19:05:04 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
