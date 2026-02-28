@@ -19,9 +19,9 @@ If you wish to install the package manually, follow these steps:
 
 ### Example Usage
 
-Here is an example of how to use the package in a LuaLaTeX document:
+See the [package manual (pdf)](doc/documentation-luahyperbolic.pdf) for numerous examples.
 
-(See documentation in `doc/` for numerous examples)
+More examples in [examples/](examples/)
 
 ## License
 
