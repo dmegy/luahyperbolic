@@ -19,7 +19,7 @@ for k=2,N do
 				{hyper.endpoints(B,C)},
 				{hyper.endpoints(C,A)}
 			}
-			geodesics = hyper.propagate_geodesics(geodesics, DEPTH, 0.005)
+			geodesics = hyper.propagateGeodesics(geodesics, DEPTH, 0.005)
 			local shapes={}
 			for k,pair in ipairs(geodesics) do
 				table.insert(shapes,hyper.shape_closed_line(pair[1], pair[2]))

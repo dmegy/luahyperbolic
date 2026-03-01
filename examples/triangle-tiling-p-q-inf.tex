@@ -23,7 +23,7 @@ local geodesics = {
 	{hyper.endpoints(B,C)},
 	{hyper.endpoints(C,A)}
 }
-geodesics = hyper.propagate_geodesics(geodesics, \depth, 0.005)
+geodesics = hyper.propagateGeodesics(geodesics, \depth, 0.005)
 local shapes={}
 local count = 0
 for k,pair in ipairs(geodesics) do

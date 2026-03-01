@@ -85,7 +85,7 @@ local geodesics = {
 	{hyper.endpoints(B,C)},
 	{hyper.endpoints(C,A)}
 }
-geodesics = hyper.propagate_geodesics(geodesics, 24)
+geodesics = hyper.propagateGeodesics(geodesics, 24)
 local shapes={}
 globalNbGeodesics = 0
 for k,pair in ipairs(geodesics) do
@@ -121,7 +121,7 @@ texio.write_nl(string.format("[TIMING] %.2f s: finished tikz picture in %.2f  se
 \subsection{What you can do with this package}
 \begin{enumerate}
 \item Draw hyperbolic geometry pictures, high precision (pdf output).
-\item Use an easy syntax. At least, easier than with \LaTeX macros and blody pgf.
+\item Use an easy syntax. At least, easier than with \LaTeX macros and bloody pgf.
 \item Export generated pictures to external tikz files if you want.
 \item Read the source code and learn hyperbolic geometry.
 \item Compile **without** installing python packages or lua packages etc.
@@ -208,7 +208,7 @@ Simply add a filename to the closing \texttt{hyper.tikzEnd()} instruction, as be
 \texttt{hyper.tikzEnd("myfile.tikz")}
 \end{center}
 
-This will save the current picture (including \verb+\begin{tikzpicture}[options]+ and \verb+\end{tikzpicture}+
+This will save the current picture (including \verb+\begin{tikzpicture}[options]+ and \verb+\end{tikzpicture}+).
 
 
 It is also possible to export the current picture at any point with \verb+hyper.tikzExport(optional-filename)+.
@@ -221,7 +221,7 @@ This allows exporting images in loops, or drawing several steps of the same pict
 %The code and result are displayed side by side thanks to the \verb+tcblisting+ environment of the \verb+tcolorbox+ package
 
 
-\section{Drawing elements}
+\section{Drawing and labeling elements}
 
 % ------------------ Figure 1 : Points ------------------
 
@@ -230,65 +230,41 @@ This allows exporting images in loops, or drawing several steps of the same pict
 
 \begin{codeandresult}{Draw and label points}
 \begin{luacode*}
-local A = complex(0.2,0.1)
-local B = complex(-0.3,0.5)
-local C = complex(0.6,-0.5)
-local D = complex(-0.6,0.2)
+local O = 0
+local A = complex(0.3,0.2)
+local B = 2*A
+local C = (1-complex.I)/2
+local D = B*complex.I
+local E = complex.exp_i(-5*math.pi/6)/2
 hyper.tikzBegin()
-hyper.drawPoint(A)
-hyper.drawPoints(B, C, "teal")
-hyper.drawPoint(D, "white, draw=red")
-hyper.labelPoint(A,"$A$") -- default: above left
-hyper.labelPoints(B,"$B$", C, "$C$", "above right, teal")
+hyper.drawPoint(O,"white, draw=red")
+hyper.drawPoints(A, B, C, "teal")
+hyper.drawPoints(D, E)
+hyper.labelPoint(A,"$A$", "below right, blue")
+hyper.labelPoints(B,"$B$", C, "$C$")
 hyper.labelPoint(D,"$D$","below=.4cm, red")
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
 
-\begin{codeandresult}{Random points with uniform density}
-\begin{luacode*}
-local rMin, rMax = .3, .8
-hyper.tikzBegin()
-for k=1,100 do
-	local M = hyper.randomPoint(rMin,rMax)
-	hyper.drawPoint(M)
-end
-hyper.tikzPrintf("\\draw[dashed] (0,0) circle (%s) ;", rMin)
-hyper.tikzPrintf("\\draw[dashed] (0,0) circle (%s) ;", rMax)
-hyper.tikzEnd()
-\end{luacode*}
-\end{codeandresult}
 
 \subsection{Geodesic segments, lines and rays}
 
 
-\begin{codeandresult}{Geodesic segments}
+\begin{codeandresult}{Segments lines and rays (through two points)}
 \begin{luacode*}
 hyper.tikzBegin()
-local A = complex(0.2,0.1)
-local B = complex(-0.3,0.5)
-local C = complex(0.6,-0.5)
-hyper.drawSegment(A, B, "thick,blue")
-hyper.drawSegment(A, C, "dashed,ForestGreen")
-hyper.drawPoints(A,B,C)
-hyper.tikzEnd()
-\end{luacode*}
-\end{codeandresult}
-
-
-\begin{codeandresult}{Lines and rays (through two points)}
-\begin{luacode*}
-hyper.tikzBegin()
-local A = complex(-0.2,-0.5)
-local B = complex(0.5,0.6)
-local C = complex(-0.5,0.5)
+local A = -complex.I/2
+local B = (1+complex.I)/2
+local C = complex(-0.7,0.4)
 local D = complex(-0.7,-0.3)
 hyper.drawLine(A, B, "red")
-hyper.drawRay(C,D, "blue")
+hyper.drawSegment(B,C,"dashed, ForestGreen")
+hyper.drawRay(C,D,"double,double distance=2pt")
 hyper.drawLine(D,-D, "green!50!black")
-hyper.drawLine(A,complex(1,0), "gray")
-hyper.drawLine(complex(1,0), complex(0,1), "teal")
+hyper.drawLine(A, 1, "gray, line width=2pt")
+hyper.drawLine(1, complex.I, "teal")
 hyper.drawPoints(A, B, C, D)
 hyper.labelPoints(A, "$A$", B, "$B$", C, "$C$", D, "$D$")
 hyper.tikzEnd()
@@ -332,14 +308,10 @@ hyper.tikzEnd()
 \begin{codeandresult}{Polygonal lines}
 \begin{luacode*}
 hyper.tikzBegin()
-local A = complex(-.9,.2)
-local B = complex(-.5,.8)
-local C = complex(-.7,-.4)
-local D = complex(.7,-.5)
-hyper.drawPolyline(A, B, C, D, "red")
+hyper.drawPolyline(0, 1, complex.I, -1, "red")
 local points={}
-for k=1,6 do
-	table.insert(points, hyper.randomPoint(0,.7))
+for k=1, 15 do
+	table.insert(points, complex.polar(k/15, k))
 end
 hyper.drawPolylineFromTable(points,"teal")
 hyper.tikzEnd()
@@ -356,9 +328,9 @@ local A = complex(-0.2,-0.5)
 local B = complex(-0.5,0.5)
 local C = complex(0,0.2)
 local v =  complex(1,0)
-hyper.drawLineFromVector(A, v, "red")
-hyper.drawRayFromVector(B, v, "blue")
-hyper.drawRayFromVector(C, v, "Green")
+hyper.drawLineFromVector(A, v, "->, red")
+hyper.drawRayFromVector(B, v, "->, blue")
+hyper.drawRayFromVector(C, v, "->, Green")
 hyper.drawPoints(A, B,C)
 hyper.drawTangentVector(A,v,"red")
 hyper.drawTangentVector(B,v,"blue")
@@ -427,7 +399,7 @@ hyper.tikzBegin()
 local O = complex(0.3,0.2)
 local P = complex(0.7,-0.4)
 local Q = complex(-0.1,0.4)
-hyper.drawCircleThrough(O, P, "red")
+hyper.drawCircleThrough(O, P, "dotted, red")
 -- or by hand : 
 hyper.drawCircle(O, hyper.distance(O,Q), "blue")
 hyper.drawPoints(O, P, Q)
@@ -465,18 +437,21 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-\begin{codeandresult}{Draw angle $\widehat{AOB}$}
+\begin{codeandresult}{Angles}
 \begin{luacode*}
 hyper.tikzBegin()
-local O = complex(-.5,-.3)
-local A = complex(0.5,0)
-local B = complex(0.2,.7)
-hyper.drawLines(O, A, O, B, "teal")
-hyper.drawAngle(A,O,B, "red, very thick")
-hyper.drawPoints(A,O,B)
-hyper.labelPoints(A, "$A$", O, "$O$", B, "$B$")
+local A = complex(-.5,-.3)
+local B = complex(0.5,0)
+local C = complex(0.2,.7)
+hyper.drawLines(A, B, B, C, C, A, "teal")
+hyper.drawAngle(B, A, C, "red, very thick")
+hyper.drawAngle(A, C, B, "thick, double, double distance=2pt, blue")
+hyper.drawAngle(A, B, C, "very thick, ->, green!50!black")
+hyper.drawPoints(A, B, C)
+hyper.labelPoints(A, "$A$", C, "$C$")
+hyper.labelPoint(N, "$B$", "above right")
 -- poor man's labelAngle:
-hyper.labelPoint(O,"$\\theta$", "above=.5cm, right=.6cm")
+hyper.labelPoint(A,"$\\alpha$", "above=.6cm, right=.7cm")
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
@@ -518,6 +493,22 @@ hyper.tikzEnd()
 
 
 \section{Defining points}
+
+\subsection{Random points}
+
+\begin{codeandresult}{Random points with uniform density}
+\begin{luacode*}
+local rMin, rMax = .3, .8
+hyper.tikzBegin()
+for k=1,100 do
+	local M = hyper.randomPoint(rMin,rMax)
+	hyper.drawPoint(M)
+end
+hyper.tikzPrintf("\\draw[dashed] (0,0) circle (%s) ;", rMin)
+hyper.tikzPrintf("\\draw[dashed] (0,0) circle (%s) ;", rMax)
+hyper.tikzEnd()
+\end{luacode*}
+\end{codeandresult}
 
 \subsection{Midpoint, interpolate, barycenter}
 
@@ -650,7 +641,7 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-\subsection{(Elliptic) Rotations}
+\subsection{Automorphisms (direct isometries)}
 
 
 \begin{codeandresult}{(Elliptic) rotation around a point (regular octogon)}
@@ -700,9 +691,32 @@ for k=1,5 do
 	local P = hyper.randomPoint(0.3,0.9)
 	local rP = r(P)
 	hyper.drawCircleThrough(O,P, "gray!10")
-	hyper.drawArc(O,P,rP,"red")
+	hyper.drawArc(O,P,rP,"->, red")
 	hyper.drawPolyline(P,O,rP, "red!10")
-	hyper.drawPoints(P,rP)
+	hyper.drawPoint(P)
+end
+hyper.tikzEnd()
+\end{luacode*}
+\end{codeandresult}
+
+
+\begin{codeandresult}{Hyperbolic automorphims}
+\begin{luacode*}
+hyper.tikzBegin()
+local A = complex(0.4,0.3)
+local phi = hyper.automorphism(A,0)
+local N=6
+style1 = "dotted, red!50"
+style2 =  "thick, red"
+for k=1,N do
+	local P = complex.polar(k/N, k*math.pi/N)
+	local Q = phi(P)
+	hyper.drawLine(0,P,style1)
+	hyper.drawLine(-A,Q,style2)
+	if k < N then
+		hyper.drawCircleThrough(0,P, style1)
+		hyper.drawCircleThrough(-A,Q,style2)
+	end
 end
 hyper.tikzEnd()
 \end{luacode*}
@@ -880,7 +894,7 @@ local geodesics = {
 {hyper.endpoints(A,B)},
 	{hyper.endpoints(B,C)},
 	{hyper.endpoints(C,A)}}
-geodesics = hyper.propagate_geodesics(geodesics, TILING_DEPTH)
+geodesics = hyper.propagateGeodesics(geodesics, TILING_DEPTH)
 hyper.drawLinesFromTable(geodesics, "green!50!black, draw opacity=.5")
 hyper.drawTriangle(A,B,C,"red, very thick")
 hyper.tikzEnd()
@@ -896,7 +910,7 @@ local geodesics = {
 	{hyper.endpoints(B,C)},
 	{hyper.endpoints(C,A)}
 }
-geodesics = hyper.propagate_geodesics(geodesics, TILING_DEPTH)
+geodesics = hyper.propagateGeodesics(geodesics, TILING_DEPTH)
 hyper.drawLinesFromTable(geodesics, "teal, draw opacity=.5")
 hyper.drawTriangle(A,B,C,"red, very thick")
 hyper.tikzEnd()
@@ -928,7 +942,7 @@ local geodesics = {
 	{hyper.endpoints(B,C)},
 	{hyper.endpoints(C,A)}
 }
-geodesics = hyper.propagate_geodesics(geodesics, 24)
+geodesics = hyper.propagateGeodesics(geodesics, 24)
 local shapes={}
 for k,pair in ipairs(geodesics) do
 	table.insert(shapes,hyper.shape_closed_line(pair[1], pair[2]))
@@ -955,7 +969,7 @@ for k=2,N do
 				{hyper.endpoints(B,C)},
 				{hyper.endpoints(C,A)}
 			}
-			geodesics = hyper.propagate_geodesics(geodesics, DEPTH)
+			geodesics = hyper.propagateGeodesics(geodesics, DEPTH)
 			local shapes={}
 			for k,pair in ipairs(geodesics) do
 				table.insert(shapes,hyper.shape_closed_line(pair[1], pair[2]))

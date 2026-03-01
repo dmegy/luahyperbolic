@@ -1,0 +1,13 @@
+\documentclass[margin=.2cm,multi,tikz]{standalone}
+\usepackage{luahyperbolic} %loads luacode
+\begin{document}
+\begin{luacode*}
+hyper.tikzBegin("scale=2.5")
+local P = complex(0.5,-0.2)
+local A = complex.exp_i(math.pi/10)
+for k=1,5 do hyper.drawLine(P, A^k, "teal") end
+hyper.labelPoint(P, "$P$", "left=.2cm")
+hyper.drawLine(complex.J,-complex.I,"very thick, dashed, red")
+hyper.tikzEnd()
+\end{luacode*}
+\end{document}
