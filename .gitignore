@@ -8,7 +8,7 @@ references/
 *.DS_Store
 Thumbs.db
 
-
+*.tikz
 *.aux
 *.log
 *.out
@@ -22,14 +22,10 @@ Thumbs.db
 *.snm
 *.vrb
 *.dvi
-*.pdf  # si tu ne veux pas versionner les PDFs finaux
 *.bbl
 *.blg
 *.bcf
 *.run.xml
 .listing
 
-# LaTeX temporary folders
-build/
-tmp/
 *.latexmkrc
