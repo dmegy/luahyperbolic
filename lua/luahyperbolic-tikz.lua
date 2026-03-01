@@ -14,6 +14,9 @@ function m.error(msg)
 	tex.error("Package " .. m.module .. " Error ", { msg })
 end
 
+function m.warning(msg)
+	texio.write_nl("[WARNING] " .. msg)
+end
 
 -- ================= HELPERS (EUCLIDEAN GEOM AND OTHER)
 
@@ -81,31 +84,24 @@ local function parse_points_with_options(...)
 	return points, options
 end
 
--- TikZ API :
+-- TikZ API --------------------------------
 
-function m.tikzBegin(options)
-	options = options and "[" .. options .. "]" or ""
-	tex.print("\\begin{tikzpicture}" .. options)
-end
-
-
-function m.tikzBeginDisk(options)
+function m.beginTikzPicture(options)
 	options = options and "[" .. options .. "]" or ""
 	tex.print("\\begin{tikzpicture}" .. options)
 	tex.print("\\draw[very thick] (0,0) circle (1);")
 	tex.print("\\clip (0,0) circle (1);")
 end
 
-function m.tikzEnd()
+function m.endTikzPicture()
 	tex.print("\\end{tikzpicture}")
 end
 
 
 local function tikz_printf(fmt, ...)
+	-- TODO : add tikz buffer and export functionality
     tex.print(string.format(fmt, ...))
 end
-
-
 
 function m.tikz_define_nodes(table)
 	for name, z in pairs(table) do
@@ -121,6 +117,11 @@ m.DRAW_POINT_RADIUS = 0.02 -- can be modified by user
 
 function m.drawPoint(z, options)
 	options = options or ""
+	-- accept nil point (circumcenter can be nil)
+	if z == nil then
+		m.warning("drawPoint : point is nil, aborting")
+		return
+	end
 	m.assert(complex.abs(z) <= 1+m.EPS, "drawPoint : point outside closed disk: " .. complex.__tostring(z))
 	tikz_printf("\\fill[%s] (%f,%f) circle (%s);", options, z.re, z.im, m.DRAW_POINT_RADIUS)
 end
@@ -162,8 +163,8 @@ function m.shape_segment(z, w)
 	m.assert(z:isNot(w), "points must be distinct")
 	local g = m.geodesic_data(z, w)
 
-	-- If the geodesic is a diameter, draw straight segment
-	if g.radius == math.huge then
+	-- If the geodesic is (almost) a diameter, draw straight segment
+	if g.radius == math.huge or g.radius > 100 then
 		return string.format("(%f,%f)--(%f,%f)", z.re, z.im, w.re, w.im)
 	else
 		local a1 = complex.arg(z - g.center)
@@ -209,10 +210,14 @@ function m.shape_closed_line(a,b)
 	end
 end
 
+
+
 function m.drawLine(a, b, options)
 	m.assert(not a:isNear(b), "drawLine : points must be distinct")
 	options = options or ""
-	local shape = m.shape_closed_line(a,b)
+	local end_a, end_b = m.endpoints(a,b)
+
+	local shape = m.shape_segment(end_a,end_b)
 	tikz_printf("\\draw[%s] %s;", options, shape)
 end
 
@@ -223,6 +228,20 @@ function m.drawLinesFromTable(pairs, options)
 		m.drawLine(pair[1], pair[2], options)
 	end
 end
+
+function m.drawPerpendicularThrough(P,A,B,options)
+	-- perpendicular through P to (A,B)
+	options = options or ""
+	m.assert_in_disk(A)
+	m.assert_in_disk(B)
+	m.assert_in_disk(P)
+	m.assert(A:isNot(B), "A and B must be distinct")
+	local H = m.projection(A,B)(P)
+	m.assert(P:isNot(H), "point must not be on line")
+	-- todo : fix this : should be ok.
+	m.drawLine(P,H,options)
+end
+
 
 function m.drawPerpendicularBisector(A, B, options)
 	options = options or ""
@@ -399,10 +418,22 @@ end
 
 function m.drawIncircle(A, B, C, options)
 	options = options or ""
-	local I = m.incenter(A, B, C)
+	local I = m.triangleIncenter(A, B, C)
 	local a = m.projection(B, C)(I)
 	m.drawCircleThrough(I, a, options)
 end
+
+function m.drawCircumcircle(A, B, C, options)
+	options = options or ""
+	local O = m.triangleCircumcenter(A, B, C)
+	if O ~= nil then
+		m.drawCircleThrough(O,A, options)
+	else
+		m.warning("drawCircumcircle : circumcenter does not exist")
+	end
+end
+
+
 
 function m.drawArc(O, A, B, options)
 	options = options or ""
@@ -437,16 +468,47 @@ function m.drawSemicircle(center, startpoint, options)
 end
 
 function m.drawAngle(A, O, B, options, distFactor)
+	distFactor = distFactor or 1/4
+	options = options or ""
+	m.assert_in_disk(A)
+	m.assert_in_disk(O)
+	m.assert_in_disk(B)
+
+	local dOA = m.distance(O,A)
+	local dOB = m.distance(O,B)
+	local minDist = math.min(dOA,dOB)
+	local radius= minDist*distFactor
+	local AA = m.interpolate(O,A,radius / dOA)
+	local BB = m.interpolate(O,B,radius/ dOB)
+	m.drawArc(O,AA,BB, options)
+end
+
+function m.drawRightAngle(A, O, B, options, distFactor)
+	-- assumes angle(AOB) = +90 deg !
 	distFactor = distFactor or 1/5
 	options = options or ""
 	m.assert_in_disk(A)
 	m.assert_in_disk(O)
 	m.assert_in_disk(B)
-	local radius= m.distance(O,A)*distFactor
-	local AA = m.interpolate(O,A,distFactor)
-	local BB = m.interpolate(O,B,radius/ m.distance(O,B))
-	m.drawArc(O,AA,BB, options)
+	local dOA = m.distance(O,A)
+	local dOB = m.distance(O,B)
+	local minDist = math.min(dOA, dOB)
+	local radius = minDist*distFactor
+	local AA = m.interpolate(O,A,radius / dOA)
+	local BB = m.interpolate(O,B,radius / dOB)
 
+	local v = m.tangentVector(AA,A)*complex.I
+	local w = m.tangentVector(BB,B)*(-complex.I)
+	local VV = m.exp_map(AA,v)
+	local WW = m.exp_map(BB,w)
+	local P = m.interLL(AA,VV, BB, WW)
+	-- fast&lazy : euclidean polyline instead of geodesic:
+	tikz_printf("\\draw[%s] (%f,%f) -- (%f,%f) -- (%f,%f);",
+		options,
+		AA.re, AA.im,
+		P.re, P.im,
+		BB.re, BB.im
+	)
 end
 
 
@@ -479,6 +541,11 @@ end
 
 function m.labelPoint(z, label, options)
 	options = options or "above left"
+	-- accept nil point (circumcenter can be nil)
+	if z == nil then
+		m.warning("labelPoint : point is nil, aborting")
+		return
+	end
 	tikz_printf("\\node[%s] at (%f,%f) {%s};", options, z.re, z.im, label)
 end
 

@@ -17,7 +17,7 @@
 -- DO NOT EDIT
 
 
--- DATE : 2026/02/28 20:01:36
+-- DATE : 2026/03/01 02:19:11
 do
 -----------------------------------------------------------------------
 -- @module complex
@@ -274,6 +274,10 @@ function m:isNot(w, eps)
 	return not m.isClose(self, w, eps)
 end
 
+-- integer check, no tolerance
+function m:isInteger()
+    return self.im == 0 and self.re % 1 == 0
+end
 
 --- Test whether imaginary part is approx. zero (method form).
 function m:isReal(eps)
@@ -281,11 +285,20 @@ function m:isReal(eps)
 	return math.abs(self.im) <= eps
 end
 
-
 --- Test whether real part is approx. zero (method form).
 function m:isImag(eps)
 	eps = eps or m.EPS
 	return math.abs(self.re) <= eps
+end
+
+-- Integer check with tolerance
+function m:isNearInteger(eps)
+    eps = eps or m.EPS
+    if math.abs(self.im) > eps then
+        return false
+    end
+    local nearest = math.floor(self.re + 0.5)
+    return math.abs(self.re - nearest) <= eps
 end
 
 
@@ -357,6 +370,62 @@ function m.log(z)
 	end
 	-- Note : other languages return -inf+0*i
 	return m.new(log(m.abs(z)), m.arg(z))
+end
+
+
+
+-- fast integer power (binary exponentiation)
+local function complex_pow_int(a, n)
+    if n == 0 then
+        return m.new(1, 0)
+    end
+
+    if n < 0 then
+        a = m.new(1, 0) / a
+        n = -n
+    end
+
+    local result = m.new(1, 0)
+    while n > 0 do
+        if n % 2 == 1 then
+            result = result * a
+        end
+        a = a * a
+        n = math.floor(n / 2)
+    end
+
+    return result
+end
+
+function m.__pow(a, b)
+    a, b = tocomplex(a), tocomplex(b)
+
+    -- Special cases
+    if a == 0 and b == 0 then
+        return m.ONE
+    end
+    if a == 0 and (b.re < 0 or b.im ~= 0) then
+        error("0 cannot be raised to a negative or complex power")
+    end
+    if a == 0 then
+        return m.ZERO
+    end
+    if b == 0 then
+        return m.ONE
+    end
+
+    if b:isInteger() then
+        return complex_pow_int(a, b.re)
+    end
+
+    -- (approx) integer exponent. Is rounding a good idea ?
+    if b:isNearInteger() then
+    	local n = math.floor(b.re + 0.5)  -- round
+        return complex_pow_int(a, n)
+    end
+
+    -- General complex power
+    return m.exp(b * m.log(a))
 end
 
 -----------------------------------------------------------------------
@@ -682,7 +751,7 @@ function m.circle_to_euclidean(z0, r)
 	return c, R
 end
 
-function m.tangent(z, w)
+function m.tangentVector(z, w)
 	local v
 	local g = m.geodesic_data(z, w)
 	if g.radius == math.huge then
@@ -699,8 +768,8 @@ end
 
 function m.angle(A, O, B)
 	-- oriented angle
-    local t1 = m.tangent(O, A)
-    local t2 = m.tangent(O, B)
+    local t1 = m.tangentVector(O, A)
+    local t2 = m.tangentVector(O, B)
     return complex.arg(t2/t1)
 end
 
@@ -902,14 +971,7 @@ function m.barycenter2(a, wa, b, wb)
 	return m.interpolate(a, b, t)
 end
 
-function m.triangleCentroid(A, B, C)
-	-- Intersection des trois médianes.
-	-- /!\ Pas au deux tiers des médianes
-	local AA = m.midpoint(B, C)
-	local BB = m.midpoint(C, A)
-	local centroid = m.interLL(A, AA, B, BB)
-	return centroid
-end
+
 
 -- ============ INTERSECTIONS ==============================
 
@@ -978,8 +1040,35 @@ function m.interLL(z1, z2, w1, w2)
 	end
 end
 
+----------------------------------
+-- TRIANGLE GEOMETRY
+---------------------------------
 
-function m.circumcenter(A, B, C)
+function m.triangleCentroid(A, B, C)
+	-- Intersection des trois médianes.
+	-- /!\ Pas au deux tiers des médianes
+	local AA = m.midpoint(B, C)
+	local BB = m.midpoint(C, A)
+	local centroid = m.interLL(A, AA, B, BB)
+	return centroid
+end
+
+
+function m.triangleIncenter(A, B, C)
+	m.assert(
+		complex.distinct(A, B) and complex.distinct(B, C) and complex.distinct(C, A),
+		"incenter: points must be distinct"
+	)
+
+	local e1, e2 = m.endpoints_angle_bisector(A, B, C)
+	local f1, f2 = m.endpoints_angle_bisector(B, C, A)
+	return m.interLL(e1, e2, f1, f2)
+end
+
+----------------
+-- CAUTION : orthocenter and circumcenter do not always exist
+
+function m.triangleCircumcenter(A, B, C)
 	-- WARNING returns circumcenter or nil
 	m.assert(
 		complex.distinct(A, B) and complex.distinct(B, C) and complex.distinct(C, A),
@@ -992,16 +1081,14 @@ function m.circumcenter(A, B, C)
 	return m.interLL(e1, e2, f1, f2) -- can be nil
 end
 
-function m.incenter(A, B, C)
-	m.assert(
-		complex.distinct(A, B) and complex.distinct(B, C) and complex.distinct(C, A),
-		"incenter: points must be distinct"
-	)
 
-	local e1, e2 = m.endpoints_angle_bisector(A, B, C)
-	local f1, f2 = m.endpoints_angle_bisector(B, C, A)
-	return m.interLL(e1, e2, f1, f2)
+function m.triangleOrthocenter(A,B,C)
+	-- Faster than projecting, no midpoint:
+	local AA = m.reflection(B,C)(A)
+	local BB = m.reflection(C,A)(B)
+	return m.interLL(A,AA,B,BB) -- can be nil
 end
+
 
 local core = m
 do
@@ -1019,6 +1106,9 @@ function m.error(msg)
 	tex.error("Package " .. m.module .. " Error ", { msg })
 end
 
+function m.warning(msg)
+	texio.write_nl("[WARNING] " .. msg)
+end
 
 -- ================= HELPERS (EUCLIDEAN GEOM AND OTHER)
 
@@ -1086,31 +1176,24 @@ local function parse_points_with_options(...)
 	return points, options
 end
 
--- TikZ API :
+-- TikZ API --------------------------------
 
-function m.tikzBegin(options)
-	options = options and "[" .. options .. "]" or ""
-	tex.print("\\begin{tikzpicture}" .. options)
-end
-
-
-function m.tikzBeginDisk(options)
+function m.beginTikzPicture(options)
 	options = options and "[" .. options .. "]" or ""
 	tex.print("\\begin{tikzpicture}" .. options)
 	tex.print("\\draw[very thick] (0,0) circle (1);")
 	tex.print("\\clip (0,0) circle (1);")
 end
 
-function m.tikzEnd()
+function m.endTikzPicture()
 	tex.print("\\end{tikzpicture}")
 end
 
 
 local function tikz_printf(fmt, ...)
+	-- TODO : add tikz buffer and export functionality
     tex.print(string.format(fmt, ...))
 end
-
-
 
 function m.tikz_define_nodes(table)
 	for name, z in pairs(table) do
@@ -1126,6 +1209,11 @@ m.DRAW_POINT_RADIUS = 0.02 -- can be modified by user
 
 function m.drawPoint(z, options)
 	options = options or ""
+	-- accept nil point (circumcenter can be nil)
+	if z == nil then
+		m.warning("drawPoint : point is nil, aborting")
+		return
+	end
 	m.assert(complex.abs(z) <= 1+m.EPS, "drawPoint : point outside closed disk: " .. complex.__tostring(z))
 	tikz_printf("\\fill[%s] (%f,%f) circle (%s);", options, z.re, z.im, m.DRAW_POINT_RADIUS)
 end
@@ -1167,8 +1255,8 @@ function m.shape_segment(z, w)
 	m.assert(z:isNot(w), "points must be distinct")
 	local g = m.geodesic_data(z, w)
 
-	-- If the geodesic is a diameter, draw straight segment
-	if g.radius == math.huge then
+	-- If the geodesic is (almost) a diameter, draw straight segment
+	if g.radius == math.huge or g.radius > 100 then
 		return string.format("(%f,%f)--(%f,%f)", z.re, z.im, w.re, w.im)
 	else
 		local a1 = complex.arg(z - g.center)
@@ -1214,10 +1302,14 @@ function m.shape_closed_line(a,b)
 	end
 end
 
+
+
 function m.drawLine(a, b, options)
 	m.assert(not a:isNear(b), "drawLine : points must be distinct")
 	options = options or ""
-	local shape = m.shape_closed_line(a,b)
+	local end_a, end_b = m.endpoints(a,b)
+
+	local shape = m.shape_segment(end_a,end_b)
 	tikz_printf("\\draw[%s] %s;", options, shape)
 end
 
@@ -1228,6 +1320,20 @@ function m.drawLinesFromTable(pairs, options)
 		m.drawLine(pair[1], pair[2], options)
 	end
 end
+
+function m.drawPerpendicularThrough(P,A,B,options)
+	-- perpendicular through P to (A,B)
+	options = options or ""
+	m.assert_in_disk(A)
+	m.assert_in_disk(B)
+	m.assert_in_disk(P)
+	m.assert(A:isNot(B), "A and B must be distinct")
+	local H = m.projection(A,B)(P)
+	m.assert(P:isNot(H), "point must not be on line")
+	-- todo : fix this : should be ok.
+	m.drawLine(P,H,options)
+end
+
 
 function m.drawPerpendicularBisector(A, B, options)
 	options = options or ""
@@ -1404,10 +1510,22 @@ end
 
 function m.drawIncircle(A, B, C, options)
 	options = options or ""
-	local I = m.incenter(A, B, C)
+	local I = m.triangleIncenter(A, B, C)
 	local a = m.projection(B, C)(I)
 	m.drawCircleThrough(I, a, options)
 end
+
+function m.drawCircumcircle(A, B, C, options)
+	options = options or ""
+	local O = m.triangleCircumcenter(A, B, C)
+	if O ~= nil then
+		m.drawCircleThrough(O,A, options)
+	else
+		m.warning("drawCircumcircle : circumcenter does not exist")
+	end
+end
+
+
 
 function m.drawArc(O, A, B, options)
 	options = options or ""
@@ -1442,16 +1560,47 @@ function m.drawSemicircle(center, startpoint, options)
 end
 
 function m.drawAngle(A, O, B, options, distFactor)
+	distFactor = distFactor or 1/4
+	options = options or ""
+	m.assert_in_disk(A)
+	m.assert_in_disk(O)
+	m.assert_in_disk(B)
+
+	local dOA = m.distance(O,A)
+	local dOB = m.distance(O,B)
+	local minDist = math.min(dOA,dOB)
+	local radius= minDist*distFactor
+	local AA = m.interpolate(O,A,radius / dOA)
+	local BB = m.interpolate(O,B,radius/ dOB)
+	m.drawArc(O,AA,BB, options)
+end
+
+function m.drawRightAngle(A, O, B, options, distFactor)
+	-- assumes angle(AOB) = +90 deg !
 	distFactor = distFactor or 1/5
 	options = options or ""
 	m.assert_in_disk(A)
 	m.assert_in_disk(O)
 	m.assert_in_disk(B)
-	local radius= m.distance(O,A)*distFactor
-	local AA = m.interpolate(O,A,distFactor)
-	local BB = m.interpolate(O,B,radius/ m.distance(O,B))
-	m.drawArc(O,AA,BB, options)
+	local dOA = m.distance(O,A)
+	local dOB = m.distance(O,B)
+	local minDist = math.min(dOA, dOB)
+	local radius = minDist*distFactor
+	local AA = m.interpolate(O,A,radius / dOA)
+	local BB = m.interpolate(O,B,radius / dOB)
 
+	local v = m.tangentVector(AA,A)*complex.I
+	local w = m.tangentVector(BB,B)*(-complex.I)
+	local VV = m.exp_map(AA,v)
+	local WW = m.exp_map(BB,w)
+	local P = m.interLL(AA,VV, BB, WW)
+	-- fast&lazy : euclidean polyline instead of geodesic:
+	tikz_printf("\\draw[%s] (%f,%f) -- (%f,%f) -- (%f,%f);",
+		options,
+		AA.re, AA.im,
+		P.re, P.im,
+		BB.re, BB.im
+	)
 end
 
 
@@ -1484,6 +1633,11 @@ end
 
 function m.labelPoint(z, label, options)
 	options = options or "above left"
+	-- accept nil point (circumcenter can be nil)
+	if z == nil then
+		m.warning("labelPoint : point is nil, aborting")
+		return
+	end
 	tikz_printf("\\node[%s] at (%f,%f) {%s};", options, z.re, z.im, label)
 end
 

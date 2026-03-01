@@ -253,6 +253,10 @@ function m:isNot(w, eps)
 	return not m.isClose(self, w, eps)
 end
 
+-- integer check, no tolerance
+function m:isInteger()
+    return self.im == 0 and self.re % 1 == 0
+end
 
 --- Test whether imaginary part is approx. zero (method form).
 function m:isReal(eps)
@@ -260,11 +264,20 @@ function m:isReal(eps)
 	return math.abs(self.im) <= eps
 end
 
-
 --- Test whether real part is approx. zero (method form).
 function m:isImag(eps)
 	eps = eps or m.EPS
 	return math.abs(self.re) <= eps
+end
+
+-- Integer check with tolerance
+function m:isNearInteger(eps)
+    eps = eps or m.EPS
+    if math.abs(self.im) > eps then
+        return false
+    end
+    local nearest = math.floor(self.re + 0.5)
+    return math.abs(self.re - nearest) <= eps
 end
 
 
@@ -336,6 +349,62 @@ function m.log(z)
 	end
 	-- Note : other languages return -inf+0*i
 	return m.new(log(m.abs(z)), m.arg(z))
+end
+
+
+
+-- fast integer power (binary exponentiation)
+local function complex_pow_int(a, n)
+    if n == 0 then
+        return m.new(1, 0)
+    end
+
+    if n < 0 then
+        a = m.new(1, 0) / a
+        n = -n
+    end
+
+    local result = m.new(1, 0)
+    while n > 0 do
+        if n % 2 == 1 then
+            result = result * a
+        end
+        a = a * a
+        n = math.floor(n / 2)
+    end
+
+    return result
+end
+
+function m.__pow(a, b)
+    a, b = tocomplex(a), tocomplex(b)
+
+    -- Special cases
+    if a == 0 and b == 0 then
+        return m.ONE
+    end
+    if a == 0 and (b.re < 0 or b.im ~= 0) then
+        error("0 cannot be raised to a negative or complex power")
+    end
+    if a == 0 then
+        return m.ZERO
+    end
+    if b == 0 then
+        return m.ONE
+    end
+
+    if b:isInteger() then
+        return complex_pow_int(a, b.re)
+    end
+
+    -- (approx) integer exponent. Is rounding a good idea ?
+    if b:isNearInteger() then
+    	local n = math.floor(b.re + 0.5)  -- round
+        return complex_pow_int(a, n)
+    end
+
+    -- General complex power
+    return m.exp(b * m.log(a))
 end
 
 -----------------------------------------------------------------------

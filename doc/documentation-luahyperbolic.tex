@@ -85,15 +85,29 @@ title=#1
 \section{Introduction}
 
 \subsection{What you can do with this package}
-:
 \begin{enumerate}
-\item Draw hyperbolic geometry pictures, high precision (pdf output), tiny size on disk
-\item ...that you can later convert to svg or raster to bitmap images, if you want.
-\item Easy (?) syntax. At least, easier than with \LaTeX macros.
+\item Draw hyperbolic geometry pictures, high precision (pdf output).
+\item Easy (?) syntax. At least, easier than with \LaTeX macros and pgf.
 \item Easy to read, educational Lua source code if you want to learn hyperbolic geometry.
 \item No need to install Python packages or create an account on some webapp.
-\item Compile anywhere in a single pass with lualatex compiler, available everywhere. No (Leeloo Dallas) multipass.
-\item Doesn't need to compile in "shell-escape" mode.
+\item No need to compile in "shell-escape" mode.
+\item Compile everything in a single pass. No (Leeloo Dallas) multipass. Want to illustrate Euclid's fifth postulate ? Do it right there without leaving your document:
+
+\begin{codeandresult}{Draw and label points}
+\begin{hyperbolicdisk}[scale=2.5]
+\begin{luacode*}
+local P = complex(0.5,-0.2)
+local A = complex.exp_i(math.pi/10)
+for k=1,5 do
+	hyper.drawLine(P, A^k, "teal")
+end
+hyper.labelPoint(P, "$P$", "left=.2cm")
+local style = "very thick, dashed, red"
+hyper.drawLine(complex.J,-complex.I,style)
+\end{luacode*}
+\end{hyperbolicdisk}
+\end{codeandresult}
+
 \end{enumerate}
 
 \subsection{What this package cannot do for you}
@@ -120,7 +134,7 @@ It will declare two lua globals : \texttt{complex} and \texttt{hyper}, and defin
 If the sty file is not in the same directory as your tex file, you can write \verb+\usepackage{../luahyperbolic}+
 
 
-\subsubsection*{CTAN} : not yet available
+\subsubsection*{CTAN} Not  available yet.
 
 \subsection{How to customize the package}
 
@@ -140,6 +154,9 @@ In this documentation, we use the shortcut environment \verb+\begin{hyperbolicdi
   \end{tikzpicture}
 }
 \end{verbatim}
+
+The package also provides lua functions \verb+hyper.beginTikzPicture(options)+ and \verb+hyper.endTikzPicture(export_file)+. 
+
 
 
 %The code and result are displayed side by side thanks to the \verb+tcblisting+ environment of the \verb+tcolorbox+ package
@@ -399,7 +416,7 @@ hyper.drawAngle(A,O,B, "red, very thick")
 hyper.drawPoints(A,O,B)
 hyper.labelPoints(A, "$A$", O, "$O$", B, "$B$")
 -- poor man's labelAngle:
-hyper.labelPoint(O,"$\\theta$", "above=.4cm, right=.5cm")
+hyper.labelPoint(O,"$\\theta$", "above=.5cm, right=.6cm")
 \end{luacode*}
 \end{hyperbolicdisk}
 \end{codeandresult}
@@ -474,72 +491,6 @@ end
 \end{hyperbolicdisk}
 \end{codeandresult}
 
-\subsection{Triangle points (CAUTION)}
-
-\begin{codeandresult}{Centroid (intersection of medians)}
-\begin{hyperbolicdisk}
-\begin{luacode*}
-local A = complex(0.1,0.8)
-local B = complex(-0.7,-0.3)
-local C = complex(0.6,-0.2)
-local AA = hyper.midpoint(B,C)
-local BB = hyper.midpoint(C,A)
-local CC = hyper.midpoint(A,B)
-local G = hyper.triangleCentroid(A,B,C) 
-hyper.drawTriangle(A,B,C)
-hyper.drawSegments(A, AA, B, BB, C, CC, "teal")
-hyper.drawPoints(AA,BB,CC)
-hyper.drawPoint(G,"white, draw=teal")
--- CAUTION : 
-local wrong = hyper.interpolate(A,AA,2/3)
-hyper.drawPoint(wrong, "red")
-\end{luacode*}
-\end{hyperbolicdisk}
-\end{codeandresult}
-
-\begin{codeandresult}{Circumcenter and circumcircle (CAUTION : does not always exist)}
-\begin{hyperbolicdisk}
-\begin{luacode*}
-local A = complex(0.1,0.8)
-local B = complex(-0.7,-0.4)
-local C = complex(0.6,-0.2)
-hyper.drawTriangle(A,B,C,"teal")
-hyper.drawPerpendicularBisector(A,B, "red")
-hyper.drawPerpendicularBisector(B,C, "red")
-hyper.drawPerpendicularBisector(C,A, "red")
-local O = hyper.circumcenter(A,B,C)
--- Does not always exist !!
-if O ~= nil then
-	hyper.drawPoint(O,"red")
-	local r = hyper.distance(O,A)
-	hyper.drawCircle(O,r,"red, dashed")
-	hyper.labelPoint(O,"$O$", "below left")
-end
-\end{luacode*}
-\end{hyperbolicdisk}
-\end{codeandresult}
-
-\begin{codeandresult}{Incenter and incircle}
-\begin{hyperbolicdisk}
-\begin{luacode*}
-local A = complex(0.1,0.8)
-local B = complex(-0.7,-0.3)
-local C = complex(0.6,-0.2)
-local I = hyper.incenter(A,B,C)
-hyper.drawTriangle(A,B,C,"teal")
-hyper.drawPoint(I,"red")
-hyper.labelPoint(I,"$I$", "below left")
-hyper.drawIncircle(A,B,C,"red")
--- show intersection : 
-hyper.drawAngleBisector(A,B, C, "red!50")
-hyper.drawAngleBisector(B,C,A, "red!50")
-hyper.drawAngleBisector(C,A,B, "red!50")
-
-\end{luacode*}
-\end{hyperbolicdisk}
-\end{codeandresult}
-
-
 \subsection{Intersections}
 
 \begin{codeandresult}{Line-Line (LL) intersection}
@@ -599,6 +550,7 @@ hyper.labelPoint(Q, "$Q$", "red, below")
 \end{luacode*}
 \end{hyperbolicdisk}
 \end{codeandresult}
+
 
 
 \subsection{Reflections and projections}
@@ -756,10 +708,108 @@ end
 \end{hyperbolicdisk}
 \end{codeandresult}
 
+
+\subsection{Triangle geometry (CAUTION)}
+
+\begin{codeandresult}{Centroid (intersection of medians)}
+\begin{hyperbolicdisk}
+\begin{luacode*}
+local A = complex(0.1,0.8)
+local B = complex(-0.7,-0.3)
+local C = complex(0.6,-0.2)
+local AA = hyper.midpoint(B,C)
+local BB = hyper.midpoint(C,A)
+local CC = hyper.midpoint(A,B)
+local G = hyper.triangleCentroid(A,B,C) 
+hyper.drawTriangle(A,B,C)
+hyper.drawSegments(A, AA, B, BB, C, CC, "teal")
+hyper.drawPoints(AA,BB,CC)
+hyper.drawPoint(G,"white, draw=teal")
+-- CAUTION : 
+local wrong = hyper.interpolate(A,AA,2/3)
+hyper.drawPoint(wrong, "red")
+\end{luacode*}
+\end{hyperbolicdisk}
+\end{codeandresult}
+
+
+\begin{codeandresult}{Incenter and incircle}
+\begin{hyperbolicdisk}
+\begin{luacode*}
+local A = complex(0.1,0.8)
+local B = complex(-0.7,-0.3)
+local C = complex(0.6,-0.2)
+local I = hyper.triangleIncenter(A,B,C)
+hyper.drawTriangle(A,B,C,"teal")
+hyper.drawPoint(I,"white, draw=red")
+hyper.labelPoint(I,"$I$", "below left")
+hyper.drawIncircle(A,B,C,"red")
+-- show intersection : 
+local mystyle = "dashed, red!50"
+hyper.drawAngleBisector(A,B, C, mystyle)
+hyper.drawAngleBisector(B,C,A, mystyle)
+hyper.drawAngleBisector(C,A,B, mystyle)
+\end{luacode*}
+\end{hyperbolicdisk}
+\end{codeandresult}
+
+\begin{codeandresult}{Circumcenter and circumcircle (CAUTION : does not always exist)}
+\begin{hyperbolicdisk}
+\begin{luacode*}
+local A = complex(0.1,0.8)
+local B = complex(-0.6,-0.5)
+local C = complex(0.6,-0.2)
+hyper.drawTriangle(A,B,C,"teal")
+local mystyle = "dashed, red!50"
+hyper.drawPerpendicularBisector(A, B, mystyle)
+hyper.drawPerpendicularBisector(B, C, mystyle)
+hyper.drawPerpendicularBisector(C, A, mystyle)
+local O = hyper.triangleCircumcenter(A,B,C)
+hyper.drawCircumcircle(A,B,C,"red")
+hyper.labelPoint(O,"$O$", "below left")
+local BC = hyper.midpoint(B,C)
+local CA = hyper.midpoint(C,A)
+local AB = hyper.midpoint(A,B)
+hyper.drawRightAngle(O, CA, C,"red",1/8)
+hyper.drawRightAngle(O,BC,B,"red",1/8)
+hyper.drawPoints(O,A,B,C,AB,BC,CA)
+hyper.labelPoints(A, "$A$", B, "$B$", C, "$C$","above")
+\end{luacode*}
+\end{hyperbolicdisk}
+\end{codeandresult}
+
+
+\begin{codeandresult}{Orthocenter (CAUTION : does not always exist)}
+\begin{hyperbolicdisk}
+\begin{luacode*}
+local A = complex(0.1,0.8)
+local B = complex(-0.7,-0.4)
+local C = complex(0.6,-0.2)
+hyper.drawTriangle(A,B,C,"teal")
+local mystyle = "dashed, red!50"
+hyper.drawPerpendicularThrough(A,B,C,mystyle)
+hyper.drawPerpendicularThrough(B,C,A,mystyle)
+hyper.drawPerpendicularThrough(C,A,B,mystyle)
+local AA = hyper.projection(B,C)(A)
+local BB = hyper.projection(C,A)(B)
+local CC = hyper.projection(A,B)(C)
+local style2 = "very thick, red"
+hyper.drawRightAngle(A,AA,B,style2,1/15)
+hyper.drawRightAngle(B,BB,C,style2,1/8)
+hyper.drawRightAngle(C,CC,A,style2,1/12)
+hyper.labelPoints(A, "$A$", B, "$B$", C, "$C$")
+local H = hyper.triangleOrthocenter(A,B,C)
+hyper.drawPoints(AA,BB,CC,H,"above")
+\end{luacode*}
+\end{hyperbolicdisk}
+\end{codeandresult}
+
+
+
 \newpage
 
 \section{Tilings}
-% depth for tilings in this documentation
+All tilings in this section are draw with \verb+TILING_DEPTH=15+
 \directlua{TILING_DEPTH = 15}
 
 \begin{codeandresult}{Triangle tiling}

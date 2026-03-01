@@ -303,7 +303,7 @@ function m.circle_to_euclidean(z0, r)
 	return c, R
 end
 
-function m.tangent(z, w)
+function m.tangentVector(z, w)
 	local v
 	local g = m.geodesic_data(z, w)
 	if g.radius == math.huge then
@@ -320,8 +320,8 @@ end
 
 function m.angle(A, O, B)
 	-- oriented angle
-    local t1 = m.tangent(O, A)
-    local t2 = m.tangent(O, B)
+    local t1 = m.tangentVector(O, A)
+    local t2 = m.tangentVector(O, B)
     return complex.arg(t2/t1)
 end
 
@@ -523,14 +523,7 @@ function m.barycenter2(a, wa, b, wb)
 	return m.interpolate(a, b, t)
 end
 
-function m.triangleCentroid(A, B, C)
-	-- Intersection des trois médianes.
-	-- /!\ Pas au deux tiers des médianes
-	local AA = m.midpoint(B, C)
-	local BB = m.midpoint(C, A)
-	local centroid = m.interLL(A, AA, B, BB)
-	return centroid
-end
+
 
 -- ============ INTERSECTIONS ==============================
 
@@ -599,8 +592,35 @@ function m.interLL(z1, z2, w1, w2)
 	end
 end
 
+----------------------------------
+-- TRIANGLE GEOMETRY
+---------------------------------
 
-function m.circumcenter(A, B, C)
+function m.triangleCentroid(A, B, C)
+	-- Intersection des trois médianes.
+	-- /!\ Pas au deux tiers des médianes
+	local AA = m.midpoint(B, C)
+	local BB = m.midpoint(C, A)
+	local centroid = m.interLL(A, AA, B, BB)
+	return centroid
+end
+
+
+function m.triangleIncenter(A, B, C)
+	m.assert(
+		complex.distinct(A, B) and complex.distinct(B, C) and complex.distinct(C, A),
+		"incenter: points must be distinct"
+	)
+
+	local e1, e2 = m.endpoints_angle_bisector(A, B, C)
+	local f1, f2 = m.endpoints_angle_bisector(B, C, A)
+	return m.interLL(e1, e2, f1, f2)
+end
+
+----------------
+-- CAUTION : orthocenter and circumcenter do not always exist
+
+function m.triangleCircumcenter(A, B, C)
 	-- WARNING returns circumcenter or nil
 	m.assert(
 		complex.distinct(A, B) and complex.distinct(B, C) and complex.distinct(C, A),
@@ -613,15 +633,13 @@ function m.circumcenter(A, B, C)
 	return m.interLL(e1, e2, f1, f2) -- can be nil
 end
 
-function m.incenter(A, B, C)
-	m.assert(
-		complex.distinct(A, B) and complex.distinct(B, C) and complex.distinct(C, A),
-		"incenter: points must be distinct"
-	)
 
-	local e1, e2 = m.endpoints_angle_bisector(A, B, C)
-	local f1, f2 = m.endpoints_angle_bisector(B, C, A)
-	return m.interLL(e1, e2, f1, f2)
+function m.triangleOrthocenter(A,B,C)
+	-- Faster than projecting, no midpoint:
+	local AA = m.reflection(B,C)(A)
+	local BB = m.reflection(C,A)(B)
+	return m.interLL(A,AA,B,BB) -- can be nil
 end
+
 
 return m
