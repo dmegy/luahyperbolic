@@ -18,18 +18,42 @@ m.module = "hyper"
 
 -- ================ MESSAGES =====================
 
-function m.error(msg)
-    error("[hyperbolic] " .. msg, 2)
+function m._error(msg)
+    error("[ERROR] " .. msg, 2)
 end
 
-function m.assert(cond, msg)
+function m._assert(cond, msg)
 	if not cond then
-		m.error(msg)
+		m._error(msg)
 	end
 end
 
-function m.assert_in_disk(z)
-	m.assert(m.in_disk(z), "[ERROR] POINT NOT IN OPEN DISK : " .. complex.__tostring(z))
+
+function m._assert_in_disk(...)
+    local points = {...}
+    for _, z in ipairs(points) do
+        m._assert(m._in_disk(z), "POINT NOT IN OPEN DISK : " .. complex.__tostring(z))
+    end
+end
+
+function m._assert_in_closed_disk(...)
+    local points = {...}
+    for _, z in ipairs(points) do
+        m._assert(m._in_closed_disk(z), "POINT NOT IN CLOSED DISK : " .. complex.__tostring(z))
+    end
+end
+
+
+function m._coerce_assert_in_disk(...)
+    local points = {complex.coerce(...)}
+    m._assert_in_disk(table.unpack(points))
+    return table.unpack(points)
+end
+
+function m._coerce_assert_in_closed_disk(...)
+    local points = {complex.coerce(...)}
+    m._assert_in_closed_disk(table.unpack(points))
+    return table.unpack(points)
 end
 
 -- ================= HELPERS (EUCLIDEAN GEOM AND OTHER)
@@ -64,7 +88,7 @@ m.asinh = function(x)
 end
 
 
-m.ensure_order = function (x, y, z, t)
+m._ensure_order = function (x, y, z, t)
 	-- if the "distance" along the circle from x to y is larger than x to z, swap
 	if complex.abs(x - y) > complex.abs(x - z) or complex.abs(t - z) > complex.abs(t - y) then
 		return t, x
@@ -129,7 +153,7 @@ function m.randomPoint(rmin, rmax)
 	rmax = math.min(rmax, 1 - m.EPS)
 	rmin = rmin or 0
 
-	m.assert(rmin >= 0 and rmax > rmin, "randomPoint: require 0 ≤ rmin < rmax")
+	m._assert(rmin >= 0 and rmax > rmin, "randomPoint: require 0 ≤ rmin < rmax")
 
 	local theta = 2 * math.pi * math.random()
 	local u = math.random()
@@ -142,25 +166,22 @@ end
 -- ==================== HYPERBOLIC CALCULUS ================
 -- =========================================================
 
-function m.in_disk(z)
+function m._in_disk(z)
 	return complex.abs(z) < 1 - m.EPS
 end
 
-function m.in_closed_disk(z)
+function m._in_closed_disk(z)
 	return complex.abs(z) < 1 + m.EPS
 end
 
-function m.on_circle(z)
+function m._on_circle(z)
 	return math.abs(complex.abs(z) - 1) < m.EPS
 end
 
-function m.in_half_plane(z)
+function m._in_half_plane(z)
 	return z.im > m.EPS
 end
 
-function m.in_closed_half_plane(z)
-	return z.im > -m.EPS
-end
 
 --------------------
 
@@ -180,7 +201,7 @@ function m.distance(z, w)
 	return m.distance_to_origin(m.automorphism(z, 0)(w))
 end
 
-function m.midpoint_to_origin(z)
+function m.midpointToOrigin(z)
 	local r = complex.abs(z)
 	if r < m.EPS then
 		return complex(0, 0)
@@ -190,7 +211,7 @@ end
 
 function m.midpoint(a, b)
 	local u = m.automorphism(a, 0)(b)
-	local u_half = m.midpoint_to_origin(u)
+	local u_half = m.midpointToOrigin(u)
 	return m.automorphism(-a, 0)(u_half)
 end
 
@@ -199,7 +220,7 @@ function m.metric_factor(z)
 end
 
 function m.geodesic_data(z, w)
-	m.assert(complex.distinct(z, w), "geodesic_data: points z and w are identical")
+	m._assert(complex.distinct(z, w), "geodesic_data: points z and w are identical")
 
 	local u = w - z
 	local area = z.re * w.im - z.im * w.re -- signed!
@@ -226,11 +247,11 @@ function m.geodesic_data(z, w)
 end
 
 function m.endpoints(a, b)
-	m.assert(complex.distinct(a,b), "endpoints : points must be distinct")
+	m._assert(complex.distinct(a,b), "endpoints : points must be distinct")
   if math.abs(complex.det(a,b)) < 100*m.EPS then
 		local dir = (a-b) / complex.abs(a-b)
 		local e1, e2 = -dir, dir
-		return m.ensure_order(e1, a, b, e2)
+		return m._ensure_order(e1, a, b, e2)
   end
   
 
@@ -240,21 +261,21 @@ function m.endpoints(a, b)
   assert(g.type=="circle", "endpoints : problem with branch diameter/circle")
 	local c, R = g.center, g.radius
 	local e1, e2 = euclid.interCC(c, R, complex(0, 0), 1)
-	return m.ensure_order(e1, a, b, e2)
+	return m._ensure_order(e1, a, b, e2)
 end
 
-
-function m.same_geodesics(a, b, c, d)
+--[[
+function m._same_geodesics(a, b, c, d)
     local aa, bb = m.endpoints(a, b)
     local cc, dd = m.endpoints(c, d)
     local sameSet = complex.isSamePair(aa,bb,cc,dd)
     return sameSet
-end
+end]]
 
 
 
 function m.endpoints_perpendicular_bisector(A, B)
-	m.assert(complex.distinct(A, B), "perpendicular_bisector: A and B must be distinct")
+	m._assert(complex.distinct(A, B), "perpendicular_bisector: A and B must be distinct")
 
 	local M = m.midpoint(A, B)
 	local phi = m.automorphism(M, 0)
@@ -268,7 +289,7 @@ function m.endpoints_perpendicular_bisector(A, B)
 end
 
 function m.endpoints_angle_bisector(A, O, B)
-	m.assert(complex.distinct(A, O) and complex.distinct(O, B), "angle_bisector: O must be distinct from A and B")
+	m._assert(complex.distinct(A, O) and complex.distinct(O, B), "angle_bisector: O must be distinct from A and B")
 
 	local phi = m.automorphism(O, 0)
 	local phi_inv = m.automorphism(-O, 0)
@@ -330,7 +351,7 @@ end
 function m.automorphism(a, theta)
 	a = complex(a.re, a.im) -- copie
 	theta = theta or 0
-	m.assert_in_disk(a)
+	m._assert_in_disk(a)
 	if complex.abs(a) < m.EPS then
 		return function(x)
 			return x
@@ -346,7 +367,7 @@ function m.automorphism(a, theta)
 end
 
 function m.rotation(center, theta)
-	m.assert_in_disk(center)
+	m._assert_in_disk(center)
 	theta = theta or 0
 	if math.abs(theta) < m.EPS then
 		return function(x)
@@ -365,7 +386,7 @@ function m.symmetry(center)
 	return m.rotation(center, math.pi)
 end
 
-function m.symmetry_around_midpoint(a, b)
+function m.symmetryAroundMidpoint(a, b)
 	return m.rotation(m.midpoint(a, b), math.pi)
 end
 
@@ -379,14 +400,14 @@ function m.parabolic_fix1(theta) -- angle in rad
 end
 
 function m.parabolic(idealPoint, theta)
-	m.assert(idealPoint:isUnit(), "parabolic : ideal point must be at infinity")
+	m._assert(idealPoint:isUnit(), "parabolic : ideal point must be at infinity")
 	return function(z)
 		return idealPoint * m.parabolic_fix1(theta)(z / idealPoint)
 	end
 end
 
-function m.automorphism_sending(z, w)
-	-- find better name ?
+function m.automorphismSending(z, w)
+	-- (hyperbolic)
 	if z:isNear(w) then
 		return function(x)
 			return x
@@ -400,9 +421,9 @@ function m.automorphism_sending(z, w)
 	end
 end
 
-function m.automorphism_from_pairs(A, B, imageA, imageB)
-	m.assert(complex.distinct(A, B), "automorphism_from_pairs : startpoints must be different")
-	m.assert(math.abs(m.dist(A, B) - m.dist(imageA, imageB)) < m.EPS, "automorphism_from_pairs : distances don't match") -- or return nil ?
+function m.automorphismFromPairs(A, B, imageA, imageB)
+	m._assert(complex.distinct(A, B), "automorphism_from_pairs : startpoints must be different")
+	m._assert(math.abs(m.dist(A, B) - m.dist(imageA, imageB)) < m.EPS, "automorphism_from_pairs : distances don't match") -- or return nil ?
 
 	if A:isNear(imageA) and B:isNear(imageB) then
 		return function(z)
@@ -419,10 +440,10 @@ function m.automorphism_from_pairs(A, B, imageA, imageB)
 	end
 end
 
-function m.rotation_from_pair(O, A, imageA)
-	m.assert(math.abs(m.distance(O, A)- m.distance(O, imageA)) < m.EPS, "rotation : must have dist(0,A) = dist(P,AA)")
+function m.rotationFromPair(O, A, imageA)
+	m._assert(math.abs(m.distance(O, A)- m.distance(O, imageA)) < m.EPS, "rotation : must have dist(0,A) = dist(P,AA)")
 
-	return m.automorphism_from_pairs(O, A, O, imageA)
+	return m.automorphismFromPairs(O, A, O, imageA)
 end
 
 function m.reflection(z1, z2)
@@ -460,13 +481,13 @@ function m.distance_to_geodesic(z, z1, z2)
 	return m.distance(z, p)
 end
 
-function m.is_on_geodesic(z, z1, z2, eps)
+function m._on_geodesic(z, z1, z2, eps)
 	eps = eps or m.EPS
 	return m.distance_to_geodesic(z, z1, z2) < eps
 end
 
 
-function m.mobius_transformation(a, b, c, d)
+function m.mobiusTransformation(a, b, c, d)
 	-- general Möbius transform
 	return function(z)
 		return (a * z + b) / (c * z + d)
@@ -517,7 +538,7 @@ end
 
 function m.barycenter2(a, wa, b, wb)
 	local s = wa + wb
-	m.assert(math.abs(s) > m.EPS, "barycenter2: sum of weights must not be zero")
+	m._assert(math.abs(s) > m.EPS, "barycenter2: sum of weights must not be zero")
 
 	local t = wb / s
 	return m.interpolate(a, b, t)
@@ -580,8 +601,8 @@ function m.interLL(z1, z2, w1, w2)
 		return nil
 	end
 
-	local inside1 = m.in_disk(p1)
-	local inside2 = m.in_disk(p2)
+	local inside1 = m._in_disk(p1)
+	local inside2 = m._in_disk(p2)
 
 	if inside1 and not inside2 then
 		return p1
@@ -607,7 +628,7 @@ end
 
 
 function m.triangleIncenter(A, B, C)
-	m.assert(
+	m._assert(
 		complex.distinct(A, B) and complex.distinct(B, C) and complex.distinct(C, A),
 		"incenter: points must be distinct"
 	)
@@ -622,7 +643,7 @@ end
 
 function m.triangleCircumcenter(A, B, C)
 	-- WARNING returns circumcenter or nil
-	m.assert(
+	m._assert(
 		complex.distinct(A, B) and complex.distinct(B, C) and complex.distinct(C, A),
 		"circumcenter: points must be distinct"
 	)
