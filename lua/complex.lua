@@ -9,7 +9,7 @@
 --   2026 Damien Mégy
 --   This software is released into the public domain.
 --   You may use, modify, and distribute it freely, without restriction.
--- 
+--
 -- SPDX-License-Identifier: CC0-1.0
 --
 -----------------------------------------------------------------------
@@ -19,12 +19,13 @@
 local m = {}
 m.__index = m
 
-local sqrt = math.sqrt
 local sin = math.sin
 local cos = math.cos
 local atan2 = math.atan2
 local exp = math.exp
 local log = math.log
+local sqrt = math.sqrt
+local abs = math.abs
 
 -- precision
 m.EPS_INV = 1e10
@@ -53,18 +54,30 @@ setmetatable(m, {
 -- Type checking and coercion
 -- -----------------------------------------
 
-local function is_complex(z)
+function m.isComplex(z)
 	return type(z) == "table" and getmetatable(z) == m
 end
 
 local function tocomplex(z)
-	if is_complex(z) then
+	if m.isComplex(z) then
 		return z
 	elseif type(z) == "number" then
 		return m.new(z, 0)
+	elseif type(z) == "table" and z.re and z.im then
+        return m.new(z.re, z.im)
 	else
 		error("Cannot coerce value to complex, got type " .. type(z))
 	end
+end
+
+-- public coerce, handles various arguments
+
+function m.coerce(...)
+    local args = {...}
+    for i = 1, #args do
+        args[i] =tocomplex(args[i])
+    end
+    return table.unpack(args)
 end
 
 -- -----------------------------------------
@@ -138,8 +151,8 @@ function m.isClose(a, b, eps)
     a, b = tocomplex(a), tocomplex(b)
     eps = eps or m.EPS
 
-    local dr = math.abs(a.re - b.re)
-    local di = math.abs(a.im - b.im)
+    local dr = abs(a.re - b.re)
+    local di = abs(a.im - b.im)
 
     return dr + di <= eps  -- norme L1,  rapide
 end
@@ -209,7 +222,7 @@ end
 --- Modulus.
 function m.abs(z)
 	z = tocomplex(z)
-	return math.sqrt(z.re*z.re + z.im*z.im)
+	return sqrt(z.re*z.re + z.im*z.im)
 end
 
 
@@ -261,23 +274,23 @@ end
 --- Test whether imaginary part is approx. zero (method form).
 function m:isReal(eps)
 	eps = eps or m.EPS
-	return math.abs(self.im) <= eps
+	return abs(self.im) <= eps
 end
 
 --- Test whether real part is approx. zero (method form).
 function m:isImag(eps)
 	eps = eps or m.EPS
-	return math.abs(self.re) <= eps
+	return abs(self.re) <= eps
 end
 
 -- Integer check with tolerance
 function m:isNearInteger(eps)
     eps = eps or m.EPS
-    if math.abs(self.im) > eps then
+    if abs(self.im) > eps then
         return false
     end
     local nearest = math.floor(self.re + 0.5)
-    return math.abs(self.re - nearest) <= eps
+    return abs(self.re - nearest) <= eps
 end
 
 
@@ -285,14 +298,14 @@ end
 function m:isUnit(eps)
 	eps = eps or m.EPS
 	local r = m.abs(self)
-	return math.abs(r-1) < eps
+	return abs(r-1) < eps
 end
 
 
 --- Test approx. colinearity with other number (method form).
 function m:isColinear(other, eps)
     eps = eps or m.EPS
-    return math.abs(m.det(self, other)) <= eps
+    return abs(m.det(self, other)) <= eps
 end
 
 
@@ -324,8 +337,8 @@ end
 
 --- Rotate by angle θ (radians).
 function m:rotate(theta)
-    local c = math.cos(theta)
-    local s = math.sin(theta)
+    local c = cos(theta)
+    local s = sin(theta)
     return m.new(c*self.re - s*self.im, s*self.re + c*self.im)
 end
 
@@ -399,8 +412,8 @@ function m.__pow(a, b)
 
     -- (approx) integer exponent. Is rounding a good idea ?
     if b:isNearInteger() then
-    	local n = math.floor(b.re + 0.5)  -- round
-        return complex_pow_int(a, n)
+		local n = math.floor(b.re + 0.5)  -- round
+		return complex_pow_int(a, n)
     end
 
     -- General complex power
@@ -421,6 +434,6 @@ m.ZERO = m.new(0, 0)
 m.I = m.new(0, 1)
 
 --- Primitive cube root of unity.
-m.J = m.new(-1/2, math.sqrt(3)/2)
+m.J = m.new(-1/2, sqrt(3)/2)
 
 return m
