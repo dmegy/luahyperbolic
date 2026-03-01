@@ -1,5 +1,5 @@
-\begin{hyperbolicdisk}
 \begin{luacode*}
+hyper.tikzBegin()
 local A, B, C = hyper.fundamentalIdealTriangle(3,2)
 local geodesics = {
 	{hyper.endpoints(A,B)},
@@ -9,5 +9,5 @@ local geodesics = {
 geodesics = hyper.propagate_geodesics(geodesics, TILING_DEPTH)
 hyper.drawLinesFromTable(geodesics, "teal, draw opacity=.5")
 hyper.drawTriangle(A,B,C,"red, very thick")
+hyper.tikzEnd()
 \end{luacode*}
-\end{hyperbolicdisk}

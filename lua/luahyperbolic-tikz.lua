@@ -85,29 +85,75 @@ local function parse_points_with_options(...)
 end
 
 -- TikZ API --------------------------------
+m.tikzOptions = ""
+m.tikzBuffer = {}
+m.tikzNbPicturesExported = 0
+m.TIKZ_CLIP_DISK = true
+m.TIKZ_BEGIN_DISK = [[
+\draw[very thick] (0,0) circle (1);
+\clip (0,0) circle (1);
+]]
 
-function m.beginTikzPicture(options)
-	options = options and "[" .. options .. "]" or ""
-	tex.print("\\begin{tikzpicture}" .. options)
-	tex.print("\\draw[very thick] (0,0) circle (1);")
-	tex.print("\\clip (0,0) circle (1);")
+function m.tikzGetFirstLines()
+	local firstLines = string.format(
+		"\\begin{tikzpicture}[%s]\n",
+		m.tikzOptions
+	)
+	if m.TIKZ_CLIP_DISK then
+		firstLines = firstLines .. m.TIKZ_BEGIN_DISK
+	end
+	return firstLines
 end
 
-function m.endTikzPicture()
+function m.tikzBegin(options)
+	-- without drawing circle and clipping disk
+	m.tikzOptions = options or "scale=3"
+	tex.print(m.tikzGetFirstLines())
+	m.tikzClearBuffer()
+end
+
+
+function m.tikzClearBuffer()
+	m.tikzBuffer = {}
+end
+
+
+function m.tikzExport(filename)
+	-- works even without filename, for automated exports
+	m.tikzNbPicturesExported = m.tikzNbPicturesExported+1
+	filename = filename or "hyper_picture_" ..m.tikzNbPicturesExported .. ".tikz"
+	local f = io.open(filename, "w")
+	f:write(m.tikzGetFirstLines())
+	for _, line in ipairs(m.tikzBuffer) do
+	  f:write(line, "\n")
+	end
+	f:write("\\end{tikzpicture}\n")
+	f:close()
+	-- doesn't clear buffer, do it manually if wanted
+	-- can be used to export different steps of the same picture
+end
+
+
+function m.tikzEnd(filename)
 	tex.print("\\end{tikzpicture}")
+	if filename ~= nil then
+		m.tikzExport(filename)
+	end
+	m.tikzClearBuffer()
 end
 
 
-local function tikz_printf(fmt, ...)
-	-- TODO : add tikz buffer and export functionality
-    tex.print(string.format(fmt, ...))
+function m.tikzPrintf(fmt, ...)
+	local line = string.format(fmt, ...)
+    tex.print(line)
+    table.insert(m.tikzBuffer, line)
 end
 
 function m.tikz_define_nodes(table)
 	for name, z in pairs(table) do
 		m.assert(z ~= nil, "nil point for " .. name)
 		m.assert(z.re ~= nil and z.im ~= nil, "not a complex for " .. name)
-		tikz_printf("\\coordinate (%s) at (%f,%f);", name, z.re, z.im)
+		m.tikzPrintf("\\coordinate (%s) at (%f,%f);", name, z.re, z.im)
 	end
 end
 
@@ -123,7 +169,7 @@ function m.drawPoint(z, options)
 		return
 	end
 	m.assert(complex.abs(z) <= 1+m.EPS, "drawPoint : point outside closed disk: " .. complex.__tostring(z))
-	tikz_printf("\\fill[%s] (%f,%f) circle (%s);", options, z.re, z.im, m.DRAW_POINT_RADIUS)
+	m.tikzPrintf("\\fill[%s] (%f,%f) circle (%s);", options, z.re, z.im, m.DRAW_POINT_RADIUS)
 end
 
 
@@ -156,7 +202,7 @@ function m.drawSegment(z, w, options)
 	options = options or ""
 	m.assert(z:isNot(w), "points must be distinct")
 	local shape = m.shape_segment(z,w)
-	tikz_printf("\\draw[%s] %s;",options, shape)
+	m.tikzPrintf("\\draw[%s] %s;",options, shape)
 end
 
 function m.shape_segment(z, w)
@@ -218,7 +264,7 @@ function m.drawLine(a, b, options)
 	local end_a, end_b = m.endpoints(a,b)
 
 	local shape = m.shape_segment(end_a,end_b)
-	tikz_printf("\\draw[%s] %s;", options, shape)
+	m.tikzPrintf("\\draw[%s] %s;", options, shape)
 end
 
 
@@ -313,7 +359,7 @@ function m.drawTangentVector(p, v, options)
 	local factor = (1 - complex.abs2(p))
 	local euclid_vec = math.tanh(factor * norm_v / 2) * u
     local shape = m.shape_euclidean_segment(p, p+euclid_vec)
-	tikz_printf("\\draw[->,%s] %s;",options,shape)
+	m.tikzPrintf("\\draw[->,%s] %s;",options,shape)
 end
 
 -- ============= FOR CONVENIENCE (draw multiple objets/segments etc
@@ -403,12 +449,13 @@ end
 
 -- ====== DRAW CIRCLES, SEMICIRCLES, ARCS ==========
 
-function m.drawCircle(z0, r, options)
+function m.drawCircleRadius(z0, r, options)
 	options = options or ""
 	local c, R = m.circle_to_euclidean(z0, r)
 
-	tikz_printf("\\draw[%s] (%f,%f) circle (%f);", options, c.re, c.im, R)
+	m.tikzPrintf("\\draw[%s] (%f,%f) circle (%f);", options, c.re, c.im, R)
 end
+m.drawCircle = m.drawCircleRadius
 
 function m.drawCircleThrough(center, point, options)
 	options = options or ""
@@ -458,7 +505,7 @@ function m.drawArc(O, A, B, options)
 		a2 = a2 + 360
 	end
 
-	tikz_printf("\\draw[%s] (%f,%f) ++(%f:%f) arc (%f:%f:%f);", options, c.re, c.im, a1, R, a1, a2, R)
+	m.tikzPrintf("\\draw[%s] (%f,%f) ++(%f:%f) arc (%f:%f:%f);", options, c.re, c.im, a1, R, a1, a2, R)
 end
 
 function m.drawSemicircle(center, startpoint, options)
@@ -503,7 +550,7 @@ function m.drawRightAngle(A, O, B, options, distFactor)
 	local WW = m.exp_map(BB,w)
 	local P = m.interLL(AA,VV, BB, WW)
 	-- fast&lazy : euclidean polyline instead of geodesic:
-	tikz_printf("\\draw[%s] (%f,%f) -- (%f,%f) -- (%f,%f);",
+	m.tikzPrintf("\\draw[%s] (%f,%f) -- (%f,%f) -- (%f,%f);",
 		options,
 		AA.re, AA.im,
 		P.re, P.im,
@@ -529,14 +576,14 @@ function m.drawHorocycle(idealPoint, point, options)
 	-- rotate back
 	center = center * idealPoint
 
-	tikz_printf("\\draw[%s] (%f,%f) circle (%f);", options, center.re, center.im, r)
+	m.tikzPrintf("\\draw[%s] (%f,%f) circle (%f);", options, center.re, center.im, r)
 end
 
 -- ===== LABEL OBJETS ==================
 
 function m.drawLabeledPoint(z, options, label, label_options)
 	options = options or ""
-	tikz_printf("\\fill[%s] (%f,%f) circle (0.02) node[%s]{%s};", options, z.re, z.im, label_options, label)
+	m.tikzPrintf("\\fill[%s] (%f,%f) circle (0.02) node[%s]{%s};", options, z.re, z.im, label_options, label)
 end
 
 function m.labelPoint(z, label, options)
@@ -546,7 +593,7 @@ function m.labelPoint(z, label, options)
 		m.warning("labelPoint : point is nil, aborting")
 		return
 	end
-	tikz_printf("\\node[%s] at (%f,%f) {%s};", options, z.re, z.im, label)
+	m.tikzPrintf("\\node[%s] at (%f,%f) {%s};", options, z.re, z.im, label)
 end
 
 function m.labelPoints(...)
