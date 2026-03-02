@@ -60,20 +60,35 @@ For more information on the license, see the `LICENSE` file or visit [CC0 1.0 Un
 - triangle intouch points, extouchpoints
 - triangle orthocenter
 - camelCase syntax for public functions and prefixing 'semipublic' functions with "\_"
+- hide functions metric_factor, circle_to_euclidean
+- get rif of cosh, sinh, tanh
+- IMPORTANT rewrite functions that compare distances, do not compute atanh, just compare tanh of distance !
+- IMPORTANT write function that computes triangle with given angles. Necessary for (p,q,r) tilings.
+- change name fundamentalIdealTriangle if only one angle is zero
+- power of a point, radical axis
 
 ### In `luahyperbolic-tikz` :
 
+- function `drawExcircle` and variants
+- more triangle geometry ? Gergonne, Nagel etc ?
 - function `drawHypercycle` and variants
 - function `markSegment` ?
 - function `markAngle(A, O, B, options)`
 - function `labelSegment(A, B, label)`
 - function `labelAngle(A, O, B, label)`
-- more tikz shapes
+- more tikz shapes if necessary
 - draw external angle bisector ?
+- replace old `complex.coerce` and assert in disk with `_coerce_assert_in_disk`
+- replace old `complex.isClose(z,w)` etc with `z:isNear(w)` etc.
 
 ### In documentation
 
 - hypercycles for hyperbolic automorphisms
+
+### Elsewhere
+
+- write more examples !
+- tilings with other types of degenerate triangles, including ideal triangles
 
 ## Contact
 
