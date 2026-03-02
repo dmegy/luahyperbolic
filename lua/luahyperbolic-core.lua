@@ -61,31 +61,41 @@ end
 -- precision
 m.EPS = 1e-10
 
--- Note : (sinh, cosh and tanh are already in math module but be add them here anyway)
+local random = math.random
+local min = math.min
+local max = math.max
+local sin = math.sin
+local cos = math.cos
+local atan2 = math.atan2
+local exp = math.exp
+local log = math.log
+local sqrt = math.sqrt
+local abs = math.abs
+local sinh = math.sinh
+local cosh = math.cosh
+local tanh = math.tanh
 
-m.sinh = function(x)
-	return (math.exp(x) - math.exp(-x)) / 2
+local atanh = function(x)
+	return 0.5 * log((1 + x) / (1 - x))
 end
 
-m.cosh = function(x)
-	return (math.exp(x) + math.exp(-x)) / 2
+local acosh = function(x)
+    return log(x + sqrt(x*x - 1))
 end
 
-m.sinh = function(x)
-	return (math.exp(x) - math.exp(-x))/(math.exp(x) + math.exp(-x))
+local asinh = function(x)
+    return log(x + sqrt(x*x + 1))
 end
 
-m.atanh = function(x)
-	return 0.5 * math.log((1 + x) / (1 - x))
-end
+-- public versions :
+m.cosh = cosh
+m.sinh = sinh
+m.tanh = tanh
+m.acosh = acosh
+m.asinh = asinh
+m.atanh = atanh
 
-m.acosh = function(x)
-    return math.log(x + math.sqrt(x*x - 1))
-end
 
-m.asinh = function(x)
-    return math.log(x + math.sqrt(x*x + 1))
-end
 
 
 m._ensure_order = function (x, y, z, t)
@@ -108,17 +118,17 @@ function euclid.interCC(c1, r1, c2, r2)
 		return nil
 	end -- même si même rayon
 
-	if d > r1 + r2 + m.EPS or d < math.abs(r1 - r2) - m.EPS then
+	if d > r1 + r2 + m.EPS or d < abs(r1 - r2) - m.EPS then
 		return nil -- no intersection
 	end
 
-	if math.abs(d - (r1 + r2)) < m.EPS or math.abs(d - math.abs(r1 - r2)) < m.EPS then
+	if abs(d - (r1 + r2)) < m.EPS or abs(d - abs(r1 - r2)) < m.EPS then
 		local p = c1 + (c2 - c1) * (r1 / d)
 		return p, p
 	end
 
 	local a = (r1 ^ 2 - r2 ^ 2 + d ^ 2) / (2 * d)
-	local h = math.sqrt(math.max(r1 ^ 2 - a ^ 2, 0))
+	local h = sqrt(max(r1 ^ 2 - a ^ 2, 0))
 	local p_mid = c1 + ((c2 - c1) / d) * a
 	local offset = complex(-(c2.im - c1.im) / d * h, (c2.re - c1.re) / d * h)
 
@@ -136,9 +146,9 @@ function euclid.interLC(z1, z2, c0, r)
 	if disc < -m.EPS then
 		return nil
 	end
-	disc = math.max(disc, 0)
+	disc = max(disc, 0)
 
-	local sqrtD = math.sqrt(disc)
+	local sqrtD = sqrt(disc)
 	local t1 = (-b + sqrtD) / (2 * a)
 	local t2 = (-b - sqrtD) / (2 * a)
 
@@ -150,16 +160,16 @@ end
 function m.randomPoint(rmin, rmax)
 	-- returns random point in disk or annulus with uniform density
 	rmax = rmax or 1 - m.EPS
-	rmax = math.min(rmax, 1 - m.EPS)
+	rmax = min(rmax, 1 - m.EPS)
 	rmin = rmin or 0
 
 	m._assert(rmin >= 0 and rmax > rmin, "randomPoint: require 0 ≤ rmin < rmax")
 
-	local theta = 2 * math.pi * math.random()
-	local u = math.random()
-	local r = math.sqrt(u * (rmax ^ 2 - rmin ^ 2) + rmin ^ 2)
+	local theta = 2 * math.pi * random()
+	local u = random()
+	local r = sqrt(u * (rmax ^ 2 - rmin ^ 2) + rmin ^ 2)
 
-	return complex(r * math.cos(theta), r * math.sin(theta))
+	return complex(r * cos(theta), r * sin(theta))
 end
 
 -- =========================================================
@@ -175,7 +185,7 @@ function m._in_closed_disk(z)
 end
 
 function m._on_circle(z)
-	return math.abs(complex.abs(z) - 1) < m.EPS
+	return abs(complex.abs(z) - 1) < m.EPS
 end
 
 function m._in_half_plane(z)
@@ -186,15 +196,15 @@ end
 --------------------
 
 function m.radial_half(r)
-	return r / (1 + math.sqrt(1 - r * r))
+	return r / (1 + sqrt(1 - r * r))
 end
 
 function m.radial_scale(r, t)
-	return math.tanh(t * m.atanh(r))
+	return tanh(t * atanh(r))
 end
 
 function m.distance_to_origin(z)
-	return 2 * m.atanh(complex.abs(z))
+	return 2 * atanh(complex.abs(z))
 end
 
 function m.distance(z, w)
@@ -224,7 +234,7 @@ function m.geodesic_data(z, w)
 
 	local u = w - z
 	local area = z.re * w.im - z.im * w.re -- signed!
-	if math.abs(area) < m.EPS then -- points are aligned with origin
+	if abs(area) < m.EPS then -- points are aligned with origin
 		return {
 			type = "diameter",
 			center = nil,
@@ -248,7 +258,7 @@ end
 
 function m.endpoints(a, b)
 	m._assert(complex.distinct(a,b), "endpoints : points must be distinct")
-  if math.abs(complex.det(a,b)) < 100*m.EPS then
+  if abs(complex.det(a,b)) < 100*m.EPS then
 		local dir = (a-b) / complex.abs(a-b)
 		local e1, e2 = -dir, dir
 		return m._ensure_order(e1, a, b, e2)
@@ -315,7 +325,7 @@ end
 
 function m.circle_to_euclidean(z0, r)
 	-- returns euclidean center and radius of hyperbolic center and radius
-	local rho = math.tanh(r / 2)
+	local rho = tanh(r / 2)
 	local mod2 = complex.abs2(z0)
 	local denom = 1 - rho * rho * mod2
 	local c = ((1 - rho * rho) / denom) * z0
@@ -369,7 +379,7 @@ end
 function m.rotation(center, theta)
 	m._assert_in_disk(center)
 	theta = theta or 0
-	if math.abs(theta) < m.EPS then
+	if abs(theta) < m.EPS then
 		return function(x)
 			return x
 		end
@@ -423,7 +433,7 @@ end
 
 function m.automorphismFromPairs(A, B, imageA, imageB)
 	m._assert(complex.distinct(A, B), "automorphism_from_pairs : startpoints must be different")
-	m._assert(math.abs(m.dist(A, B) - m.dist(imageA, imageB)) < m.EPS, "automorphism_from_pairs : distances don't match") -- or return nil ?
+	m._assert(abs(m.dist(A, B) - m.dist(imageA, imageB)) < m.EPS, "automorphism_from_pairs : distances don't match") -- or return nil ?
 
 	if A:isNear(imageA) and B:isNear(imageB) then
 		return function(z)
@@ -441,7 +451,7 @@ function m.automorphismFromPairs(A, B, imageA, imageB)
 end
 
 function m.rotationFromPair(O, A, imageA)
-	m._assert(math.abs(m.distance(O, A)- m.distance(O, imageA)) < m.EPS, "rotation : must have dist(0,A) = dist(P,AA)")
+	m._assert(abs(m.distance(O, A)- m.distance(O, imageA)) < m.EPS, "rotation : must have dist(0,A) = dist(P,AA)")
 
 	return m.automorphismFromPairs(O, A, O, imageA)
 end
@@ -511,7 +521,7 @@ function m.exp_map_at_origin(v)
 	if norm_v < m.EPS then
 		return complex(0, 0)
 	end
-	return v / norm_v * math.tanh(norm_v / 2)
+	return v / norm_v * tanh(norm_v / 2)
 end
 
 function m.exp_map(p, v)
@@ -547,7 +557,7 @@ end
 
 function m.barycenter2(a, wa, b, wb)
 	local s = wa + wb
-	m._assert(math.abs(s) > m.EPS, "barycenter2: sum of weights must not be zero")
+	m._assert(abs(s) > m.EPS, "barycenter2: sum of weights must not be zero")
 
 	local t = wb / s
 	return m.interpolate(a, b, t)
@@ -585,7 +595,7 @@ function m.interLL(z1, z2, w1, w2)
 		local v = g2.direction
 
 		local dot = u.re * v.re + u.im * v.im
-		if math.abs(math.abs(dot) - 1) < m.EPS then
+		if abs(abs(dot) - 1) < m.EPS then
 			return nil
 		end
 

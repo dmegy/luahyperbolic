@@ -20,6 +20,21 @@ end
 
 -- ================= HELPERS (EUCLIDEAN GEOM AND OTHER)
 
+
+local min = math.min
+local max = math.max
+local sin = math.sin
+local cos = math.cos
+local atan2 = math.atan2
+local exp = math.exp
+local log = math.log
+local sqrt = math.sqrt
+local abs = math.abs
+local sinh = math.sinh
+local cosh = math.cosh
+local tanh = math.tanh
+
+
 -- precision
 m.DRAW_EPS_INV = 1e6
 m.DRAW_EPS = 1/m.DRAW_EPS_INV
@@ -29,6 +44,18 @@ m.DRAW_EPS = 1/m.DRAW_EPS_INV
 m.SCALE = 1e9
 local function _quantize(x)
     return math.floor(x * m.SCALE + 0.5)
+end
+
+local function euclidean_circumcenter(a, b, c)
+	a, b, c = complex.coerce(a, b, c)
+    m._assert(math.abs(complex.det(b-a,c-a)) > m.EPS, "points must not be aligned")
+    local ma2 = complex.abs2(a)
+    local mb2 = complex.abs2(b)
+    local mc2 = complex.abs2(c)
+    local num = a*(mb2 - mc2) + b*(mc2 - ma2) + c*(ma2 - mb2)
+    local den = a*complex.conj(b - c) + b*complex.conj(c - a) + c*complex.conj(a - b)
+
+    return num / den
 end
 
 
@@ -280,7 +307,7 @@ function m.drawLinesFromTable(pairs, options)
 end
 
 function m.drawPerpendicularThrough(P,A,B,options)
-	-- perpendicular through P to (A,B)
+	-- perpendicular through P to geodesic (A,B)
 	options = options or ""
 	P, A, B = m._coerce_assert_in_closed_disk(P, A, B)
 	m._assert(A:isNot(B), "A and B must be distinct")
@@ -288,6 +315,21 @@ function m.drawPerpendicularThrough(P,A,B,options)
 	m._assert(P:isNot(H), "point must not be on line")
 	-- todo : fix this : should be ok.
 	m.drawLine(P,H,options)
+end
+
+function m.drawHypercycleThrough(P, A, B, options)
+	options = options or ""
+	P, A, B = complex.coerce(P, A, B)
+	if not A:isUnit() or not B:isUnit() then
+		A, B = m.endpoints(A, B)
+	end
+	if math.abs(complex.det(P-A, P-B)) < m.EPS then
+		m.tikzPrintf("\\draw[%s] (%f,%f) -- (%f,%f);", options, A.re, A.im, B.re, B.im)
+		return
+	end
+	local O = euclidean_circumcenter(P, A, B)
+	local radius = complex.abs(O-A)
+	m.tikzPrintf("\\draw[%s] (%f,%f) circle (%f);", options, O.re, O.im, radius)
 end
 
 
@@ -464,6 +506,7 @@ function m.drawCircleRadius(z0, r, options)
 
 	m.tikzPrintf("\\draw[%s] (%f,%f) circle (%f);", options, c.re, c.im, R)
 end
+
 m.drawCircle = m.drawCircleRadius
 
 function m.drawCircleThrough(center, point, options)
