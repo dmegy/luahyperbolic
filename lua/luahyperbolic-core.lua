@@ -476,14 +476,13 @@ function m.projection(z1, z2)
 	end
 end
 
-function m.distance_to_geodesic(z, z1, z2)
-	local p = (m.projection(z1, z2))(z)
-	return m.distance(z, p)
-end
-
-function m._on_geodesic(z, z1, z2, eps)
-	eps = eps or m.EPS
-	return m.distance_to_geodesic(z, z1, z2) < eps
+function m.pointOrbit(point, func, n)
+	local points = {}
+	for _ = 1, n do
+		point = func(point)
+		table.insert(points, point)
+	end
+	return points
 end
 
 
@@ -492,6 +491,16 @@ function m.mobiusTransformation(a, b, c, d)
 	return function(z)
 		return (a * z + b) / (c * z + d)
 	end
+end
+
+function m.distance_to_geodesic(z, z1, z2)
+	local p = (m.projection(z1, z2))(z)
+	return m.distance(z, p)
+end
+
+function m._on_geodesic(z, z1, z2, eps)
+	eps = eps or m.EPS
+	return m.distance_to_geodesic(z, z1, z2) < eps
 end
 
 -- ========== EXPONENTIAL MAPS (vector -> point) ==========

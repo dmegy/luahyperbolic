@@ -184,14 +184,12 @@ function m.drawPoints(...)
 	end
 end
 
+
+
 function m.drawPointOrbit(point, func, n, options)
 	-- draws n points. Doesn't draw original point
 	options = options or "black"
-	local points = {}
-	for _ = 1, n do
-		point = func(point)
-		table.insert(points, point)
-	end
+	local points = m.pointOrbit(point, func, n)
 
 	for i, z in ipairs(points) do
 		local alpha = i / #points
