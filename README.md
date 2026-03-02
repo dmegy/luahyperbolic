@@ -59,15 +59,21 @@ For more information on the license, see the `LICENSE` file or visit [CC0 1.0 Un
 - function closest_points_between_geodesics(z1, z2, w1, w2)
 - triangle intouch points, extouchpoints
 - triangle orthocenter
+- camelCase syntax for public functions and prefixing 'semipublic' functions with "\_"
 
 ### In `luahyperbolic-tikz` :
 
+- function `drawHypercycle` and variants
 - function `markSegment` ?
 - function `markAngle(A, O, B, options)`
 - function `labelSegment(A, B, label)`
 - function `labelAngle(A, O, B, label)`
 - more tikz shapes
 - draw external angle bisector ?
+
+### In documentation
+
+- hypercycles for hyperbolic automorphisms
 
 ## Contact
 
