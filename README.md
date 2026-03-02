@@ -19,6 +19,27 @@ If you wish to install the package manually, follow these steps:
 
 ### Example Usage
 
+A MWE is (see `minimal_example.tex`in `examples/`) :
+
+```latex
+\documentclass[margin=.2cm,multi,tikz]{standalone}
+\usepackage{luahyperbolic} %loads luacode package
+\begin{document}
+\begin{luacode*}
+hyper.tikzBegin("scale=2.5")
+local P = complex(0.5,-0.2)
+local A = complex.exp_i(math.pi/10)
+for k=1,5 do hyper.drawLine(P, A^k, "teal") end
+hyper.labelPoint(P, "$P$", "left=.2cm")
+hyper.drawLine(complex.J,-complex.I,"very thick, dashed, red")
+hyper.tikzEnd()
+\end{luacode*}
+\end{document}
+```
+
+Compiling that file with `lualatex` produces the following :
+![minimal example](examples/minimal_example.png)
+
 See the [package manual (pdf)](doc/documentation-luahyperbolic.pdf) for numerous examples.
 
 More examples in [examples/](examples/)

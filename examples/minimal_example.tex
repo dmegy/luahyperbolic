@@ -1,15 +1,13 @@
 \documentclass[margin=.2cm,multi,tikz]{standalone}
-\usepackage{luahyperbolic} %loads luacode
+\usepackage{luahyperbolic} %loads luacode package
 \begin{document}
 \begin{luacode*}
-local A = complex(.3,.7)
-local B = complex(-.8,-.3)
-local C = hyper.interLL(A, B, complex.I, complex.ONE)
-hyper.tikzBegin()
-hyper.drawLine(complex.I, complex.ONE)
-hyper.drawSegment(A,B,"very thick, red")
-hyper.drawRay(C, -complex.J, "green!50!black, dashed")
-hyper.drawPoints(A,B,C)
+hyper.tikzBegin("scale=2.5")
+local P = complex(0.5,-0.2)
+local A = complex.exp_i(math.pi/10)
+for k=1,5 do hyper.drawLine(P, A^k, "teal") end
+hyper.labelPoint(P, "$P$", "left=.2cm")
+hyper.drawLine(complex.J,-complex.I,"very thick, dashed, red")
 hyper.tikzEnd()
 \end{luacode*}
 \end{document}
