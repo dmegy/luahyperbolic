@@ -37,7 +37,8 @@ hyper.tikzEnd()
 \end{document}
 ```
 
-Compiling that file with `lualatex` produces the following :
+Compiling that file with `lualatex` produces the following output:
+
 ![minimal example](examples/minimal_example.png)
 
 See the [package manual (pdf)](doc/documentation-luahyperbolic.pdf) for numerous examples.
