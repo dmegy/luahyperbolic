@@ -26,6 +26,6 @@ Thumbs.db
 *.blg
 *.bcf
 *.run.xml
-.listing
+*.listing
 
 *.latexmkrc
