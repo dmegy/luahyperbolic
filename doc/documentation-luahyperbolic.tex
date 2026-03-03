@@ -260,11 +260,11 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Segments lines and rays (through two points)}
 \begin{luacode*}
-hyper.tikzBegin()
 local A = -complex.I/2
 local B = (1+complex.I)/2
 local C = complex(-0.7,0.4)
 local D = complex(-0.7,-0.3)
+hyper.tikzBegin()
 hyper.drawLine(A, B, "red")
 hyper.drawSegment(B,C,"dashed, ForestGreen")
 hyper.drawRay(C,D,"double,double distance=2pt")
@@ -295,13 +295,13 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Regular polygons}
 \begin{luacode*}
-hyper.tikzBegin()
 local O1 = complex(.5,.2)
 local A1 = complex(.7,.3)
 local O2 = complex(-0.1,0)
 local A2 = complex(-.4,.3)
 local O3 = complex(0,.7)
 local A3 = complex(0,.9)
+hyper.tikzBegin()
 hyper.drawRegularPolygon(O1, A1, 3, "red")
 hyper.drawRegularPolygon(O2, A2, 5, "blue")
 hyper.drawRegularPolygon(O3, A3, 8, "green!50!black")
@@ -329,11 +329,11 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Lines and rays (point and tangent vector)}
 \begin{luacode*}
-hyper.tikzBegin()
 local A = complex(-0.2,-0.5)
 local B = complex(-0.5,0.5)
 local C = complex(0,0.2)
 local v =  complex(1,0)
+hyper.tikzBegin()
 hyper.drawLineFromVector(A, v, "->, red")
 hyper.drawRayFromVector(B, v, "->, blue")
 hyper.drawRayFromVector(C, v, "->, Green")
@@ -352,9 +352,9 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Perpendicular bisector}
 \begin{luacode*}
-hyper.tikzBegin()
 local A = complex(-0.2,-0.5)
 local B = complex(-0.7,0.3)
+hyper.tikzBegin()
 hyper.drawPerpendicularBisector(A,B,"red")
 hyper.drawPoints(A,B)
 hyper.drawSegment(A, B, "teal")
@@ -366,10 +366,10 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Angle bisector}
 \begin{luacode*}
-hyper.tikzBegin()
 local A = complex(-0.2,-0.6)
 local O = complex(0.3,0.3)
 local B = complex(-0.7,0.3)
+hyper.tikzBegin()
 hyper.drawAngleBisector(A,O,B,"red")
 hyper.drawPoints(A,O,B)
 hyper.drawPolyline(A,O,B, "teal")
@@ -382,13 +382,13 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Center and radius}
 \begin{luacode*}
-hyper.tikzBegin()
 local points = {
 	complex(0,0),
 	complex(-0.5,-0.4),
 	complex(0.8,0.1),
 	complex(0,0.9)
 }
+hyper.tikzBegin()
 for _,point in ipairs(points) do
 	hyper.drawCircle(point,1,"teal")
 	hyper.drawPoint(point)
@@ -401,12 +401,12 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Circle through point}
 \begin{luacode*}
-hyper.tikzBegin()
 local O = complex(0.3,0.2)
 local P = complex(0.7,-0.4)
 local Q = complex(-0.1,0.4)
+hyper.tikzBegin()
 hyper.drawCircleThrough(O, P, "dotted, red")
--- or by hand : 
+-- or draw by hand : 
 hyper.drawCircle(O, hyper.distance(O,Q), "blue")
 hyper.drawPoints(O, P, Q)
 hyper.labelPoints(O, "$O$", P, "$P$", Q, "$Q$")
@@ -416,11 +416,11 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Semicircles}
 \begin{luacode*}
-hyper.tikzBegin()
 local O = complex(0,0)
 local A = complex(-0.3,0)
 local P = complex(0.5,0.2)
 local B = complex(0.7,-0.4)
+hyper.tikzBegin()
 hyper.drawSemicircle(O, A, "blue")
 hyper.drawSemicircle(P, B, "red")
 hyper.drawPoints(O, A, P, B)
@@ -433,10 +433,10 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Arc (center and endpoints)}
 \begin{luacode*}
-hyper.tikzBegin()
 local O = complex(0,0)
 local A = complex(0.5,0)
 local B = complex.polar(0.5,math.pi/3)
+hyper.tikzBegin()
 hyper.drawArc(O,A,B, "red")
 hyper.drawPoints(O,A,B)
 hyper.tikzEnd()
@@ -445,10 +445,10 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Angles}
 \begin{luacode*}
-hyper.tikzBegin()
 local A = complex(-.5,-.3)
 local B = complex(0.5,0)
 local C = complex(0.2,.7)
+hyper.tikzBegin()
 hyper.drawLines(A, B, B, C, C, A, "teal")
 hyper.drawAngle(B, A, C, "red, very thick")
 hyper.drawAngle(A, C, B, "thick, double, double distance=2pt, blue")
@@ -464,10 +464,10 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Tangent at point}
 \begin{luacode*}
-hyper.tikzBegin()
 local O = complex(0.3,0.2)
 local P = complex(0.1,-0.4)
 local Q = hyper.rotation(O,math.pi/3)(P)
+hyper.tikzBegin()
 hyper.drawCircleThrough(O, P)
 hyper.drawPoints(O, P, Q)
 hyper.drawTangentAt(O,P,"red")
@@ -481,10 +481,10 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Horocycles}
 \begin{luacode*}
-hyper.tikzBegin()
 local theta=math.pi/3
 local idealPoint = complex.exp_i(theta)
 local N = 10
+hyper.tikzBegin()
 for k=1,N-1 do
 	local point = idealPoint * (2*k/N-1)
 	hyper.drawHorocycle(idealPoint,point,"red")
@@ -562,10 +562,10 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Midpoint}
 \begin{luacode*}
-hyper.tikzBegin()
 local A = complex(0.4,0.4)
 local B = complex(-0.8,-0.3)
 local M = hyper.midpoint(A,B)
+hyper.tikzBegin()
 hyper.drawSegment(A,B, "very thick, teal")
 hyper.drawPoints(A,B,M)
 hyper.labelPoints(A, "$A$", B, "$B$")
@@ -576,10 +576,10 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Interpolate and barycenter}
 \begin{luacode*}
-hyper.tikzBegin()
 local A = complex(0.3,0.8)
 local B = complex(-0.7,-0.4)
 local N = 10
+hyper.tikzBegin()
 hyper.drawSegment(A,B, "thick, teal")
 hyper.drawPoints(A, B, "teal")
 hyper.labelPoints(A, "$A$", B, "$B$")
@@ -595,12 +595,12 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Line-Line (LL) intersection}
 \begin{luacode*}
-hyper.tikzBegin()
 local A = complex(0.4,0.3)
 local B = complex(-0.4,-0.7)
 local C = complex(0,0.7)
 local D = complex(0.8,-0.2)
 local P = hyper.interLL(A, B, C, D)
+hyper.tikzBegin()
 hyper.drawLines(A, B, C, D, "thick, teal")
 hyper.drawPoints(A, B, C, D,"thick, teal")
 hyper.drawPoint(P,"white, draw=red")
@@ -617,12 +617,12 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Line-circle (LC) intersection}
 \begin{luacode*}
-hyper.tikzBegin()
 local A = complex(0.5,0.4)
 local B = complex(-0.3,-0.7)
 local O = complex(-0.2,0.1)
 local radius = 1
 local P, Q = hyper.interLC(A, B, O, radius)
+hyper.tikzBegin()
 hyper.drawLine(A, B, "teal")
 hyper.drawCircle(O,radius, "teal")
 hyper.drawPoints(A, B, O, "teal")
@@ -635,11 +635,11 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Circle-circle (CC) intersection}
 \begin{luacode*}
-hyper.tikzBegin()
 local O1 = complex(-0.6,-.3)
 local O2 = complex(0.5,0)
 local r1, r2 = 1, 2
 local P, Q = hyper.interCC(O1, r1, O2, r2)
+hyper.tikzBegin()
 hyper.drawCircle(O1,r1, "teal")
 hyper.drawCircle(O2,r2, "teal")
 hyper.drawPoints(P, Q, "white, draw=red")
@@ -658,11 +658,11 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Reflection across a geodesic line}
 \begin{luacode*}
-hyper.tikzBegin()
 local A = complex(0.8,0.2)
 local B = complex(-0.3,0.5)
 local M = complex(0.3,-0.6)
 local Mp = (hyper.reflection(A,B))(M)
+hyper.tikzBegin()
 hyper.drawLine(A, B, "thick, teal")
 hyper.drawPoints(A, B, M)
 hyper.drawPoint(Mp,"red")
@@ -675,11 +675,11 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Projection onto a geodesic line}
 \begin{luacode*}
-hyper.tikzBegin()
 local A = complex(0.8,0.2)
 local B = complex(-0.3,0.5)
 local M = complex(0.3,-0.6)
 local P = (hyper.projection(A,B))(M)
+hyper.tikzBegin()
 hyper.drawLine(A, B, "thick, teal")
 hyper.drawPoints(A, B, M)
 hyper.drawPoint(P,"white, draw=red")
@@ -695,9 +695,9 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{(Elliptic) rotation around a point (regular octogon)}
 \begin{luacode*}
-hyper.tikzBegin()
 local O = complex(0.3,0.2)
 local M = complex(0.5,-0.4)
+hyper.tikzBegin()
 hyper.drawPoints(O)
 for k=1,8 do
 	local P = (hyper.rotation(O,2*math.pi/8))(M)
@@ -712,11 +712,11 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Symmetry around a point (rotation by $180^\circ$)}
 \begin{luacode*}
-hyper.tikzBegin()
 local O = complex(0.2,0.2)
 local s = hyper.symmetry(O)
-hyper.drawPoints(O)
 local points={complex(-.8,.1), complex(.6,0), complex(0,-.5)}
+hyper.tikzBegin()
+hyper.drawPoint(O)
 for k, P in ipairs(points) do
 	hyper.drawCircleThrough(O, P, "gray!10")
 	local sP = s(P)
@@ -732,10 +732,10 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Rotation by $60^\circ$}
 \begin{luacode*}
-hyper.tikzBegin()
 local O = complex(0.1,0.1)
 local r = hyper.rotation(O,math.pi/3)
-hyper.drawPoints(O)
+hyper.tikzBegin()
+hyper.drawPoint(O)
 for k=1,5 do
 	local P = hyper.randomPoint(0.3,0.9)
 	local rP = r(P)
@@ -751,10 +751,10 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Hyperbolic automorphims}
 \begin{luacode*}
-hyper.tikzBegin()
 local A = complex(0.4,0.3)
 local phi = hyper.automorphism(A,0)
 local N=6
+hyper.tikzBegin()
 style1 = "dotted, red!50"
 style2 =  "thick, red"
 for k=1,N do
@@ -777,11 +777,11 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Orbit under elliptic automorphism (rotation)}
 \begin{luacode*}
-hyper.tikzBegin()
 local nbPoints = 7
 local nbIterations = 10
 local O = complex(0.1,0.2)
 local rot = hyper.rotation(O,math.pi/30) -- angle in radians
+hyper.tikzBegin()
 hyper.drawPoint(O,"red")
 for k=1,nbPoints do
 	local P = hyper.randomPoint(0,.9)
@@ -795,12 +795,12 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Orbit under hyperbolic automorphism}
 \begin{luacode*}
-hyper.tikzBegin()
 local nbPoints = 10
 local nbIterations = 10
 local A = complex(0.05,0.05)
 local phi = hyper.automorphism(A,0)
 local X, Y = hyper.endpoints(A,0)
+hyper.tikzBegin()
 for k=1,nbPoints do
 	local P = hyper.randomPoint(0,.9)
 	hyper.drawHypercycleThrough(P,X,Y,"gray")
@@ -816,15 +816,15 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Orbit under parabolic automorphism}
 \begin{luacode*}
-hyper.tikzBegin()
 local nbIterations = 10
-limit = complex.exp_i(math.pi/3) -- on circle
+local limit = complex.exp_i(math.pi/3) -- on circle
 local phi = hyper.parabolic(limit,math.pi/30)
 local points={
 	complex(0,0), complex(0,.7),
 	complex(.4,.4), complex(.3,.7),
 	complex(-.8,.4), complex(-.4,0),
 	complex(.4,-.45)}
+hyper.tikzBegin()
 for _,P in ipairs(points) do
 	hyper.drawPointOrbit(P, phi, nbIterations) 
 	hyper.drawHorocycle(limit, P, "red, draw opacity=.3")
@@ -880,21 +880,21 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Circumcenter and circumcircle (CAUTION : does not always exist)}
 \begin{luacode*}
-hyper.tikzBegin()
 local A = complex(0.1,0.8)
 local B = complex(-0.6,-0.5)
 local C = complex(0.6,-0.2)
-hyper.drawTriangle(A,B,C,"teal")
-local mystyle = "dashed, red!50"
-hyper.drawPerpendicularBisector(A, B, mystyle)
-hyper.drawPerpendicularBisector(B, C, mystyle)
-hyper.drawPerpendicularBisector(C, A, mystyle)
 local O = hyper.triangleCircumcenter(A,B,C)
-hyper.drawCircumcircle(A,B,C,"red")
-hyper.labelPoint(O,"$O$", "below left")
 local BC = hyper.midpoint(B,C)
 local CA = hyper.midpoint(C,A)
 local AB = hyper.midpoint(A,B)
+hyper.tikzBegin()
+local mystyle = "dashed, red!50"
+hyper.drawTriangle(A,B,C,"teal")
+hyper.drawPerpendicularBisector(A, B, mystyle)
+hyper.drawPerpendicularBisector(B, C, mystyle)
+hyper.drawPerpendicularBisector(C, A, mystyle)
+hyper.drawCircumcircle(A,B,C,"red")
+hyper.labelPoint(O,"$O$", "below left")
 hyper.drawRightAngle(O, CA, C,"red",1/8)
 hyper.drawRightAngle(O,BC,B,"red",1/8)
 hyper.drawPoints(O,A,B,C,AB,BC,CA)
@@ -906,24 +906,25 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Orthocenter (CAUTION : does not always exist)}
 \begin{luacode*}
-hyper.tikzBegin()
 local A = complex(0.1,0.8)
 local B = complex(-0.7,-0.4)
 local C = complex(0.6,-0.2)
-hyper.drawTriangle(A,B,C,"teal")
-local mystyle = "dashed, red!50"
-hyper.drawPerpendicularThrough(A,B,C,mystyle)
-hyper.drawPerpendicularThrough(B,C,A,mystyle)
-hyper.drawPerpendicularThrough(C,A,B,mystyle)
+local H = hyper.triangleOrthocenter(A,B,C)
 local AA = hyper.projection(B,C)(A)
 local BB = hyper.projection(C,A)(B)
 local CC = hyper.projection(A,B)(C)
+
+hyper.tikzBegin()
+local mystyle = "dashed, red!50"
 local style2 = "very thick, red"
+hyper.drawTriangle(A,B,C,"teal")
+hyper.drawPerpendicularThrough(A,B,C,mystyle)
+hyper.drawPerpendicularThrough(B,C,A,mystyle)
+hyper.drawPerpendicularThrough(C,A,B,mystyle)
 hyper.drawRightAngle(A,AA,B,style2,1/15)
 hyper.drawRightAngle(B,BB,C,style2,1/8)
 hyper.drawRightAngle(C,CC,A,style2,1/12)
 hyper.labelPoints(A, "$A$", B, "$B$", C, "$C$")
-local H = hyper.triangleOrthocenter(A,B,C)
 hyper.drawPoints(AA,BB,CC,H,"above")
 hyper.tikzEnd()
 \end{luacode*}
@@ -939,13 +940,14 @@ The two following tilings  are drawn with \verb+TILING_DEPTH=12+
 
 \begin{codeandresult}{Triangle tiling}
 \begin{luacode*}
-hyper.tikzBegin()
 local A, B, C = hyper.fundamentalRightTriangle(4,5)
 local geodesics = {
 {hyper.endpoints(A,B)},
 	{hyper.endpoints(B,C)},
 	{hyper.endpoints(C,A)}}
 geodesics = hyper.propagateGeodesics(geodesics, TILING_DEPTH)
+
+hyper.tikzBegin()
 hyper.drawLinesFromTable(geodesics, "green!50!black, draw opacity=.5")
 hyper.drawTriangle(A,B,C,"red, very thick")
 hyper.tikzEnd()
@@ -954,7 +956,6 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Triangle tiling with one angle zero}
 \begin{luacode*}
-hyper.tikzBegin()
 local A, B, C = hyper.fundamentalIdealTriangle(3,2)
 local geodesics = {
 	{hyper.endpoints(A,B)},
@@ -962,6 +963,7 @@ local geodesics = {
 	{hyper.endpoints(C,A)}
 }
 geodesics = hyper.propagateGeodesics(geodesics, TILING_DEPTH)
+hyper.tikzBegin()
 hyper.drawLinesFromTable(geodesics, "teal, draw opacity=.5")
 hyper.drawTriangle(A,B,C,"red, very thick")
 hyper.tikzEnd()
@@ -1076,7 +1078,7 @@ end
 
 \subsection{luahyperbolic-tikz (requires and copies luahyperbolic-core)}
 
-Functions beginning with underscore are available in the module but should not be needed for normal use.
+Functions beginning with underscore are available in the module but should not be needed for normal use. Don't use them, they could become private in the future and not be available to users anymore.
 
 \subsubsection*{Functions}
 \begin{multicols}{3}

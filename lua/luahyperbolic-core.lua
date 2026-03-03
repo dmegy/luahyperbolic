@@ -195,11 +195,11 @@ end
 
 --------------------
 
-function m.radial_half(r)
+function m._radial_half(r)
 	return r / (1 + sqrt(1 - r * r))
 end
 
-function m.radial_scale(r, t)
+function m._radial_scale(r, t)
 	return tanh(t * atanh(r))
 end
 
@@ -211,6 +211,8 @@ function m.distance(z, w)
 	return m._distance_to_origin(m.automorphism(z, 0)(w))
 end
 
+-- shortcut:
+m.dist = m.distance
 
 function m._same_distance(A, B, C, D)
 	local phiA = m.automorphism(A,0)
@@ -225,7 +227,7 @@ function m._midpoint_to_origin(z)
 	if r < m.EPS then
 		return complex(0, 0)
 	end
-	return (z / r) * m.radial_half(r)
+	return (z / r) * m._radial_half(r)
 end
 
 function m.midpoint(a, b)
@@ -238,7 +240,8 @@ function m._metric_factor(z)
 	return 2 / (1 - complex.abs2(z))
 end
 
-function m.geodesic_data(z, w)
+
+function m._geodesic_data(z, w)
 	m._assert(complex.distinct(z, w), "geodesic_data: points z and w are identical")
 
 	local u = w - z
@@ -276,7 +279,7 @@ function m.endpoints(a, b)
 
 	-- should be circle case. rewrite this
   
-	local g = m.geodesic_data(a, b)
+	local g = m._geodesic_data(a, b)
   assert(g.type=="circle", "endpoints : problem with branch diameter/circle")
 	local c, R = g.center, g.radius
 	local e1, e2 = euclid.interCC(c, R, complex(0, 0), 1)
@@ -345,7 +348,7 @@ end
 
 function m.tangentVector(z, w)
 	local v
-	local g = m.geodesic_data(z, w)
+	local g = m._geodesic_data(z, w)
 	if g.radius == math.huge then
 		v = w - z
 	else
@@ -465,7 +468,7 @@ end
 
 function m.reflection(z1, z2)
 	-- rewrite with automorphisms ? maybe  not
-	local g = m.geodesic_data(z1, z2)
+	local g = m._geodesic_data(z1, z2)
 
 	if g.radius == math.huge then
 		local dir = (z2-z1) / complex.abs(z2-z1)
@@ -522,24 +525,30 @@ end
 
 -- ========== EXPONENTIAL MAPS (vector -> point) ==========
 
-function m.exp_map_at_origin(v)
+-- ! local ! expose as "_exp_map_at_origin" ? 
+local function exp_map_at_origin(v)
 	-- input : vector, output : point
+	if v:isNear(0) then return complex(0,0) end
+
 	local norm_v = complex.abs(v)
-	if norm_v < m.EPS then
-		return complex(0, 0)
-	end
 	return v / norm_v * tanh(norm_v / 2)
 end
 
-function m.exp_map(p, v)
-	if complex.abs(v) < m.EPS then
-		return p
+--- Exponential map at a point P
+-- @param P complex
+-- @param vector  complex (vector)
+-- @return complex
+function m.expMap(P, vector)
+	P, vector = complex.coerce(P, vector)
+	m._assert_in_disk(P)
+	if vector:isNear(0) then
+		return P
 	end
-	local w = m.exp_map_at_origin(v)
-	if complex.abs(p) < m.EPS then
+	local w = exp_map_at_origin(vector)
+	if P:isNear(0) then
 		return w
 	end
-	return m.automorphism(-p, 0)(w)
+	return m.automorphism(-P, 0)(w)
 end
 
 
@@ -556,7 +565,7 @@ function m.interpolate(a, b, t)
 		return a
 	end
 
-	local r_t = m.radial_scale(r, t)
+	local r_t = m._radial_scale(r, t)
 	local u_t = u * (r_t / r)
 
 	return phi_inv(u_t)
@@ -576,7 +585,7 @@ end
 
 function m.interLC(z1, z2, c0, r)
 	local ce, Re = m._circle_to_euclidean(c0, r)
-	local g = m.geodesic_data(z1, z2)
+	local g = m._geodesic_data(z1, z2)
 	if g.radius == math.huge then
 		return euclid.interLC(complex(0, 0), g.direction, ce, Re)
 	else
@@ -592,8 +601,8 @@ function m.interCC(c1, r1, c2, r2)
 end
 
 function m.interLL(z1, z2, w1, w2)
-	local g1 = m.geodesic_data(z1, z2)
-	local g2 = m.geodesic_data(w1, w2)
+	local g1 = m._geodesic_data(z1, z2)
+	local g2 = m._geodesic_data(w1, w2)
 	local is_diam1 = (g1.radius == math.huge)
 	local is_diam2 = (g2.radius == math.huge)
 

@@ -236,7 +236,7 @@ end
 
 function m.shape_segment(z, w)
 	m._assert(z:isNot(w), "points must be distinct")
-	local g = m.geodesic_data(z, w)
+	local g = m._geodesic_data(z, w)
 
 	-- If the geodesic is (almost) a diameter, draw straight segment
 	if g.radius == math.huge or g.radius > 100 then
@@ -368,7 +368,7 @@ function m.drawRayFromVector(p, v, options)
 	options = options or ""
 	p = m._coerce_assert_in_disk(p)
 	-- TODO : allow point at infinity (check vector direction) FIX/TEST
-	local q = m.exp_map(p, v) -- move along v in hyperbolic space
+	local q = m.expMap(p, v) -- move along v in hyperbolic space
 	local _, e2 = m.endpoints(p, q)
 	m.drawSegment(p, e2, options)
 end
@@ -376,7 +376,7 @@ end
 function m.drawLineFromVector(p, v, options)
 	options = options or ""
 	-- TODO : allow point at infinity
-	local q = m.exp_map(p, v) -- move along v in hyperbolic space
+	local q = m.expMap(p, v) -- move along v in hyperbolic space
 	m.drawLine(p, q, options)
 end
 
@@ -602,8 +602,8 @@ function m.drawRightAngle(A, O, B, options, distFactor)
 
 	local v = m.tangentVector(AA,A)*complex.I
 	local w = m.tangentVector(BB,B)*(-complex.I)
-	local VV = m.exp_map(AA,v)
-	local WW = m.exp_map(BB,w)
+	local VV = m.expMap(AA,v)
+	local WW = m.expMap(BB,w)
 	local P = m.interLL(AA,VV, BB, WW)
 	-- fast&lazy : euclidean polyline instead of geodesic:
 	m.tikzPrintf("\\draw[%s] (%f,%f) -- (%f,%f) -- (%f,%f);",
