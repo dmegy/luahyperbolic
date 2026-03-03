@@ -17,7 +17,7 @@
 -- DO NOT EDIT
 
 
--- DATE : 2026/03/02 00:47:59
+-- DATE : 2026/03/03 01:01:29
 do
 -----------------------------------------------------------------------
 -- @module complex
@@ -522,31 +522,41 @@ end
 -- precision
 m.EPS = 1e-10
 
--- Note : (sinh, cosh and tanh are already in math module but be add them here anyway)
+local random = math.random
+local min = math.min
+local max = math.max
+local sin = math.sin
+local cos = math.cos
+local atan2 = math.atan2
+local exp = math.exp
+local log = math.log
+local sqrt = math.sqrt
+local abs = math.abs
+local sinh = math.sinh
+local cosh = math.cosh
+local tanh = math.tanh
 
-m.sinh = function(x)
-	return (math.exp(x) - math.exp(-x)) / 2
+local atanh = function(x)
+	return 0.5 * log((1 + x) / (1 - x))
 end
 
-m.cosh = function(x)
-	return (math.exp(x) + math.exp(-x)) / 2
+local acosh = function(x)
+    return log(x + sqrt(x*x - 1))
 end
 
-m.sinh = function(x)
-	return (math.exp(x) - math.exp(-x))/(math.exp(x) + math.exp(-x))
+local asinh = function(x)
+    return log(x + sqrt(x*x + 1))
 end
 
-m.atanh = function(x)
-	return 0.5 * math.log((1 + x) / (1 - x))
-end
+-- public versions :
+m.cosh = cosh
+m.sinh = sinh
+m.tanh = tanh
+m.acosh = acosh
+m.asinh = asinh
+m.atanh = atanh
 
-m.acosh = function(x)
-    return math.log(x + math.sqrt(x*x - 1))
-end
 
-m.asinh = function(x)
-    return math.log(x + math.sqrt(x*x + 1))
-end
 
 
 m._ensure_order = function (x, y, z, t)
@@ -569,17 +579,17 @@ function euclid.interCC(c1, r1, c2, r2)
 		return nil
 	end -- même si même rayon
 
-	if d > r1 + r2 + m.EPS or d < math.abs(r1 - r2) - m.EPS then
+	if d > r1 + r2 + m.EPS or d < abs(r1 - r2) - m.EPS then
 		return nil -- no intersection
 	end
 
-	if math.abs(d - (r1 + r2)) < m.EPS or math.abs(d - math.abs(r1 - r2)) < m.EPS then
+	if abs(d - (r1 + r2)) < m.EPS or abs(d - abs(r1 - r2)) < m.EPS then
 		local p = c1 + (c2 - c1) * (r1 / d)
 		return p, p
 	end
 
 	local a = (r1 ^ 2 - r2 ^ 2 + d ^ 2) / (2 * d)
-	local h = math.sqrt(math.max(r1 ^ 2 - a ^ 2, 0))
+	local h = sqrt(max(r1 ^ 2 - a ^ 2, 0))
 	local p_mid = c1 + ((c2 - c1) / d) * a
 	local offset = complex(-(c2.im - c1.im) / d * h, (c2.re - c1.re) / d * h)
 
@@ -597,9 +607,9 @@ function euclid.interLC(z1, z2, c0, r)
 	if disc < -m.EPS then
 		return nil
 	end
-	disc = math.max(disc, 0)
+	disc = max(disc, 0)
 
-	local sqrtD = math.sqrt(disc)
+	local sqrtD = sqrt(disc)
 	local t1 = (-b + sqrtD) / (2 * a)
 	local t2 = (-b - sqrtD) / (2 * a)
 
@@ -611,16 +621,16 @@ end
 function m.randomPoint(rmin, rmax)
 	-- returns random point in disk or annulus with uniform density
 	rmax = rmax or 1 - m.EPS
-	rmax = math.min(rmax, 1 - m.EPS)
+	rmax = min(rmax, 1 - m.EPS)
 	rmin = rmin or 0
 
 	m._assert(rmin >= 0 and rmax > rmin, "randomPoint: require 0 ≤ rmin < rmax")
 
-	local theta = 2 * math.pi * math.random()
-	local u = math.random()
-	local r = math.sqrt(u * (rmax ^ 2 - rmin ^ 2) + rmin ^ 2)
+	local theta = 2 * math.pi * random()
+	local u = random()
+	local r = sqrt(u * (rmax ^ 2 - rmin ^ 2) + rmin ^ 2)
 
-	return complex(r * math.cos(theta), r * math.sin(theta))
+	return complex(r * cos(theta), r * sin(theta))
 end
 
 -- =========================================================
@@ -636,7 +646,7 @@ function m._in_closed_disk(z)
 end
 
 function m._on_circle(z)
-	return math.abs(complex.abs(z) - 1) < m.EPS
+	return abs(complex.abs(z) - 1) < m.EPS
 end
 
 function m._in_half_plane(z)
@@ -647,22 +657,31 @@ end
 --------------------
 
 function m.radial_half(r)
-	return r / (1 + math.sqrt(1 - r * r))
+	return r / (1 + sqrt(1 - r * r))
 end
 
 function m.radial_scale(r, t)
-	return math.tanh(t * m.atanh(r))
+	return tanh(t * atanh(r))
 end
 
-function m.distance_to_origin(z)
-	return 2 * m.atanh(complex.abs(z))
+function m._distance_to_origin(z)
+	return 2 * atanh(complex.abs(z))
 end
 
 function m.distance(z, w)
-	return m.distance_to_origin(m.automorphism(z, 0)(w))
+	return m._distance_to_origin(m.automorphism(z, 0)(w))
 end
 
-function m.midpointToOrigin(z)
+
+function m._same_distance(A, B, C, D)
+	local phiA = m.automorphism(A,0)
+	local phiC = m.automorphism(C,0)
+	local BB = phiA(B)
+	local DD = phiC(D)
+	return abs(complex.abs2(BB) - complex.abs2(DD)) < m.EPS
+end
+
+function m._midpoint_to_origin(z)
 	local r = complex.abs(z)
 	if r < m.EPS then
 		return complex(0, 0)
@@ -672,11 +691,11 @@ end
 
 function m.midpoint(a, b)
 	local u = m.automorphism(a, 0)(b)
-	local u_half = m.midpointToOrigin(u)
+	local u_half = m._midpoint_to_origin(u)
 	return m.automorphism(-a, 0)(u_half)
 end
 
-function m.metric_factor(z)
+function m._metric_factor(z)
 	return 2 / (1 - complex.abs2(z))
 end
 
@@ -685,7 +704,7 @@ function m.geodesic_data(z, w)
 
 	local u = w - z
 	local area = z.re * w.im - z.im * w.re -- signed!
-	if math.abs(area) < m.EPS then -- points are aligned with origin
+	if abs(area) < m.EPS then -- points are aligned with origin
 		return {
 			type = "diameter",
 			center = nil,
@@ -709,7 +728,7 @@ end
 
 function m.endpoints(a, b)
 	m._assert(complex.distinct(a,b), "endpoints : points must be distinct")
-  if math.abs(complex.det(a,b)) < 100*m.EPS then
+  if abs(complex.det(a,b)) < 100*m.EPS then
 		local dir = (a-b) / complex.abs(a-b)
 		local e1, e2 = -dir, dir
 		return m._ensure_order(e1, a, b, e2)
@@ -763,7 +782,7 @@ function m.endpoints_angle_bisector(A, O, B)
 
 	local v = u1 + u2
 
-	if complex.abs(v) < m.EPS then
+	if v:isNear(0) then
 		-- flat angle: perpendicular to common diameter
 		local perp = complex(-u1.im, u1.re)
 		return phi_inv(perp), phi_inv(-perp)
@@ -774,9 +793,9 @@ function m.endpoints_angle_bisector(A, O, B)
 	return phi_inv(v), phi_inv(-v)
 end
 
-function m.circle_to_euclidean(z0, r)
+function m._circle_to_euclidean(z0, r)
 	-- returns euclidean center and radius of hyperbolic center and radius
-	local rho = math.tanh(r / 2)
+	local rho = tanh(r / 2)
 	local mod2 = complex.abs2(z0)
 	local denom = 1 - rho * rho * mod2
 	local c = ((1 - rho * rho) / denom) * z0
@@ -830,7 +849,7 @@ end
 function m.rotation(center, theta)
 	m._assert_in_disk(center)
 	theta = theta or 0
-	if math.abs(theta) < m.EPS then
+	if abs(theta) < m.EPS then
 		return function(x)
 			return x
 		end
@@ -884,7 +903,7 @@ end
 
 function m.automorphismFromPairs(A, B, imageA, imageB)
 	m._assert(complex.distinct(A, B), "automorphism_from_pairs : startpoints must be different")
-	m._assert(math.abs(m.dist(A, B) - m.dist(imageA, imageB)) < m.EPS, "automorphism_from_pairs : distances don't match") -- or return nil ?
+	m._assert(m._same_distance(A, B, imageA, imageB), "automorphism_from_pairs : distances don't match") -- or return nil ?
 
 	if A:isNear(imageA) and B:isNear(imageB) then
 		return function(z)
@@ -902,8 +921,6 @@ function m.automorphismFromPairs(A, B, imageA, imageB)
 end
 
 function m.rotationFromPair(O, A, imageA)
-	m._assert(math.abs(m.distance(O, A)- m.distance(O, imageA)) < m.EPS, "rotation : must have dist(0,A) = dist(P,AA)")
-
 	return m.automorphismFromPairs(O, A, O, imageA)
 end
 
@@ -937,14 +954,13 @@ function m.projection(z1, z2)
 	end
 end
 
-function m.distance_to_geodesic(z, z1, z2)
-	local p = (m.projection(z1, z2))(z)
-	return m.distance(z, p)
-end
-
-function m._on_geodesic(z, z1, z2, eps)
-	eps = eps or m.EPS
-	return m.distance_to_geodesic(z, z1, z2) < eps
+function m.pointOrbit(point, func, n)
+	local points = {}
+	for _ = 1, n do
+		point = func(point)
+		table.insert(points, point)
+	end
+	return points
 end
 
 
@@ -955,6 +971,16 @@ function m.mobiusTransformation(a, b, c, d)
 	end
 end
 
+function m.distance_to_geodesic(z, z1, z2)
+	local p = (m.projection(z1, z2))(z)
+	return m.distance(z, p)
+end
+
+function m._on_geodesic(z, z1, z2, eps)
+	eps = eps or m.EPS
+	return m.distance_to_geodesic(z, z1, z2) < eps
+end
+
 -- ========== EXPONENTIAL MAPS (vector -> point) ==========
 
 function m.exp_map_at_origin(v)
@@ -963,7 +989,7 @@ function m.exp_map_at_origin(v)
 	if norm_v < m.EPS then
 		return complex(0, 0)
 	end
-	return v / norm_v * math.tanh(norm_v / 2)
+	return v / norm_v * tanh(norm_v / 2)
 end
 
 function m.exp_map(p, v)
@@ -999,7 +1025,7 @@ end
 
 function m.barycenter2(a, wa, b, wb)
 	local s = wa + wb
-	m._assert(math.abs(s) > m.EPS, "barycenter2: sum of weights must not be zero")
+	m._assert(abs(s) > m.EPS, "barycenter2: sum of weights must not be zero")
 
 	local t = wb / s
 	return m.interpolate(a, b, t)
@@ -1010,7 +1036,7 @@ end
 -- ============ INTERSECTIONS ==============================
 
 function m.interLC(z1, z2, c0, r)
-	local ce, Re = m.circle_to_euclidean(c0, r)
+	local ce, Re = m._circle_to_euclidean(c0, r)
 	local g = m.geodesic_data(z1, z2)
 	if g.radius == math.huge then
 		return euclid.interLC(complex(0, 0), g.direction, ce, Re)
@@ -1020,8 +1046,8 @@ function m.interLC(z1, z2, c0, r)
 end
 
 function m.interCC(c1, r1, c2, r2)
-	local C1, R1 = m.circle_to_euclidean(c1, r1)
-	local C2, R2 = m.circle_to_euclidean(c2, r2)
+	local C1, R1 = m._circle_to_euclidean(c1, r1)
+	local C2, R2 = m._circle_to_euclidean(c2, r2)
 
 	return euclid.interCC(C1, R1, C2, R2)
 end
@@ -1037,7 +1063,7 @@ function m.interLL(z1, z2, w1, w2)
 		local v = g2.direction
 
 		local dot = u.re * v.re + u.im * v.im
-		if math.abs(math.abs(dot) - 1) < m.EPS then
+		if abs(abs(dot) - 1) < m.EPS then
 			return nil
 		end
 
@@ -1146,6 +1172,21 @@ end
 
 -- ================= HELPERS (EUCLIDEAN GEOM AND OTHER)
 
+
+local min = math.min
+local max = math.max
+local sin = math.sin
+local cos = math.cos
+local atan2 = math.atan2
+local exp = math.exp
+local log = math.log
+local sqrt = math.sqrt
+local abs = math.abs
+local sinh = math.sinh
+local cosh = math.cosh
+local tanh = math.tanh
+
+
 -- precision
 m.DRAW_EPS_INV = 1e6
 m.DRAW_EPS = 1/m.DRAW_EPS_INV
@@ -1155,6 +1196,18 @@ m.DRAW_EPS = 1/m.DRAW_EPS_INV
 m.SCALE = 1e9
 local function _quantize(x)
     return math.floor(x * m.SCALE + 0.5)
+end
+
+local function euclidean_circumcenter(a, b, c)
+	a, b, c = complex.coerce(a, b, c)
+    m._assert(math.abs(complex.det(b-a,c-a)) > m.EPS, "points must not be aligned")
+    local ma2 = complex.abs2(a)
+    local mb2 = complex.abs2(b)
+    local mc2 = complex.abs2(c)
+    local num = a*(mb2 - mc2) + b*(mc2 - ma2) + c*(ma2 - mb2)
+    local den = a*complex.conj(b - c) + b*complex.conj(c - a) + c*complex.conj(a - b)
+
+    return num / den
 end
 
 
@@ -1310,14 +1363,12 @@ function m.drawPoints(...)
 	end
 end
 
+
+
 function m.drawPointOrbit(point, func, n, options)
 	-- draws n points. Doesn't draw original point
 	options = options or "black"
-	local points = {}
-	for _ = 1, n do
-		point = func(point)
-		table.insert(points, point)
-	end
+	local points = m.pointOrbit(point, func, n)
 
 	for i, z in ipairs(points) do
 		local alpha = i / #points
@@ -1408,7 +1459,7 @@ function m.drawLinesFromTable(pairs, options)
 end
 
 function m.drawPerpendicularThrough(P,A,B,options)
-	-- perpendicular through P to (A,B)
+	-- perpendicular through P to geodesic (A,B)
 	options = options or ""
 	P, A, B = m._coerce_assert_in_closed_disk(P, A, B)
 	m._assert(A:isNot(B), "A and B must be distinct")
@@ -1416,6 +1467,21 @@ function m.drawPerpendicularThrough(P,A,B,options)
 	m._assert(P:isNot(H), "point must not be on line")
 	-- todo : fix this : should be ok.
 	m.drawLine(P,H,options)
+end
+
+function m.drawHypercycleThrough(P, A, B, options)
+	options = options or ""
+	P, A, B = complex.coerce(P, A, B)
+	if not A:isUnit() or not B:isUnit() then
+		A, B = m.endpoints(A, B)
+	end
+	if math.abs(complex.det(P-A, P-B)) < m.EPS then
+		m.tikzPrintf("\\draw[%s] (%f,%f) -- (%f,%f);", options, A.re, A.im, B.re, B.im)
+		return
+	end
+	local O = euclidean_circumcenter(P, A, B)
+	local radius = complex.abs(O-A)
+	m.tikzPrintf("\\draw[%s] (%f,%f) circle (%f);", options, O.re, O.im, radius)
 end
 
 
@@ -1588,10 +1654,11 @@ end
 function m.drawCircleRadius(z0, r, options)
 	options = options or ""
 	z0 = m._coerce_assert_in_disk(z0)
-	local c, R = m.circle_to_euclidean(z0, r)
+	local c, R = m._circle_to_euclidean(z0, r)
 
 	m.tikzPrintf("\\draw[%s] (%f,%f) circle (%f);", options, c.re, c.im, R)
 end
+
 m.drawCircle = m.drawCircleRadius
 
 function m.drawCircleThrough(center, point, options)
@@ -1631,7 +1698,7 @@ function m.drawArc(O, A, B, options)
 	local rB = m.distance(O, B)
 	m._assert(math.abs(rA - rB) < m.EPS, "drawArc: points A and B are not on the same hyperbolic circle")
 
-	local c, R = m.circle_to_euclidean(O, rA)
+	local c, R = m._circle_to_euclidean(O, rA)
 
 	-- Compute angles of A and B on the Euclidean circle
 	local function angleOnCircle(p)

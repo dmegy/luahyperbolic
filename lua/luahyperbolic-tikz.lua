@@ -502,7 +502,7 @@ end
 function m.drawCircleRadius(z0, r, options)
 	options = options or ""
 	z0 = m._coerce_assert_in_disk(z0)
-	local c, R = m.circle_to_euclidean(z0, r)
+	local c, R = m._circle_to_euclidean(z0, r)
 
 	m.tikzPrintf("\\draw[%s] (%f,%f) circle (%f);", options, c.re, c.im, R)
 end
@@ -546,7 +546,7 @@ function m.drawArc(O, A, B, options)
 	local rB = m.distance(O, B)
 	m._assert(math.abs(rA - rB) < m.EPS, "drawArc: points A and B are not on the same hyperbolic circle")
 
-	local c, R = m.circle_to_euclidean(O, rA)
+	local c, R = m._circle_to_euclidean(O, rA)
 
 	-- Compute angles of A and B on the Euclidean circle
 	local function angleOnCircle(p)

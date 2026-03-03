@@ -58,7 +58,6 @@ For more information on the license, see the `LICENSE` file or visit [CC0 1.0 Un
 - function distance_between_geodesics(z1, z2, w1, w2)
 - function closest_points_between_geodesics(z1, z2, w1, w2)
 - triangle intouch points, extouchpoints
-- triangle orthocenter
 - camelCase syntax for public functions and prefixing 'semipublic' functions with "\_"
 - hide functions metric_factor, circle_to_euclidean
 - get rif of cosh, sinh, tanh
@@ -66,12 +65,13 @@ For more information on the license, see the `LICENSE` file or visit [CC0 1.0 Un
 - IMPORTANT write function that computes triangle with given angles. Necessary for (p,q,r) tilings.
 - change name fundamentalIdealTriangle if only one angle is zero
 - power of a point, radical axis
+- hyper.getType(phi) for automorphism
+- hyper.getFixedPoints(phi) for automorphism
 
 ### In `luahyperbolic-tikz` :
 
 - function `drawExcircle` and variants
 - more triangle geometry ? Gergonne, Nagel etc ?
-- function `drawHypercycle` and variants
 - function `markSegment` ?
 - function `markAngle(A, O, B, options)`
 - function `labelSegment(A, B, label)`

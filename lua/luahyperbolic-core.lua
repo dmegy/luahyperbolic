@@ -203,15 +203,24 @@ function m.radial_scale(r, t)
 	return tanh(t * atanh(r))
 end
 
-function m.distance_to_origin(z)
+function m._distance_to_origin(z)
 	return 2 * atanh(complex.abs(z))
 end
 
 function m.distance(z, w)
-	return m.distance_to_origin(m.automorphism(z, 0)(w))
+	return m._distance_to_origin(m.automorphism(z, 0)(w))
 end
 
-function m.midpointToOrigin(z)
+
+function m._same_distance(A, B, C, D)
+	local phiA = m.automorphism(A,0)
+	local phiC = m.automorphism(C,0)
+	local BB = phiA(B)
+	local DD = phiC(D)
+	return abs(complex.abs2(BB) - complex.abs2(DD)) < m.EPS
+end
+
+function m._midpoint_to_origin(z)
 	local r = complex.abs(z)
 	if r < m.EPS then
 		return complex(0, 0)
@@ -221,11 +230,11 @@ end
 
 function m.midpoint(a, b)
 	local u = m.automorphism(a, 0)(b)
-	local u_half = m.midpointToOrigin(u)
+	local u_half = m._midpoint_to_origin(u)
 	return m.automorphism(-a, 0)(u_half)
 end
 
-function m.metric_factor(z)
+function m._metric_factor(z)
 	return 2 / (1 - complex.abs2(z))
 end
 
@@ -312,7 +321,7 @@ function m.endpoints_angle_bisector(A, O, B)
 
 	local v = u1 + u2
 
-	if complex.abs(v) < m.EPS then
+	if v:isNear(0) then
 		-- flat angle: perpendicular to common diameter
 		local perp = complex(-u1.im, u1.re)
 		return phi_inv(perp), phi_inv(-perp)
@@ -323,7 +332,7 @@ function m.endpoints_angle_bisector(A, O, B)
 	return phi_inv(v), phi_inv(-v)
 end
 
-function m.circle_to_euclidean(z0, r)
+function m._circle_to_euclidean(z0, r)
 	-- returns euclidean center and radius of hyperbolic center and radius
 	local rho = tanh(r / 2)
 	local mod2 = complex.abs2(z0)
@@ -433,7 +442,7 @@ end
 
 function m.automorphismFromPairs(A, B, imageA, imageB)
 	m._assert(complex.distinct(A, B), "automorphism_from_pairs : startpoints must be different")
-	m._assert(abs(m.dist(A, B) - m.dist(imageA, imageB)) < m.EPS, "automorphism_from_pairs : distances don't match") -- or return nil ?
+	m._assert(m._same_distance(A, B, imageA, imageB), "automorphism_from_pairs : distances don't match") -- or return nil ?
 
 	if A:isNear(imageA) and B:isNear(imageB) then
 		return function(z)
@@ -451,8 +460,6 @@ function m.automorphismFromPairs(A, B, imageA, imageB)
 end
 
 function m.rotationFromPair(O, A, imageA)
-	m._assert(abs(m.distance(O, A)- m.distance(O, imageA)) < m.EPS, "rotation : must have dist(0,A) = dist(P,AA)")
-
 	return m.automorphismFromPairs(O, A, O, imageA)
 end
 
@@ -568,7 +575,7 @@ end
 -- ============ INTERSECTIONS ==============================
 
 function m.interLC(z1, z2, c0, r)
-	local ce, Re = m.circle_to_euclidean(c0, r)
+	local ce, Re = m._circle_to_euclidean(c0, r)
 	local g = m.geodesic_data(z1, z2)
 	if g.radius == math.huge then
 		return euclid.interLC(complex(0, 0), g.direction, ce, Re)
@@ -578,8 +585,8 @@ function m.interLC(z1, z2, c0, r)
 end
 
 function m.interCC(c1, r1, c2, r2)
-	local C1, R1 = m.circle_to_euclidean(c1, r1)
-	local C2, R2 = m.circle_to_euclidean(c2, r2)
+	local C1, R1 = m._circle_to_euclidean(c1, r1)
+	local C2, R2 = m._circle_to_euclidean(c2, r2)
 
 	return euclid.interCC(C1, R1, C2, R2)
 end

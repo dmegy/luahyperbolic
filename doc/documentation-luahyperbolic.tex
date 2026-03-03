@@ -71,6 +71,7 @@ title=#1
 
 \title{Package luahyperbolic}
 \author{Damien Mégy}
+\date{}
 \begin{document}
 \maketitle
 \begin{center}
@@ -102,13 +103,17 @@ hyper.tikzPrintf(
 hyper.drawRegularPolygon(complex.ZERO, B,5,  "line width=.15cm, cyan")
 hyper.tikzEnd()
 \end{luacode*}
+\par
+\bigskip
+The latest version of this documentation is available at:
+\href{https://github.com/dmegy/luahyperbolic}{github.com/dmegy/luahyperbolic}.
 \end{center}
 
 \begin{luacode*}
 globalTimeIntroPicture = os.clock() - t1
 texio.write_nl(string.format("[TIMING] %.2f s: finished tikz picture in %.2f  seconds", os.clock() - t0, globalTimeIntroPicture))
 \end{luacode*}
-
+\vspace{1cm}
 \begin{multicols}{2}
 \tableofcontents
 \end{multicols}
@@ -471,7 +476,7 @@ hyper.tikzEnd()
 \end{codeandresult}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Horocycles}
+\subsection{Horocycles and hypercycles}
 
 \begin{codeandresult}{Horocycles}
 \begin{luacode*}
@@ -485,6 +490,21 @@ for k=1,N-1 do
 	-- and an orthogonal geodesic : 
 	local endPoint = complex.exp_i(theta+2*k*math.pi/N)
 	hyper.drawLine(idealPoint,endPoint,"gray")
+end
+hyper.tikzEnd()
+\end{luacode*}
+\end{codeandresult}
+
+\begin{codeandresult}{Hypercycles}
+\begin{luacode*}
+hyper.tikzBegin()
+local A = 1
+local B = complex.J
+hyper.drawLine(A,B,"very thick, teal")
+local N = 10
+for k=1,N-1 do
+	local P = (2*k/N-1)*(-B^2)
+	hyper.drawHypercycleThrough(P, A, B, "red")
 end
 hyper.tikzEnd()
 \end{luacode*}
@@ -730,9 +750,9 @@ hyper.tikzEnd()
 \begin{luacode*}
 hyper.tikzBegin()
 local nbPoints = 7
-local nbIterations = 5
+local nbIterations = 10
 local O = complex(0.1,0.2)
-local rot = hyper.rotation(O,math.pi/20) -- angle in radians
+local rot = hyper.rotation(O,math.pi/30) -- angle in radians
 hyper.drawPoint(O,"red")
 for k=1,nbPoints do
 	local P = hyper.randomPoint(0,.9)
@@ -748,11 +768,13 @@ hyper.tikzEnd()
 \begin{luacode*}
 hyper.tikzBegin()
 local nbPoints = 10
-local nbIterations = 5
-local A = complex(0.1,0.1)
+local nbIterations = 10
+local A = complex(0.05,0.05)
 local phi = hyper.automorphism(A,0)
+local X, Y = hyper.endpoints(A,0)
 for k=1,nbPoints do
 	local P = hyper.randomPoint(0,.9)
+	hyper.drawHypercycleThrough(P,X,Y,"gray")
 	hyper.drawPointOrbit(P, phi, nbIterations) 
 end
 hyper.drawPoint(A,"red")
@@ -766,9 +788,9 @@ hyper.tikzEnd()
 \begin{codeandresult}{Orbit under parabolic automorphism}
 \begin{luacode*}
 hyper.tikzBegin()
-local nbIterations = 7
+local nbIterations = 10
 limit = complex.exp_i(math.pi/3) -- on circle
-local phi = hyper.parabolic(limit,math.pi/20)
+local phi = hyper.parabolic(limit,math.pi/30)
 local points={
 	complex(0,0), complex(0,.7),
 	complex(.4,.4), complex(.3,.7),
@@ -1022,7 +1044,10 @@ end
 
 
 
-\subsection{luahyperbolic-tikz.lua and hyperbolic-core}
+\subsection{luahyperbolic-tikz (requires and copies luahyperbolic-core)}
+
+Functions beginning with underscore are available in the module but should not be needed for normal use.
+
 \subsubsection*{Functions}
 \begin{multicols}{3}
 \noindent\directlua{print_module_type(hyper, "function", "\\\\")}
