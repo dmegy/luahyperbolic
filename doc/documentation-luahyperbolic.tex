@@ -144,7 +144,7 @@ end
 hyper.labelPoint(P, "$P$", "left=.2cm")
 local style = "very thick, dashed, red"
 hyper.drawLine(complex.J,-complex.I,style)
-hyper.tikzEnd("euclid5thPostulate.tikz")
+hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
@@ -206,6 +206,8 @@ The package provides the latex environment \verb+\begin{hyperbolicdisk} ... \end
 In this documentation, we prefer to use the lua functions 
  \verb+hyper.tikzBegin(options)+ and \verb+hyper.tikzEnd(export_file)+, that enable export functionalities, see below.
  
+
+ 
 \subsubsection{Exporting the pictures}
 
 Simply add a filename to the closing \texttt{hyper.tikzEnd()} instruction, as below:
@@ -219,7 +221,6 @@ This will save the current picture (including \verb+\begin{tikzpicture}[options]
 It is also possible to export the current picture at any point with \verb+hyper.tikzExport(optional-filename)+.
 If no filename is provided, the package will name it \verb+hyper_picture_N+ with \texttt{N} the picture counter. Luahyperbolic keeps count of how many pictures have been produced in the document.
 This allows exporting images in loops, or drawing several steps of the same picture.
-
 
 
 
@@ -511,6 +512,33 @@ hyper.tikzEnd()
 \end{codeandresult}
 
 
+\subsection{Printing custom strings into the TikZ picture}
+ 
+ In case you want to insert custom TikZ instructions into the TikZ picture, the library provides a \texttt{tikzPintf()} function, which  is essentially \texttt{tex.print} composed with \texttt{string.format()}, but also saves the printed string to the tikz buffer.
+
+For example, you can write 
+\begin{codeandresult}{Printing custom strings to TikZ}
+\begin{luacode*}
+local A = complex.ONE
+local B = complex.I
+local C = (-A-B)/2
+hyper.tikzBegin()
+hyper.tikzPrintf(
+	"\\draw[%s] (%f,%f) -- (%f,%f) ;",
+	"red, thick, dashed", A.re, A.im, B.re, B.im
+)
+hyper.tikzPrintf(
+	"\\draw[%s] (%f,%f) rectangle (%f,%f) ;",
+	"blue, thick", C.re, C.im, 0.8,0.7
+) 
+hyper.tikzEnd()
+\end{luacode*}
+\end{codeandresult}
+
+The package doesn't expose euclidean drawing functions.
+Users should write TikZ directly in the picture as above with \texttt{tikzPrintf}, or use some other library, for example the \textbf{amazing} library \texttt{tkz-euclide}. 
+
+ 
 
 \section{Defining points}
 
@@ -538,9 +566,10 @@ hyper.tikzBegin()
 local A = complex(0.4,0.4)
 local B = complex(-0.8,-0.3)
 local M = hyper.midpoint(A,B)
-hyper.drawSegment(A,B, "teal")
+hyper.drawSegment(A,B, "very thick, teal")
 hyper.drawPoints(A,B,M)
-hyper.labelPoints(A, "$A$", B, "$B$", M, "$M$")
+hyper.labelPoints(A, "$A$", B, "$B$")
+hyper.labelPoint(M, "$M$", "below right, red")
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
@@ -550,13 +579,13 @@ hyper.tikzEnd()
 hyper.tikzBegin()
 local A = complex(0.3,0.8)
 local B = complex(-0.7,-0.4)
-hyper.drawSegment(A,B, "teal")
-for k=0,10 do
-	local M = hyper.interpolate(A, B, k/10)
-	hyper.drawPoint(M)
-	if k % 2 == 0 then
-		hyper.labelPoint(M, "$M_{" .. k .. "}$", "below right")
-	end
+local N = 10
+hyper.drawSegment(A,B, "thick, teal")
+hyper.drawPoints(A, B, "teal")
+hyper.labelPoints(A, "$A$", B, "$B$")
+for k=1,N-1 do
+	local M = hyper.interpolate(A, B, k/N)
+	hyper.drawPoint(M, "white, draw=red")
 end
 hyper.tikzEnd()
 \end{luacode*}
@@ -572,9 +601,9 @@ local B = complex(-0.4,-0.7)
 local C = complex(0,0.7)
 local D = complex(0.8,-0.2)
 local P = hyper.interLL(A, B, C, D)
-hyper.drawLines(A, B, C, D, "teal")
-hyper.drawPoints(A, B, C, D,"teal")
-hyper.drawPoint(P,"red")
+hyper.drawLines(A, B, C, D, "thick, teal")
+hyper.drawPoints(A, B, C, D,"thick, teal")
+hyper.drawPoint(P,"white, draw=red")
 hyper.labelPoint(A, "$A$", "above")
 hyper.labelPoint(B, "$B$")
 hyper.labelPoint(C, "$C$", "left")
@@ -597,7 +626,7 @@ local P, Q = hyper.interLC(A, B, O, radius)
 hyper.drawLine(A, B, "teal")
 hyper.drawCircle(O,radius, "teal")
 hyper.drawPoints(A, B, O, "teal")
-hyper.drawPoints(P, Q, "red")
+hyper.drawPoints(P, Q, "white, draw=red")
 hyper.labelPoints(A, "$A$", B, "$B$", O, "$O$")
 hyper.labelPoints(P, "$P$", Q, "$Q$", "red, below right")
 hyper.tikzEnd()
@@ -613,7 +642,7 @@ local r1, r2 = 1, 2
 local P, Q = hyper.interCC(O1, r1, O2, r2)
 hyper.drawCircle(O1,r1, "teal")
 hyper.drawCircle(O2,r2, "teal")
-hyper.drawPoints(P, Q, "red")
+hyper.drawPoints(P, Q, "white, draw=red")
 hyper.drawPoints(O1, O2, "teal")
 hyper.labelPoints(O1, "$O_1$", O2, "$O_2$", "left, teal")
 hyper.labelPoints(P, "$P$", "above left, red")
@@ -634,12 +663,12 @@ local A = complex(0.8,0.2)
 local B = complex(-0.3,0.5)
 local M = complex(0.3,-0.6)
 local Mp = (hyper.reflection(A,B))(M)
-hyper.drawLine(A, B, "teal")
+hyper.drawLine(A, B, "thick, teal")
 hyper.drawPoints(A, B, M)
 hyper.drawPoint(Mp,"red")
 hyper.drawSegment(M,Mp,"dashed,red")
 hyper.labelPoint(Mp,"$M'$", "left, red")
-hyper.labelPoints(A, "$A$", B, "$B$", M, "$M$", "below")
+hyper.labelPoints(A, "$A$", B, "$B$", M, "$M$")
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
@@ -651,9 +680,9 @@ local A = complex(0.8,0.2)
 local B = complex(-0.3,0.5)
 local M = complex(0.3,-0.6)
 local P = (hyper.projection(A,B))(M)
-hyper.drawLine(A, B, "teal")
+hyper.drawLine(A, B, "thick, teal")
 hyper.drawPoints(A, B, M)
-hyper.drawPoint(P,"red")
+hyper.drawPoint(P,"white, draw=red")
 hyper.drawSegment(M,P,"dashed,red")
 hyper.labelPoint(P,"$P$", "above, red")
 hyper.labelPoints(A, "$A$", B, "$B$", M, "$M$", "below")
@@ -1006,6 +1035,7 @@ for k=2,N do
 end 
 \end{luacode*}
 
+\newpage
 \section{Overview of the lua libraries}
 
 The Lua files are in the \verb+lua/+ subdirectory of the repo.
