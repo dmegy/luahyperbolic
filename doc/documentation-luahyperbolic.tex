@@ -6,6 +6,13 @@
 %\setmainfont{Libertinus Math}
 \usepackage[a4paper,margin=2cm]{geometry}
 \usepackage{tikz}
+%\tikzset{every picture/.style=thick}
+\tikzset{
+    thin/.style={line width=0.8pt},
+    thick/.style={line width=1pt},
+}
+
+
 \usepackage[dvipsnames]{xcolor}
 \usepackage{multicol}
 \usepackage[normalem]{ulem}
@@ -184,6 +191,17 @@ If the sty file is not in the same directory as your tex file, you can write \ve
 
 \subsubsection*{CTAN} Not  available yet.
 
+\subsection{Dependencies}
+
+The package luahyperbolic  requires the following packages:
+\begin{itemize}
+\item tikz
+\item luacode
+\end{itemize}
+It loads them if they are not loaded already.
+
+ The latex files must be compiled with the lualatex engine.
+
 \subsection{How to customize the package}
 
 The \texttt{luahyperbolic.sty}  is generated from three lua modules : \texttt{complex.lua}, \texttt{luahyperbolic-core.lua} and \texttt{luahyperbolic-tikz.lua}. These files are in the \texttt{lua/} subdirectory of the package repo. 
@@ -208,7 +226,7 @@ In this documentation, we prefer to use the lua functions
  
 
  
-\subsubsection{Exporting the pictures}
+\subsection{Exporting the pictures}
 
 Simply add a filename to the closing \texttt{hyper.tikzEnd()} instruction, as below:
 \begin{center}
@@ -231,7 +249,7 @@ This allows exporting images in loops, or drawing several steps of the same pict
 
 % ------------------ Figure 1 : Points ------------------
 
-\subsection{Points}
+\subsection{Draw and label points}
 
 
 \begin{codeandresult}{Draw and label points}
@@ -239,23 +257,23 @@ This allows exporting images in loops, or drawing several steps of the same pict
 local O = 0
 local A = complex(0.3,0.2)
 local B = 2*A
-local C = (1-complex.I)/2
-local D = B*complex.I
-local E = complex.exp_i(-5*math.pi/6)/2
+local I, J = complex.I, complex.J
+local C, D = I*A, I*B
 hyper.tikzBegin()
 hyper.drawPoint(O,"white, draw=red")
 hyper.drawPoints(A, B, C, "teal")
+hyper.DRAW_POINT_RADIUS = .04
 hyper.drawPoints(D, E)
 hyper.labelPoint(A,"$A$", "below right, blue")
 hyper.labelPoints(B,"$B$", C, "$C$")
-hyper.labelPoint(D,"$D$","below=.4cm, red")
+hyper.labelPoint(D,"$D$","left=.4cm, red")
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
 
 
-\subsection{Geodesic segments, lines and rays}
+\subsection{Draw, mabel and mark geodesic segments, lines and rays}
 
 
 \begin{codeandresult}{Segments lines and rays (through two points)}
@@ -277,6 +295,9 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
+
+
+
 \begin{codeandresult}{Triangles and polygons}
 \begin{luacode*}
 hyper.tikzBegin()
@@ -292,6 +313,28 @@ hyper.drawPolygonFromTable(points,"teal")
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
+
+
+\begin{codeandresult}{Label and mark segments}
+\begin{luacode*}
+local A = -complex.I/2
+local B = (1+complex.I)/2
+local C = complex(-0.7,0.4)
+local D = complex(-0.7,-0.3)
+hyper.tikzBegin()
+hyper.drawPolygon(A, B, C, D, "teal")
+hyper.markSegment(A,B,"|")
+local marking = "\\textcolor{red}{||}"
+local position = 0.7
+hyper.markSegment(B,C,marking, position)
+hyper.labelSegment(C,D,"$3$", "fill=white, draw=blue")
+hyper.labelSegment(D, A,"$\\alpha$", "below")
+hyper.labelPoint(A, "$A$", "below right")
+
+hyper.tikzEnd()
+\end{luacode*}
+\end{codeandresult}
+
 
 \begin{codeandresult}{Regular polygons}
 \begin{luacode*}
@@ -334,13 +377,15 @@ local B = complex(-0.5,0.5)
 local C = complex(0,0.2)
 local v =  complex(1,0)
 hyper.tikzBegin()
-hyper.drawLineFromVector(A, v, "->, red")
-hyper.drawRayFromVector(B, v, "->, blue")
-hyper.drawRayFromVector(C, v, "->, Green")
+myVec = ">=latex, red"
+myLine = "dashed, gray"
+hyper.drawLineFromVector(A, v, myLine)
+hyper.drawRayFromVector(B, v, myLine)
+hyper.drawRayFromVector(C, v, myLine)
+hyper.drawTangentVector(A,v,myVec)
+hyper.drawTangentVector(B,v,myVec)
+hyper.drawTangentVector(C,v,myVec)
 hyper.drawPoints(A, B,C)
-hyper.drawTangentVector(A,v,"red")
-hyper.drawTangentVector(B,v,"blue")
-hyper.drawTangentVector(C,v,"Green")
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
@@ -356,8 +401,8 @@ local A = complex(-0.2,-0.5)
 local B = complex(-0.7,0.3)
 hyper.tikzBegin()
 hyper.drawPerpendicularBisector(A,B,"red")
-hyper.drawPoints(A,B)
 hyper.drawSegment(A, B, "teal")
+hyper.drawPoints(A,B)
 hyper.labelPoints(A,"$A$", B, "$B$", "above right")
 hyper.tikzEnd()
 \end{luacode*}
@@ -371,8 +416,8 @@ local O = complex(0.3,0.3)
 local B = complex(-0.7,0.3)
 hyper.tikzBegin()
 hyper.drawAngleBisector(A,O,B,"red")
-hyper.drawPoints(A,O,B)
 hyper.drawPolyline(A,O,B, "teal")
+hyper.drawPoints(A,O,B)
 hyper.labelPoints(A, "$A$", O, "$O$", B, "$B$")
 hyper.tikzEnd()
 \end{luacode*}
@@ -423,9 +468,9 @@ local B = complex(0.7,-0.4)
 hyper.tikzBegin()
 hyper.drawSemicircle(O, A, "blue")
 hyper.drawSemicircle(P, B, "red")
-hyper.drawPoints(O, A, P, B)
 hyper.labelPoints(O, "$O$", A, "$A$", P, "$P$", B, "$B$")
 hyper.drawLine(P,B, "gray, dashed")
+hyper.drawPoints(O, A, P, B)
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
@@ -469,9 +514,9 @@ local P = complex(0.1,-0.4)
 local Q = hyper.rotation(O,math.pi/3)(P)
 hyper.tikzBegin()
 hyper.drawCircleThrough(O, P)
-hyper.drawPoints(O, P, Q)
 hyper.drawTangentAt(O,P,"red")
 hyper.drawTangentAt(O,Q,"teal")
+hyper.drawPoints(O, P, Q)
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
@@ -512,7 +557,7 @@ hyper.tikzEnd()
 \end{codeandresult}
 
 
-\subsection{Printing custom strings into the TikZ picture}
+\subsection{Printing custom strings to TikZ}
  
  In case you want to insert custom TikZ instructions into the TikZ picture, the library provides a \texttt{tikzPintf()} function, which  is essentially \texttt{tex.print} composed with \texttt{string.format()}, but also saves the printed string to the tikz buffer.
 
@@ -567,9 +612,12 @@ local B = complex(-0.8,-0.3)
 local M = hyper.midpoint(A,B)
 hyper.tikzBegin()
 hyper.drawSegment(A,B, "very thick, teal")
-hyper.drawPoints(A,B,M)
+hyper.drawPoints(A, B, M)
 hyper.labelPoints(A, "$A$", B, "$B$")
 hyper.labelPoint(M, "$M$", "below right, red")
+local marking = "\\textcolor{red}{||}"
+hyper.markSegment(A,M,marking)
+hyper.markSegment(M,B,marking)
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
@@ -598,7 +646,7 @@ hyper.tikzEnd()
 local A = complex(0.4,0.3)
 local B = complex(-0.4,-0.7)
 local C = complex(0,0.7)
-local D = complex(0.8,-0.2)
+local D = complex(0.8,-0.4)
 local P = hyper.interLL(A, B, C, D)
 hyper.tikzBegin()
 hyper.drawLines(A, B, C, D, "thick, teal")
@@ -619,34 +667,40 @@ hyper.tikzEnd()
 \begin{luacode*}
 local A = complex(0.5,0.4)
 local B = complex(-0.3,-0.7)
-local O = complex(-0.2,0.1)
-local radius = 1
+local O = complex(-0.4,0.2)
+local radius = 1.5
 local P, Q = hyper.interLC(A, B, O, radius)
 hyper.tikzBegin()
 hyper.drawLine(A, B, "teal")
 hyper.drawCircle(O,radius, "teal")
+hyper.drawSegments(O, P, O, Q, "red, dashed")
 hyper.drawPoints(A, B, O, "teal")
 hyper.drawPoints(P, Q, "white, draw=red")
 hyper.labelPoints(A, "$A$", B, "$B$", O, "$O$")
 hyper.labelPoints(P, "$P$", Q, "$Q$", "red, below right")
+local mark = "\\textcolor{red}{||}"
+hyper.markSegments(O, P, O, Q, mark)
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
 \begin{codeandresult}{Circle-circle (CC) intersection}
 \begin{luacode*}
-local O1 = complex(-0.6,-.3)
-local O2 = complex(0.5,0)
-local r1, r2 = 1, 2
-local P, Q = hyper.interCC(O1, r1, O2, r2)
+local A = complex(-0.5,-.3)
+local B = complex(0.3,0)
+local r = hyper.dist(A, B)
+local P, Q = hyper.interCC(A, r, B, r)
 hyper.tikzBegin()
-hyper.drawCircle(O1,r1, "teal")
-hyper.drawCircle(O2,r2, "teal")
+hyper.drawCircle(A, r, "teal")
+hyper.drawCircle(B, r, "teal")
+hyper.drawPolygon(A, B, P, "dashed, red")
 hyper.drawPoints(P, Q, "white, draw=red")
-hyper.drawPoints(O1, O2, "teal")
-hyper.labelPoints(O1, "$O_1$", O2, "$O_2$", "left, teal")
+hyper.drawPoints(A, B, "teal")
+hyper.labelPoints(A, "$A$", B, "$B$", "below, teal")
 hyper.labelPoints(P, "$P$", "above left, red")
 hyper.labelPoint(Q, "$Q$", "red, below")
+local mark = "\\textcolor{red}{||}"
+hyper.markSegments(A, B, B, P, P, A, mark)
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
@@ -668,7 +722,11 @@ hyper.drawPoints(A, B, M)
 hyper.drawPoint(Mp,"red")
 hyper.drawSegment(M,Mp,"dashed,red")
 hyper.labelPoint(Mp,"$M'$", "left, red")
-hyper.labelPoints(A, "$A$", B, "$B$", M, "$M$")
+local P = hyper.interLL(A, B, M, Mp)
+local mark="\\textcolor{red}{||}"
+hyper.labelPoints(A, "$A$", B, "$B$", M, "$M$", "below")
+hyper.markSegments(M, P, P, Mp, mark)
+hyper.drawRightAngle(M, P, A, "red")
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
@@ -686,6 +744,7 @@ hyper.drawPoint(P,"white, draw=red")
 hyper.drawSegment(M,P,"dashed,red")
 hyper.labelPoint(P,"$P$", "above, red")
 hyper.labelPoints(A, "$A$", B, "$B$", M, "$M$", "below")
+hyper.drawRightAngle(M,P,A,"red")
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
@@ -720,8 +779,8 @@ hyper.drawPoint(O)
 for k, P in ipairs(points) do
 	hyper.drawCircleThrough(O, P, "gray!10")
 	local sP = s(P)
-	hyper.drawPoints(P,sP)
 	hyper.drawSegment(P,sP, "red, dashed")
+	hyper.drawPoints(P,sP)
 	hyper.labelPoint(P, "$P_{".. k .."}$")
 	hyper.labelPoint(sP, "$\\sigma(P_{".. k .."})$")
 end
@@ -740,7 +799,7 @@ for k=1,5 do
 	local P = hyper.randomPoint(0.3,0.9)
 	local rP = r(P)
 	hyper.drawCircleThrough(O,P, "gray!10")
-	hyper.drawArc(O,P,rP,"->, red")
+	hyper.drawArc(O,P,rP,"->, red, thick")
 	hyper.drawPolyline(P,O,rP, "red!10")
 	hyper.drawPoint(P)
 end
@@ -1076,7 +1135,9 @@ end
 
 
 
-\subsection{luahyperbolic-tikz (requires and copies luahyperbolic-core)}
+\subsection{luahyperbolic}
+
+The luahyperbolic library consists of two modules : luahyperbolic-core, and luahyperbolic-tikz. The latter requires requires and copies luahyperbolic-core. (It also requires complex.lua internally.)
 
 Functions beginning with underscore are available in the module but should not be needed for normal use. Don't use them, they could become private in the future and not be available to users anymore.
 

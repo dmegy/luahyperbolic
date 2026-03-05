@@ -8,6 +8,22 @@ end
 
 m.module = "hyperbolic-tikz"
 
+m.TIKZ_CLIP_DISK = true -- can be modified by user.
+m.TIKZ_BEGIN_DISK = [[
+\draw[very thick] (0,0) circle (1);
+\clip (0,0) circle (1);
+]]
+
+m._DRAW_POINT_DEFAULT_RADIUS = 0.02
+m._DRAW_POINT_DEFAULT_STYLE = "white, draw=black"
+
+m.DRAW_POINT_RADIUS = m._DRAW_POINT_DEFAULT_RADIUS -- can be modified by user
+m.DRAW_POINT_STYLE = m._DRAW_POINT_DEFAULT_STYLE -- can be modified by user
+
+-- for quantization (geodesic propagation)
+m.QUANTIZATION_SCALE = 1e9
+
+
 -- ========= REDEFINE ERROR (TeX error) =====================
 
 function m._error(msg)
@@ -35,15 +51,10 @@ local cosh = math.cosh
 local tanh = math.tanh
 
 
--- precision
-m.DRAW_EPS_INV = 1e6
-m.DRAW_EPS = 1/m.DRAW_EPS_INV
 
--- for quantization (geodesic propagation)
 
-m.SCALE = 1e9
 local function _quantize(x)
-    return math.floor(x * m.SCALE + 0.5)
+    return math.floor(x * m.QUANTIZATION_SCALE + 0.5)
 end
 
 local function euclidean_circumcenter(a, b, c)
@@ -94,7 +105,7 @@ local function parse_points_with_options(...)
 	-- errors if no point provided
 	local args = { ... }
 	local n = #args
-	local options = ""
+	local options = nil
 
 	if n >= 1 and type(args[n]) == "string" then
 		options = args[n]
@@ -116,11 +127,7 @@ end
 m.tikzOptions = ""
 m.tikzBuffer = {}
 m.tikzNbPicturesExported = 0
-m.TIKZ_CLIP_DISK = true
-m.TIKZ_BEGIN_DISK = [[
-\draw[very thick] (0,0) circle (1);
-\clip (0,0) circle (1);
-]]
+
 
 function m.tikzGetFirstLines()
 	local firstLines = string.format(
@@ -138,6 +145,10 @@ function m.tikzBegin(options)
 	m.tikzOptions = options or "scale=3"
 	tex.print(m.tikzGetFirstLines())
 	m.tikzClearBuffer()
+	-- reset point styles:
+	m.DRAW_POINT_RADIUS = m._DRAW_POINT_DEFAULT_RADIUS
+	m.DRAW_POINT_STYLE = m._DRAW_POINT_DEFAULT_STYLE
+
 end
 
 
@@ -187,24 +198,24 @@ end
 
 -- ==== DRAW POINT(S) ===============
 
-m.DRAW_POINT_RADIUS = 0.02 -- can be modified by user
 
 function m.drawPoint(z, options)
-	options = options or ""
+    options = options or m.DRAW_POINT_STYLE
 
-	-- accept nil point (circumcenter can be nil)
-	if z == nil then
-		m._warning("drawPoint : point is nil, aborting")
-		return
-	end
-	z = complex.coerce(z)
-	m._assert_in_disk(z)
-	m.tikzPrintf("\\fill[%s] (%f,%f) circle (%s);", options, z.re, z.im, m.DRAW_POINT_RADIUS)
+    -- accept nil point (circumcenter can be nil)
+    if z == nil then
+        m._warning("drawPoint : point is nil, aborting")
+        return
+    end
+    z = complex.coerce(z)
+    m._assert_in_disk(z)
+    m.tikzPrintf("\\fill[%s] (%f,%f) circle (%f);", options, z.re, z.im, m.DRAW_POINT_RADIUS)
 end
 
 
 function m.drawPoints(...)
 	local points, options = parse_points_with_options(...)
+	options = options or m.DRAW_POINT_STYLE
 
 	for i = 1, #points do
 		m.drawPoint(points[i], options)
@@ -232,6 +243,20 @@ function m.drawSegment(z, w, options)
 	m._assert(z:isNot(w), "points must be distinct")
 	local shape = m.shape_segment(z,w)
 	m.tikzPrintf("\\draw[%s] %s;",options, shape)
+end
+
+function m.markSegment(z, w, markString, position)
+	position = position or 0.5
+	size ="small" -- add to function input ?
+	z,w = complex.coerce(z,w)
+	m._assert(z:isNot(w), "points must be distinct")
+	local shape = m.shape_segment(z,w)
+	m.tikzPrintf("\\path[postaction={decorate,decoration={markings, mark=at position %f with {\\node[transform shape,sloped,font=\\%s] {%s};}}}] %s;",
+  		position,
+  		size,
+  		markString,
+  		shape
+  	)
 end
 
 function m.shape_segment(z, w)
@@ -430,6 +455,14 @@ function m.drawSegments(...)
 
 	for i = 1, #points, 2 do
 		m.drawSegment(points[i], points[i + 1], options)
+	end
+end
+
+function m.markSegments(...)
+	-- parameters : points and optional options string
+	local points, options = parse_points_with_options(...)
+	for i = 1, #points, 2 do
+		m.markSegment(points[i], points[i + 1], options)
 	end
 end
 
@@ -652,6 +685,8 @@ function m.labelPoint(z, label, options)
 	m.tikzPrintf("\\node[%s] at (%f,%f) {%s};", options, z.re, z.im, label)
 end
 
+
+
 function m.labelPoints(...)
 	local args = { ... }
 	local n = #args
@@ -667,6 +702,12 @@ function m.labelPoints(...)
 	for i = 1, n, 2 do
 		m.labelPoint(args[i], args[i + 1], options)
 	end
+end
+
+function m.labelSegment(A, B, label, options)
+	options = options or "above left"
+	local midpoint = m.midpoint(A, B)
+	m.labelPoint(midpoint, label,options)
 end
 
 
