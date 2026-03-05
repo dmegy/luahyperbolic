@@ -1,11 +1,12 @@
 %===========================================================================
 % luahyperbolic.sty
 % LuaLaTeX package for hyperbolic geometry
-% Version : 2026/03/05 13:31:04
+% Version : 2026/03/06 00:02:51
 % Automatically generated from the following files:
 % - complex.lua
 % - luahyperbolic-core.lua
 % - luahyperbolic-tikz.lua
+% - luahyperbolic-tilings.lua
 % source code and documentation:
 % https://github.com/dmegy/luahyperbolic
 % -- 2026 Damien Mégy
@@ -20,9 +21,13 @@
 \begin{luacode*}
 -- AUTO-GENERATED FILE
 -- DO NOT EDIT
+-- DATE: 2026/03/06 00:02:51
 
+-- internal modules
+local core
+local tikz
+local tilings
 
--- DATE : 2026/03/05 13:31:04
 do
 -----------------------------------------------------------------------
 -- @module complex
@@ -465,6 +470,7 @@ m.J = m.new(-1/2, sqrt(3)/2)
 complex = m
 end
 
+do
 -----------------------------------------------------------------------
 -- @module luahyperbolic-core
 -- Pure Lua hyperbolic geometry
@@ -1164,15 +1170,13 @@ function m.triangleOrthocenter(A,B,C)
 end
 
 
-local core = m
+core = m
+end
+
 do
 local m = {}
 
-for k,v in pairs(core) do
-    m[k] = v
-end
-
-m.module = "hyperbolic-tikz"
+m.module = "luahyperbolic-tikz"
 
 m.TIKZ_CLIP_DISK = true -- can be modified by user.
 m.TIKZ_BEGIN_DISK = [[
@@ -1186,8 +1190,6 @@ m._DRAW_POINT_DEFAULT_STYLE = "white, draw=black"
 m.DRAW_POINT_RADIUS = m._DRAW_POINT_DEFAULT_RADIUS -- can be modified by user
 m.DRAW_POINT_STYLE = m._DRAW_POINT_DEFAULT_STYLE -- can be modified by user
 
--- for quantization (geodesic propagation)
-m.QUANTIZATION_SCALE = 1e9
 
 
 -- ========= REDEFINE ERROR (TeX error) =====================
@@ -1217,15 +1219,9 @@ local cosh = math.cosh
 local tanh = math.tanh
 
 
-
-
-local function _quantize(x)
-    return math.floor(x * m.QUANTIZATION_SCALE + 0.5)
-end
-
 local function euclidean_circumcenter(a, b, c)
 	a, b, c = complex.coerce(a, b, c)
-    m._assert(math.abs(complex.det(b-a,c-a)) > m.EPS, "points must not be aligned")
+    core._assert(math.abs(complex.det(b-a,c-a)) > core.EPS, "points must not be aligned")
     local ma2 = complex.abs2(a)
     local mb2 = complex.abs2(b)
     local mc2 = complex.abs2(c)
@@ -1236,35 +1232,6 @@ local function euclidean_circumcenter(a, b, c)
 end
 
 
-local function _quantize_normalize_pair(a, b)
-
-    local ar = _quantize(a.re)
-    local ai = _quantize(a.im)
-    local br = _quantize(b.re)
-    local bi = _quantize(b.im)
-
-    -- lexicographic sort on integers
-    if br < ar or (br == ar and bi < ai) then
-        ar, br = br, ar
-        ai, bi = bi, ai
-    end
-
-    return ar .. ":" .. ai .. ":" .. br .. ":" .. bi
-end
-
-
--- put in module ?
-local function isPairInTable(pair, tableOfPairs)
-    for _, existing in ipairs(tableOfPairs) do
-        if complex.isClosePair(
-            pair[1], pair[2],
-            existing[1], existing[2]
-        ) then
-            return true
-        end
-    end
-    return false
-end
 
 
 local function parse_points_with_options(...)
@@ -1283,7 +1250,7 @@ local function parse_points_with_options(...)
 		points[i] = args[i]
 	end
 
-	m._assert(#points > 0, "parse_points_with_options : no points provided")
+	core._assert(#points > 0, "parse_points_with_options : no points provided")
 
 	return points, options
 end
@@ -1356,8 +1323,8 @@ end
 
 function m.tikz_define_nodes(table)
 	for name, z in pairs(table) do
-		m._assert(z ~= nil, "nil point for " .. name)
-		m._assert(z.re ~= nil and z.im ~= nil, "not a complex for " .. name)
+		core._assert(z ~= nil, "nil point for " .. name)
+		core._assert(z.re ~= nil and z.im ~= nil, "not a complex for " .. name)
 		m.tikzPrintf("\\coordinate (%s) at (%f,%f);", name, z.re, z.im)
 	end
 end
@@ -1374,7 +1341,7 @@ function m.drawPoint(z, options)
         return
     end
     z = complex.coerce(z)
-    m._assert_in_disk(z)
+    core._assert_in_disk(z)
     m.tikzPrintf("\\fill[%s] (%f,%f) circle (%f);", options, z.re, z.im, m.DRAW_POINT_RADIUS)
 end
 
@@ -1393,7 +1360,7 @@ end
 function m.drawPointOrbit(point, func, n, options)
 	-- draws n points. Doesn't draw original point
 	options = options or "black"
-	local points = m.pointOrbit(point, func, n)
+	local points = core.pointOrbit(point, func, n)
 
 	for i, z in ipairs(points) do
 		local alpha = i / #points
@@ -1406,7 +1373,7 @@ end
 function m.drawSegment(z, w, options)
 	options = options or ""
 	z,w = complex.coerce(z,w)
-	m._assert(z:isNot(w), "points must be distinct")
+	core._assert(z:isNot(w), "points must be distinct")
 	local shape = m.shape_segment(z,w)
 	m.tikzPrintf("\\draw[%s] %s;",options, shape)
 end
@@ -1415,7 +1382,7 @@ function m.markSegment(z, w, markString, position)
 	position = position or 0.5
 	size ="small" -- add to function input ?
 	z,w = complex.coerce(z,w)
-	m._assert(z:isNot(w), "points must be distinct")
+	core._assert(z:isNot(w), "points must be distinct")
 	local shape = m.shape_segment(z,w)
 	m.tikzPrintf("\\path[postaction={decorate,decoration={markings, mark=at position %f with {\\node[transform shape,sloped,font=\\%s] {%s};}}}] %s;",
   		position,
@@ -1426,8 +1393,8 @@ function m.markSegment(z, w, markString, position)
 end
 
 function m.shape_segment(z, w)
-	m._assert(z:isNot(w), "points must be distinct")
-	local g = m._geodesic_data(z, w)
+	core._assert(z:isNot(w), "points must be distinct")
+	local g = core._geodesic_data(z, w)
 
 	-- If the geodesic is (almost) a diameter, draw straight segment
 	if g.radius == math.huge or g.radius > 100 then
@@ -1455,9 +1422,9 @@ end
 
 function m.shape_closed_line(a,b)
 	-- todo : add "close" flag to decide if we close diameters ? 
-	m._assert(a:isNot(b), "points must be distinct")
+	core._assert(a:isNot(b), "points must be distinct")
 	if not a:isUnit() or not b:isUnit() then
-		a, b = m.endpoints(a,b)
+		a, b = core.endpoints(a,b)
 	end
 	if a:isNear(-b) then
 		-- WARNING :  HACK : close diameter as rectangle ! 
@@ -1481,10 +1448,10 @@ end
 function m.drawLine(a, b, options)
 	options = options or ""
 
-	a, b = m._coerce_assert_in_closed_disk(a,b)
-	m._assert(not a:isNear(b), "drawLine : points must be distinct")
+	a, b = core._coerce_assert_in_closed_disk(a,b)
+	core._assert(not a:isNear(b), "drawLine : points must be distinct")
 	
-	local end_a, end_b = m.endpoints(a,b)
+	local end_a, end_b = core.endpoints(a,b)
 	local shape = m.shape_segment(end_a,end_b)
 	m.tikzPrintf("\\draw[%s] %s;", options, shape)
 end
@@ -1500,10 +1467,10 @@ end
 function m.drawPerpendicularThrough(P,A,B,options)
 	-- perpendicular through P to geodesic (A,B)
 	options = options or ""
-	P, A, B = m._coerce_assert_in_closed_disk(P, A, B)
-	m._assert(A:isNot(B), "A and B must be distinct")
-	local H = m.projection(A,B)(P)
-	m._assert(P:isNot(H), "point must not be on line")
+	P, A, B = core._coerce_assert_in_closed_disk(P, A, B)
+	core._assert(A:isNot(B), "A and B must be distinct")
+	local H = core.projection(A,B)(P)
+	core._assert(P:isNot(H), "point must not be on line")
 	-- todo : fix this : should be ok.
 	m.drawLine(P,H,options)
 end
@@ -1512,9 +1479,9 @@ function m.drawHypercycleThrough(P, A, B, options)
 	options = options or ""
 	P, A, B = complex.coerce(P, A, B)
 	if not A:isUnit() or not B:isUnit() then
-		A, B = m.endpoints(A, B)
+		A, B = core.endpoints(A, B)
 	end
-	if math.abs(complex.det(P-A, P-B)) < m.EPS then
+	if math.abs(complex.det(P-A, P-B)) < core.EPS then
 		m.tikzPrintf("\\draw[%s] (%f,%f) -- (%f,%f);", options, A.re, A.im, B.re, B.im)
 		return
 	end
@@ -1526,29 +1493,29 @@ end
 
 function m.drawPerpendicularBisector(A, B, options)
 	options = options or ""
-	A, B = m._coerce_assert_in_closed_disk(A, B)
+	A, B = core._coerce_assert_in_closed_disk(A, B)
 
-	m._assert(A:isNot(B), "drawPerpendicularBisector: A and B must be distinct")
+	core._assert(A:isNot(B), "drawPerpendicularBisector: A and B must be distinct")
 
-	local e1, e2 = m.endpoints_perpendicular_bisector(A, B)
+	local e1, e2 = core.endpoints_perpendicular_bisector(A, B)
 	m.drawLine(e1, e2, options)
 end
 
 function m.drawAngleBisector(A, O, B, options)
 	options = options or ""
-	A, O, B = m._coerce_assert_in_closed_disk(A, O, B)
+	A, O, B = core._coerce_assert_in_closed_disk(A, O, B)
 
-	m._assert(complex.distinct(O,A) and complex.distinct(O,B),
+	core._assert(complex.distinct(O,A) and complex.distinct(O,B),
 		"angle_bisector: O must be distinct from A and B")
 
-	local e1, e2 = m.endpoints_angle_bisector(A, O, B)
+	local e1, e2 = core.endpoints_angle_bisector(A, O, B)
 	m.drawLine(e1, e2, options)
 end
 
 --- Draw a hyperbolic ray from two points: start at p1, through p2
 function m.drawRayFromPoints(p1, p2, options)
 	options = options or ""
-	local _, e2 = m.endpoints(p1, p2) -- e2 is the "ahead" endpoint
+	local _, e2 = core.endpoints(p1, p2) -- e2 is the "ahead" endpoint
 	m.drawSegment(p1, e2, options)
 end
 
@@ -1557,25 +1524,25 @@ m.drawRay = m.drawRayFromPoints
 --- Draw a hyperbolic ray from a start point p along a tangent vector v
 function m.drawRayFromVector(p, v, options)
 	options = options or ""
-	p = m._coerce_assert_in_disk(p)
+	p = core._coerce_assert_in_disk(p)
 	-- TODO : allow point at infinity (check vector direction) FIX/TEST
-	local q = m.expMap(p, v) -- move along v in hyperbolic space
-	local _, e2 = m.endpoints(p, q)
+	local q = core.expMap(p, v) -- move along v in hyperbolic space
+	local _, e2 = core.endpoints(p, q)
 	m.drawSegment(p, e2, options)
 end
 
 function m.drawLineFromVector(p, v, options)
 	options = options or ""
 	-- TODO : allow point at infinity
-	local q = m.expMap(p, v) -- move along v in hyperbolic space
+	local q = core.expMap(p, v) -- move along v in hyperbolic space
 	m.drawLine(p, q, options)
 end
 
 function m.drawTangentAt(center, point, options)
 	-- draw tangent line of circle of center 'center' passing through 'point'
 	options = options or ""
-	center, point = m._coerce_assert_in_disk(center, point)
-	local Q = m.rotation(point, math.pi / 2)(center)
+	center, point = core._coerce_assert_in_disk(center, point)
+	local Q = core.rotation(point, math.pi / 2)(center)
 	m.drawLine(point, Q, options)
 end
 
@@ -1595,7 +1562,7 @@ end
 function m.drawTangentVector(p, v, options)
 	options = options or ""
 	local norm_v = complex.abs(v)
-	m._assert(norm_v > m.EPS, "drawTangentVector : vector must not be zero")
+	core._assert(norm_v > core.EPS, "drawTangentVector : vector must not be zero")
 	local u = v / norm_v
 	local factor = (1 - complex.abs2(p))
 	local euclid_vec = math.tanh(factor * norm_v / 2) * u
@@ -1607,7 +1574,7 @@ end
 
 function m.drawLines(...)
 	local points, options = parse_points_with_options(...)
-	m._assert(#points % 2 == 0, "drawLines expects  an even number of points, got " .. #points)
+	core._assert(#points % 2 == 0, "drawLines expects  an even number of points, got " .. #points)
 
 	for i = 1, #points, 2 do
 		m.drawLine(points[i], points[i + 1], options)
@@ -1617,7 +1584,7 @@ end
 function m.drawSegments(...)
 	local points, options = parse_points_with_options(...)
 
-	m._assert(#points % 2 == 0, "drawSegments expects  an even number of points, got " .. #points)
+	core._assert(#points % 2 == 0, "drawSegments expects  an even number of points, got " .. #points)
 
 	for i = 1, #points, 2 do
 		m.drawSegment(points[i], points[i + 1], options)
@@ -1635,7 +1602,7 @@ end
 function m.drawTriangle(...)
 	local points, options = parse_points_with_options(...)
 
-	m._assert(#points == 3, "drawTriangle expects exactly 3 points, got " .. #points)
+	core._assert(#points == 3, "drawTriangle expects exactly 3 points, got " .. #points)
 
 	local a, b, c = points[1], points[2], points[3]
 	m.drawSegment(a, b, options)
@@ -1646,7 +1613,7 @@ end
 -- Draw a polyline from a table of points (open chain)
 function m.drawPolySegFromTable(points, options)
 	options = options or ""
-	m._assert(#points >= 2, "drawPolySegFromTable expects at least 2 points, got " .. #points)
+	core._assert(#points >= 2, "drawPolySegFromTable expects at least 2 points, got " .. #points)
 
 	for i = 1, #points - 1 do
 		m.drawSegment(points[i], points[i + 1], options)
@@ -1655,7 +1622,7 @@ end
 
 function m.drawPolySeg(...)
 	local points, options = parse_points_with_options(...)
-	m._assert(#points >= 2, "drawPolySeg expects at least 2 points, got " .. #points)
+	core._assert(#points >= 2, "drawPolySeg expects at least 2 points, got " .. #points)
 	m.drawPolySegFromTable(points, options)
 end
 
@@ -1664,7 +1631,7 @@ m.drawPolyline = m.drawPolySeg
 
 function m.drawPolygonFromTable(points, options)
 	options = options or ""
-	m._assert(#points >= 2, "drawPolygonFromTable expects at least 2 points, got " .. #points)
+	core._assert(#points >= 2, "drawPolygonFromTable expects at least 2 points, got " .. #points)
 
 	for i = 1, #points do
 		local z = points[i]
@@ -1677,17 +1644,17 @@ function m.drawPolygon(...)
 	local points, options = parse_points_with_options(...)
 
 	-- a 2-gon is a polygon
-	m._assert(#points >= 2, "drawPolygon expects at least 2 points, got " .. #points)
+	core._assert(#points >= 2, "drawPolygon expects at least 2 points, got " .. #points)
 	m.drawPolygonFromTable(points, options)
 end
 
 function m.drawRegularPolygon(center, point, nbSides, options)
 	options = options or ""
-	m._assert(nbSides>1, "drawRegularPolygon : expects >=2 sides, got " .. nbSides)
-	m._assert_in_disk(center)
-	m._assert_in_disk(point)
-	m._assert(complex.distinct(center, point), "drawRegularPolygon : center and point must be distinct")
-	local rot = m.rotation(center, 2*math.pi/nbSides)
+	core._assert(nbSides>1, "drawRegularPolygon : expects >=2 sides, got " .. nbSides)
+	core._assert_in_disk(center)
+	core._assert_in_disk(point)
+	core._assert(complex.distinct(center, point), "drawRegularPolygon : center and point must be distinct")
+	local rot = core.rotation(center, 2*math.pi/nbSides)
 	local vertices = {}
 	for k=1,nbSides do
 		point = rot(point)
@@ -1700,8 +1667,8 @@ end
 
 function m.drawCircleRadius(z0, r, options)
 	options = options or ""
-	z0 = m._coerce_assert_in_disk(z0)
-	local c, R = m._circle_to_euclidean(z0, r)
+	z0 = core._coerce_assert_in_disk(z0)
+	local c, R = core._circle_to_euclidean(z0, r)
 
 	m.tikzPrintf("\\draw[%s] (%f,%f) circle (%f);", options, c.re, c.im, R)
 end
@@ -1710,23 +1677,23 @@ m.drawCircle = m.drawCircleRadius
 
 function m.drawCircleThrough(center, point, options)
 	options = options or ""
-	center, point = m._coerce_assert_in_disk(center, point)
-	local r = m.distance(center, point)
+	center, point = core._coerce_assert_in_disk(center, point)
+	local r = core.distance(center, point)
 	m.drawCircle(center, r, options)
 end
 
 function m.drawIncircle(A, B, C, options)
 	options = options or ""
-	A, B, C = m._coerce_assert_in_disk(A, B, C)
-	local I = m.triangleIncenter(A, B, C)
-	local a = m.projection(B, C)(I)
+	A, B, C = core._coerce_assert_in_disk(A, B, C)
+	local I = core.triangleIncenter(A, B, C)
+	local a = core.projection(B, C)(I)
 	m.drawCircleThrough(I, a, options)
 end
 
 function m.drawCircumcircle(A, B, C, options)
 	options = options or ""
-	A, B, C = m._coerce_assert_in_disk(A, B, C)
-	local O = m.triangleCircumcenter(A, B, C)
+	A, B, C = core._coerce_assert_in_disk(A, B, C)
+	local O = core.triangleCircumcenter(A, B, C)
 	if O ~= nil then
 		m.drawCircleThrough(O,A, options)
 	else
@@ -1738,14 +1705,14 @@ end
 
 function m.drawArc(O, A, B, options)
 	options = options or ""
-	O, A, B = m._coerce_assert_in_disk(O, A, B)
+	O, A, B = core._coerce_assert_in_disk(O, A, B)
 
 	-- Check points are on same hyperbolic circle
-	local rA = m.distance(O, A)
-	local rB = m.distance(O, B)
-	m._assert(math.abs(rA - rB) < m.EPS, "drawArc: points A and B are not on the same hyperbolic circle")
+	local rA = core.distance(O, A)
+	local rB = core.distance(O, B)
+	core._assert(math.abs(rA - rB) < core.EPS, "drawArc: points A and B are not on the same hyperbolic circle")
 
-	local c, R = m._circle_to_euclidean(O, rA)
+	local c, R = core._circle_to_euclidean(O, rA)
 
 	-- Compute angles of A and B on the Euclidean circle
 	local function angleOnCircle(p)
@@ -1765,23 +1732,23 @@ end
 
 function m.drawSemicircle(center, startpoint, options)
 	options = options or ""
-	local endpoint = (m.symmetry(center))(startpoint)
+	local endpoint = (core.symmetry(center))(startpoint)
 	m.drawArc(center, startpoint, endpoint, options)
 end
 
 function m.drawAngle(A, O, B, options, distFactor)
 	distFactor = distFactor or 1/4
 	options = options or ""
-	m._assert_in_disk(A)
-	m._assert_in_disk(O)
-	m._assert_in_disk(B)
+	core._assert_in_disk(A)
+	core._assert_in_disk(O)
+	core._assert_in_disk(B)
 
-	local dOA = m.distance(O,A)
-	local dOB = m.distance(O,B)
+	local dOA = core.distance(O,A)
+	local dOB = core.distance(O,B)
 	local minDist = math.min(dOA,dOB)
 	local radius= minDist*distFactor
-	local AA = m.interpolate(O,A,radius / dOA)
-	local BB = m.interpolate(O,B,radius/ dOB)
+	local AA = core.interpolate(O,A,radius / dOA)
+	local BB = core.interpolate(O,B,radius/ dOB)
 	m.drawArc(O,AA,BB, options)
 end
 
@@ -1789,21 +1756,21 @@ function m.drawRightAngle(A, O, B, options, distFactor)
 	-- assumes angle(AOB) = +90 deg !
 	distFactor = distFactor or 1/5
 	options = options or ""
-	m._assert_in_disk(A)
-	m._assert_in_disk(O)
-	m._assert_in_disk(B)
-	local dOA = m.distance(O,A)
-	local dOB = m.distance(O,B)
+	core._assert_in_disk(A)
+	core._assert_in_disk(O)
+	core._assert_in_disk(B)
+	local dOA = core.distance(O,A)
+	local dOB = core.distance(O,B)
 	local minDist = math.min(dOA, dOB)
 	local radius = minDist*distFactor
-	local AA = m.interpolate(O,A,radius / dOA)
-	local BB = m.interpolate(O,B,radius / dOB)
+	local AA = core.interpolate(O,A,radius / dOA)
+	local BB = core.interpolate(O,B,radius / dOB)
 
-	local v = m.tangentVector(AA,A)*complex.I
-	local w = m.tangentVector(BB,B)*(-complex.I)
-	local VV = m.expMap(AA,v)
-	local WW = m.expMap(BB,w)
-	local P = m.interLL(AA,VV, BB, WW)
+	local v = core.tangentVector(AA,A)*complex.I
+	local w = core.tangentVector(BB,B)*(-complex.I)
+	local VV = core.expMap(AA,v)
+	local WW = core.expMap(BB,w)
+	local P = core.interLL(AA,VV, BB, WW)
 	-- fast&lazy : euclidean polyline instead of geodesic:
 	m.tikzPrintf("\\draw[%s] (%f,%f) -- (%f,%f) -- (%f,%f);",
 		options,
@@ -1819,8 +1786,8 @@ end
 function m.drawHorocycle(idealPoint, point, options)
 	options = options or ""
 
-	m._assert(complex.isClose(complex.abs(idealPoint), 1), "drawHorocycle: ideal point must be on unit circle")
-	m._assert(m._in_disk(point), "drawHorocycle: second point must be in disk")
+	core._assert(complex.isClose(complex.abs(idealPoint), 1), "drawHorocycle: ideal point must be on unit circle")
+	core._assert(core._in_disk(point), "drawHorocycle: second point must be in disk")
 	-- rotate :
 	local w = point / idealPoint
 	local x, y = w.re, w.im
@@ -1851,8 +1818,6 @@ function m.labelPoint(z, label, options)
 	m.tikzPrintf("\\node[%s] at (%f,%f) {%s};", options, z.re, z.im, label)
 end
 
-
-
 function m.labelPoints(...)
 	local args = { ... }
 	local n = #args
@@ -1863,7 +1828,7 @@ function m.labelPoints(...)
 		n = n - 1
 	end
 
-	m._assert(n % 2 == 0, "labelPoints expects pairs: (point, label)")
+	core._assert(n % 2 == 0, "labelPoints expects pairs: (point, label)")
 
 	for i = 1, n, 2 do
 		m.labelPoint(args[i], args[i + 1], options)
@@ -1872,8 +1837,58 @@ end
 
 function m.labelSegment(A, B, label, options)
 	options = options or "above left"
-	local midpoint = m.midpoint(A, B)
+	local midpoint = core.midpoint(A, B)
 	m.labelPoint(midpoint, label,options)
+end
+
+-- ====================== MODULE END
+
+tikz = m
+end
+
+do
+local m = {}
+
+m.module = "luahyperbolic-tilings"
+
+-- for quantization (geodesic propagation)
+m.QUANTIZATION_SCALE = 1e9
+
+local min = math.min
+local max = math.max
+local sin = math.sin
+local cos = math.cos
+local atan2 = math.atan2
+local exp = math.exp
+local log = math.log
+local sqrt = math.sqrt
+local abs = math.abs
+local sinh = math.sinh
+local cosh = math.cosh
+local tanh = math.tanh
+
+
+
+
+local function _quantize(x)
+    return math.floor(x * m.QUANTIZATION_SCALE + 0.5)
+end
+
+
+local function _quantize_normalize_pair(a, b)
+
+    local ar = _quantize(a.re)
+    local ai = _quantize(a.im)
+    local br = _quantize(b.re)
+    local bi = _quantize(b.im)
+
+    -- lexicographic sort on integers
+    if br < ar or (br == ar and bi < ai) then
+        ar, br = br, ar
+        ai, bi = bi, ai
+    end
+
+    return ar .. ":" .. ai .. ":" .. br .. ":" .. bi
 end
 
 
@@ -1884,21 +1899,21 @@ end
 function m.fundamentalRightTriangle(p, q)
 	-- returns right triangle A=0, B, C with angles
 	-- alpha = pi/2, beta = pi/p, gamma = pi/q
-    m._assert(1/p + 1/q < 0.5, "triangle must be hyperbolic")
+    core._assert(1/p + 1/q < 0.5, "triangle must be hyperbolic")
     
     local beta = math.pi / p
     local gamma  = math.pi / q
 
     -- hyperbolic side lengths opposite angles
-    local u = m.acosh(math.cos(gamma) / math.sin(beta))
-    local v = m.acosh(math.cos(beta)  / math.sin(gamma))
+    local u = core.acosh(math.cos(gamma) / math.sin(beta))
+    local v = core.acosh(math.cos(beta)  / math.sin(gamma))
 
     -- convert hyperbolic lengths to Euclidean radii in disk
     local r = math.tanh(u / 2)
     local s = math.tanh(v / 2)
 
-    m._assert(r > 0 and r < 1, "B not inside disk")
-    m._assert(s > 0 and s < 1, "C not inside disk")
+    core._assert(r > 0 and r < 1, "B not inside disk")
+    core._assert(s > 0 and s < 1, "C not inside disk")
 
     local A = complex(0, 0)
     local B = complex(r, 0)
@@ -1908,7 +1923,7 @@ function m.fundamentalRightTriangle(p, q)
 end
 
 function m.fundamentalIdealTriangle(p, q)
-    m._assert(p >= 2 and q >= 2,
+    core._assert(p >= 2 and q >= 2,
         "fundamentalIdealTriangle: p,q >= 2")
 
     local alpha = math.pi / p
@@ -1930,13 +1945,15 @@ function m.fundamentalIdealTriangle(p, q)
     return A, B, C
 end
 
+
+-- TODO : use better algorithm... use the group and work with words
 function m.propagateGeodesics(geodesics, depth, MAX_ENDPOINT_DISTANCE)
     MAX_ENDPOINT_DISTANCE = MAX_ENDPOINT_DISTANCE or 0.01
-    m._assert(#geodesics > 1, "must have at least 2 geodesics")
+    core._assert(#geodesics > 1, "must have at least 2 geodesics")
 
     local reflections = {}
     for i, side in ipairs(geodesics) do
-        reflections[i] = m.reflection(side[1], side[2])
+        reflections[i] = core.reflection(side[1], side[2])
     end
 
     local seen = {}
@@ -1990,8 +2007,29 @@ end
 
 -- ====================== MODULE END
 
-hyper = m
+tilings = m
 end
+
+
+-- public API
+hyper = {}
+
+-- structured access
+hyper.core = core
+hyper.tikz = tikz
+hyper.tilings = tilings
+
+local function merge(dst, src)
+  for k,v in pairs(src) do
+    dst[k] = v
+  end
+end
+
+-- flattened API
+merge(hyper, core)
+merge(hyper, tikz)
+merge(hyper, tilings)
+
 
 \end{luacode*}
 

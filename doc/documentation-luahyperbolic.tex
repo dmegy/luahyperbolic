@@ -12,7 +12,6 @@
     thick/.style={line width=1pt},
 }
 
-
 \usepackage[dvipsnames]{xcolor}
 \usepackage{multicol}
 \usepackage[normalem]{ulem}
@@ -23,6 +22,8 @@
 \usepackage{fancyvrb}
 \usepackage[colorlinks]{hyperref}
 
+\hbadness=10000
+\hfuzz=3pt
 
 \usepackage{../luahyperbolic}
 
@@ -76,7 +77,7 @@ title=#1
   breakable
 }
 
-\title{Package luahyperbolic}
+\title{The \textbf{\textsf{luahyperbolic}} latex package}
 \author{Damien Mégy}
 \date{}
 \begin{document}
@@ -357,7 +358,9 @@ hyper.tikzEnd()
 \begin{codeandresult}{Polygonal lines}
 \begin{luacode*}
 hyper.tikzBegin()
+-- drawPolyline : 
 hyper.drawPolyline(0, 1, complex.I, -1, "red")
+-- drawPolylineFromTable : 
 local points={}
 for k=1, 15 do
 	table.insert(points, complex.polar(k/15, k))
@@ -510,13 +513,16 @@ hyper.tikzEnd()
 \begin{codeandresult}{Tangent at point}
 \begin{luacode*}
 local O = complex(0.3,0.2)
-local P = complex(0.1,-0.4)
-local Q = hyper.rotation(O,math.pi/3)(P)
+local P = complex(-0.1,0)
+local phi  =  hyper.rotation(O,math.pi/4)
+local Q =phi(P)
+local R = phi(Q)
 hyper.tikzBegin()
-hyper.drawCircleThrough(O, P)
+hyper.drawCircleThrough(O, P, "teal")
 hyper.drawTangentAt(O,P,"red")
-hyper.drawTangentAt(O,Q,"teal")
-hyper.drawPoints(O, P, Q)
+hyper.drawTangentAt(O,Q,"red")
+hyper.drawTangentAt(O,R,"red")
+hyper.drawPoints(O, P, Q, R)
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
@@ -607,7 +613,7 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Midpoint}
 \begin{luacode*}
-local A = complex(0.4,0.4)
+local A = complex(0.4,0.6)
 local B = complex(-0.8,-0.3)
 local M = hyper.midpoint(A,B)
 hyper.tikzBegin()
@@ -791,10 +797,9 @@ hyper.tikzEnd()
 
 \begin{codeandresult}{Rotation by $60^\circ$}
 \begin{luacode*}
-local O = complex(0.1,0.1)
+local O = complex(0.2,0.2)
 local r = hyper.rotation(O,math.pi/3)
 hyper.tikzBegin()
-hyper.drawPoint(O)
 for k=1,5 do
 	local P = hyper.randomPoint(0.3,0.9)
 	local rP = r(P)
@@ -803,6 +808,7 @@ for k=1,5 do
 	hyper.drawPolyline(P,O,rP, "red!10")
 	hyper.drawPoint(P)
 end
+hyper.drawPoint(O)
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
@@ -1137,7 +1143,7 @@ end
 
 \subsection{luahyperbolic}
 
-The luahyperbolic library consists of two modules : luahyperbolic-core, and luahyperbolic-tikz. The latter requires requires and copies luahyperbolic-core. (It also requires complex.lua internally.)
+The luahyperbolic library consists of three submodules : luahyperbolic-core,  luahyperbolic-tikz and luahyperpolic-tilings. These three submodules are flattened in a single \texttt{hyper} global module. (The submodules are still available in three tables hyper.core, hyper.tikz and hyper.tilings if necessary.)
 
 Functions beginning with underscore are available in the module but should not be needed for normal use. Don't use them, they could become private in the future and not be available to users anymore.
 
