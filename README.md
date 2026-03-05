@@ -19,7 +19,7 @@ If you wish to install the package manually, follow these steps:
 
 ### Example Usage
 
-A MWE is (see `minimal_example.tex`in `examples/`) :
+A minimal working example is (see `minimal_example.tex`in `examples/`) :
 
 ```latex
 \documentclass[margin=.2cm,multi,tikz]{standalone}
@@ -32,7 +32,7 @@ local A = complex.exp_i(math.pi/10)
 for k=1,5 do hyper.drawLine(P, A^k, "teal") end
 hyper.labelPoint(P, "$P$", "left=.2cm")
 hyper.drawLine(complex.J,-complex.I,"very thick, dashed, red")
-hyper.tikzEnd()
+hyper.tikzEnd("myfile.tikz")
 \end{luacode*}
 \end{document}
 ```
@@ -40,6 +40,8 @@ hyper.tikzEnd()
 Compiling that file with `lualatex` produces the following output:
 
 ![minimal example](examples/minimal_example.png)
+
+It also saves the TikZ picture to `myfile.tikz`, for later use. (Optional)
 
 See the [package manual (pdf)](doc/documentation-luahyperbolic.pdf) for numerous examples.
 
@@ -70,7 +72,6 @@ For more information on the license, see the `LICENSE` file or visit [CC0 1.0 Un
 
 - function `drawExcircle` and variants
 - more triangle geometry ? Gergonne, Nagel etc ?
-- function `markSegment` ?
 - function `markAngle(A, O, B, options)`
 - function `labelSegment(A, B, label)`
 - function `labelAngle(A, O, B, label)`
@@ -81,6 +82,7 @@ For more information on the license, see the `LICENSE` file or visit [CC0 1.0 Un
 ### In documentation
 
 - hypercycles for hyperbolic automorphisms
+- index of functions
 
 ### More examples :
 
