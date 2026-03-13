@@ -1,3 +1,16 @@
+-----------------------------------------------------------------------
+-- @module luahyperbolic-tikz
+-- Pure Lua hyperbolic geometry
+-- 
+-- License:
+--   Public Domain / CC0 1.0 Universal
+--   2026 Damien Mégy
+--   This software is released into the public domain.
+--   You may use, modify, and distribute it freely, without restriction.
+-- 
+-- SPDX-License-Identifier: CC0-1.0
+--
+-----------------------------------------------------------------------
 
 -- ============ BEGIN MODULE "LUAHYPERBOLIC-TIKZ" ============
 
@@ -14,23 +27,20 @@ m.TIKZ_BEGIN_DISK = [[
 ]]
 
 m.GEODESIC_STYLE = "black"
-m.CIRCLE_OSTYLE = "black"
-m.HOROCYCLE_OSTYLE = "black"
+m.CIRCLE_STYLE = "black"
+m.HOROCYCLE_STYLE = "black"
 m.HYPERCYCLE_STYLE = "black"
 m.ANGLE_STYLE = "black"
 m.MARKING_STYLE = "black"
 m.LABEL_STYLE = "above left"
 
-
-m._DRAW_POINT_DEFAULT_RADIUS = 0.02
-m._DRAW_POINT_DEFAULT_STYLE = "white, draw=black"
-
-m.DRAW_POINT_RADIUS = m._DRAW_POINT_DEFAULT_RADIUS -- can be modified by user
-m.DRAW_POINT_STYLE = m._DRAW_POINT_DEFAULT_STYLE -- can be modified by user
+m.DRAW_POINT_RADIUS = 0.02 -- can be modified by user
+m.DRAW_POINT_STYLE = "white, draw=black" -- can be modified by user
 
 m.DRAW_ANGLE_DIST = 1/5
+m.MARKING_SIZE = "small"
 
-m._DRAW_STYLE_BOUNDARY_CIRCLE = "very thick, black"
+m.BOUNDARY_CIRCLE_STYLE = "very thick, black"
 
 
 
@@ -122,9 +132,6 @@ function m.tikzBegin(options)
 	m.tikzpictureOptions = options or "scale=3"
 	tex.print(m.tikzGetFirstLines())
 	m.tikzClearBuffer()
-	-- reset point styles:
-	m.DRAW_POINT_RADIUS = m._DRAW_POINT_DEFAULT_RADIUS
-	m.DRAW_POINT_STYLE = m._DRAW_POINT_DEFAULT_STYLE
 
 end
 
@@ -144,7 +151,7 @@ function m.tikzExport(filename)
 	  f:write(line, "\n")
 	end
 	f:write("\\end{scope}\n")
-	f:write("\\draw[".. m._DRAW_STYLE_BOUNDARY_CIRCLE .."] (0,0) circle (1);\n")
+	f:write("\\draw[".. m.BOUNDARY_CIRCLE_STYLE .."] (0,0) circle (1);\n")
 	f:write("\\end{tikzpicture}\n")
 	f:close()
 	-- doesn't clear buffer, do it manually if wanted
@@ -154,7 +161,7 @@ end
 
 function m.tikzEnd(filename)
 	tex.print("\\end{scope}")
-	tex.print("\\draw[".. m._DRAW_STYLE_BOUNDARY_CIRCLE .."] (0,0) circle (1);")
+	tex.print("\\draw[".. m.BOUNDARY_CIRCLE_STYLE .."] (0,0) circle (1);")
 	tex.print("\\end{tikzpicture}")
 	if filename ~= nil then
 		m.tikzExport(filename)
@@ -226,8 +233,8 @@ function m.drawSegment(z, w, options)
 end
 
 function m.markSegment(z, w, markString, position)
-	position = position or 0.5
-	size ="small" -- add to function input ?
+	position = position or 0.5 -- midway
+	size = m.MARKING_SIZE -- add to function input ?
 	z,w = complex.coerce(z,w)
 	core._assert(z:isNot(w), "points must be distinct")
 	local shape = m.tikz_shape_segment(z,w)
@@ -330,7 +337,7 @@ function m.drawPerpendicularBisector(A, B, options)
 
 	core._assert(A:isNot(B), "drawPerpendicularBisector: A and B must be distinct")
 
-	local e1, e2 = core.endpoints_perpendicular_bisector(A, B)
+	local e1, e2 = core.endpointsPerpendicularBisector(A, B)
 	m.drawLine(e1, e2, options)
 end
 
@@ -341,7 +348,7 @@ function m.drawAngleBisector(A, O, B, options)
 	core._assert(complex.distinct(O,A) and complex.distinct(O,B),
 		"angle_bisector: O must be distinct from A and B")
 
-	local e1, e2 = core.endpoints_angle_bisector(A, O, B)
+	local e1, e2 = core.endpointsAngleBisector(A, O, B)
 	m.drawLine(e1, e2, options)
 end
 

@@ -231,6 +231,8 @@ This will buid and replace the existing sty file.
 
  
 \subsection{Exporting the pictures}
+
+\subsubsection{When finishing a picture}
 \index{tikzExport}
 Simply add a filename to the closing \texttt{hyper.tikzEnd()} instruction, as below:
 \begin{center}
@@ -239,14 +241,11 @@ Simply add a filename to the closing \texttt{hyper.tikzEnd()} instruction, as be
 
 This will save the current picture (including \verb+\begin{tikzpicture}[options]+ and \verb+\end{tikzpicture}+).
 
+\subsubsection{In the middle of the TikZpicture}
 
 It is also possible to export the current picture at any point with \verb+hyper.tikzExport(optional-filename)+.
 If no filename is provided, the package will name it \verb+hyper_picture_N+ with \texttt{N} the picture counter. Luahyperbolic keeps count of how many pictures have been produced in the document.
 This allows exporting images in loops, or drawing several steps of the same picture.
-
-
-
-%The code and result are displayed side by side thanks to the \verb+tcblisting+ environment of the \verb+tcolorbox+ package
 
 
 \section{Drawing and labeling elements}
@@ -897,26 +896,6 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-\index{symmetryAroundMidpoint}
-\begin{codeandresult}
-\begin{luacode*}
-local A, B = complex.J/2, -complex.I/2
-local s = hyper.symmetryAroundMidpoint(A,B)
-local points={complex(-.7,.3), complex(.4,.2)}
-hyper.tikzBegin()
-for k, P in ipairs(points) do
-	local sP = s(P)
-	hyper.drawSegment(P,sP, "red, dashed")
-	hyper.drawPoints(P,sP)
-	hyper.labelPoint(P, "$P_{".. k .."}$")
-	hyper.labelPoint(sP, "$\\sigma(P_{".. k .."})$")
-end
-hyper.drawPoints(A, B, "black")
-hyper.labelPoints(A, "$A$", B, "$B$") 
-hyper.tikzEnd()
-\end{luacode*}
-\end{codeandresult}
-
 
 \subsubsection{Hyperbolic automorphims}
 \index{automorphism}
@@ -1134,7 +1113,7 @@ local geodesics = {
 	{hyper.endpoints(B,C)},
 	{hyper.endpoints(C,A)}
 }
-geodesics = hyper.propagateGeodesics(geodesics, 12) -- depth=12
+geodesics = hyper.propagateGeodesics(geodesics, 12) -- depth = 12
 hyper.tikzBegin()
 hyper.drawLinesFromTable(geodesics, "green!50!black, draw opacity=.5")
 hyper.drawTriangle(A,B,C,"red, very thick")
@@ -1147,9 +1126,10 @@ hyper.tikzEnd()
 \begin{codeandresult}
 \begin{luacode*}
 local PI = math.pi
+local DEPTH = 12
 local A, B, C = hyper.triangleWithAngles(PI/2,PI/3,0)
 hyper.tikzBegin()
-hyper.drawTilingFromTriangle(A, B, C, 12, "teal, draw opacity=.5")
+hyper.drawTilingFromTriangle(A, B, C, DEPTH, "teal, draw opacity=.5")
 hyper.drawTriangle(A,B,C,"red, very thick")
 hyper.tikzEnd()
 \end{luacode*}
@@ -1162,7 +1142,7 @@ hyper.tikzEnd()
 \begin{luacode*}
 local PI = math.pi
 hyper.tikzBegin()
-hyper.drawTilingFromAngles(PI/3, PI/5, PI/7, 12, "teal, draw opacity=.5")
+hyper.drawTilingFromAngles(PI/3,PI/5,PI/7,12)
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}

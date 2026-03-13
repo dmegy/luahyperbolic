@@ -295,7 +295,7 @@ end]]
 
 
 
-function m.endpoints_perpendicular_bisector(A, B)
+function m.endpointsPerpendicularBisector(A, B)
 	m._assert(complex.distinct(A, B), "perpendicular_bisector: A and B must be distinct")
 
 	local M = m.midpoint(A, B)
@@ -309,7 +309,7 @@ function m.endpoints_perpendicular_bisector(A, B)
 	return phi_inv(e1), phi_inv(e2)
 end
 
-function m.endpoints_angle_bisector(A, O, B)
+function m.endpointsAngleBisector(A, O, B)
 	m._assert(complex.distinct(A, O) and complex.distinct(O, B), "angle_bisector: O must be distinct from A and B")
 
 	local phi = m.automorphism(O, 0)
@@ -674,8 +674,8 @@ function m.triangleIncenter(A, B, C)
 		"incenter: points must be distinct"
 	)
 
-	local e1, e2 = m.endpoints_angle_bisector(A, B, C)
-	local f1, f2 = m.endpoints_angle_bisector(B, C, A)
+	local e1, e2 = m.endpointsAngleBisector(A, B, C)
+	local f1, f2 = m.endpointsAngleBisector(B, C, A)
 	return m.interLL(e1, e2, f1, f2)
 end
 
@@ -689,8 +689,8 @@ function m.triangleCircumcenter(A, B, C)
 		"circumcenter: points must be distinct"
 	)
 
-	local e1, e2 = m.endpoints_perpendicular_bisector(A, B)
-	local f1, f2 = m.endpoints_perpendicular_bisector(A, C)
+	local e1, e2 = m.endpointsPerpendicularBisector(A, B)
+	local f1, f2 = m.endpointsPerpendicularBisector(A, C)
 
 	return m.interLL(e1, e2, f1, f2) -- can be nil
 end

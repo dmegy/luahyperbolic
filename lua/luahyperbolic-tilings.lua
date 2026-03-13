@@ -1,3 +1,16 @@
+-----------------------------------------------------------------------
+-- @module luahyperbolic-tilings
+-- Pure Lua hyperbolic geometry
+-- 
+-- License:
+--   Public Domain / CC0 1.0 Universal
+--   2026 Damien Mégy
+--   This software is released into the public domain.
+--   You may use, modify, and distribute it freely, without restriction.
+-- 
+-- SPDX-License-Identifier: CC0-1.0
+--
+-----------------------------------------------------------------------
 
 -- ============ BEGIN MODULE "LUAGYPERBOLIC-TILINGS" ============
 
@@ -145,7 +158,7 @@ function m.fillTilingFromTriangle(A, B, C, depth, options)
 end
 
 function m.drawTilingFromTriangle(A, B, C, depth, options)
-    options = options or "black"
+    options = options or tikz.GEODESIC_STYLE
     local geodesics = {
         {core.endpoints(A,B)},
         {core.endpoints(B,C)},
