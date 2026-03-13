@@ -20,12 +20,15 @@
 \tcbuselibrary{listings}
 \tcbuselibrary{skins,breakable}
 \usepackage{fancyvrb}
-\usepackage[colorlinks]{hyperref}
 
 \hbadness=10000
 \hfuzz=3pt
 
 \usepackage{../luahyperbolic}
+\usepackage{imakeidx}
+\makeindex[title=Index of functions used in this documentation]
+\makeindex[name=fields, title=Index of constants and parameters]
+\usepackage[colorlinks]{hyperref}
 
 \lstdefinelanguage{Lua}{
   morekeywords={and,break,do,else,elseif,end,false,for,function,if,in,
@@ -55,15 +58,14 @@
 }
 
 
-\newtcblisting{codeandresult}[1]{%
+\newtcblisting{codeandresult}{%
 myluacolors,
 colback=white,
-colframe=black,
+colframe=gray!20,
 fonttitle=\bfseries,
 listing side text,
-lefthand width=0.62\textwidth,
-righthand width=0.35\textwidth,
-title=#1
+lefthand width=0.65\textwidth,
+righthand width=0.35\textwidth
 }
 
 
@@ -77,6 +79,7 @@ title=#1
   breakable
 }
 
+
 \title{The \textbf{\textsf{luahyperbolic}} latex package}
 \author{Damien Mégy}
 \date{}
@@ -86,29 +89,13 @@ title=#1
 \begin{luacode*}
 t1 = os.clock()
 texio.write_nl(string.format("[TIMING]  %.2f s: beginning intro picture", os.clock() - t0))
-local A, B, C = hyper.fundamentalRightTriangle(4,5)
+local PI = math.pi
+local A, B, C = hyper.triangleWithAngles(PI/2,PI/4,PI/5)
 local phi = hyper.automorphism(C,0)
 A,B,C = phi(A), phi(B), phi(C)
-local geodesics = {
-	{hyper.endpoints(A,B)},
-	{hyper.endpoints(B,C)},
-	{hyper.endpoints(C,A)}
-}
-geodesics = hyper.propagateGeodesics(geodesics, 24)
-local shapes={}
-globalNbGeodesics = 0
-for k,pair in ipairs(geodesics) do
-	globalNbGeodesics = globalNbGeodesics + 1
-	table.insert(shapes,hyper.shape_closed_line(pair[1], pair[2]))
-end
-shapes_string = table.concat(shapes, " ")
-
-texio.write_nl(string.format("[TIMING] %.2f s: computed %d geodesics", os.clock() - t0, globalNbGeodesics))
 hyper.tikzBegin("scale=6")
-hyper.tikzPrintf(
-	"\\fill[even odd rule] (0,0) circle (1) %s ;",
-	shapes_string)
-hyper.drawRegularPolygon(complex.ZERO, B,5,  "line width=.15cm, cyan")
+hyper.fillTilingFromTriangle(A,B,C,24, "even odd rule")
+hyper.drawRegularPolygon(complex.ZERO, B, 5,  "line width=.15cm, cyan")
 hyper.tikzEnd()
 \end{luacode*}
 \par
@@ -123,6 +110,7 @@ texio.write_nl(string.format("[TIMING] %.2f s: finished tikz picture in %.2f  se
 \end{luacode*}
 \vspace{1cm}
 \begin{multicols}{2}
+\setcounter{tocdepth}{2}
 \tableofcontents
 \end{multicols}
 
@@ -139,14 +127,16 @@ texio.write_nl(string.format("[TIMING] %.2f s: finished tikz picture in %.2f  se
 \item Read the source code and learn hyperbolic geometry.
 \item Compile **without** installing python packages or lua packages etc.
 \item Compile **without**  "shell-escape" mode.
-\item Compile everything in a single pass. No (Leeloo Dallas) multipass. Want to illustrate Euclid's fifth postulate ? Do it right there in your tex file without having to include external files :
+\item Compile everything in a single pass. No (Leeloo Dallas) multipass.
+Want to illustrate Euclid's fifth postulate ?
+Do it right there in your TeX file without having to include external files :
 
-\begin{codeandresult}{Euclid's 5th Postulate}
+\begin{codeandresult}
 \begin{luacode*}
 hyper.tikzBegin("scale=2.5")
 local P = complex(0.5,-0.2)
-local A = complex.exp_i(math.pi/10)
-for k=1,5 do
+local A = complex.exp_i(math.pi/20)
+for k=1,10 do
 	hyper.drawLine(P, A^k, "teal")
 end
 hyper.labelPoint(P, "$P$", "left=.2cm")
@@ -155,6 +145,8 @@ hyper.drawLine(complex.J,-complex.I,style)
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
+\index[fields]{complex!I}\index[fields]{complex!J}
+\index{complex!exp\_i}\index{tikzBegin}\index{tikzEnd}
 
 \end{enumerate}
 
@@ -169,7 +161,7 @@ hyper.tikzEnd()
 
 For heavy computations, please use a \sout{Python} C library. Nevertheless, this library is still reasonably efficient and usable:
 \begin{itemize}
-\item The first tiling illustration of this documentation (hyperbolic 2-4-5 tiling with \directlua{tex.print(globalNbGeodesics)} geodesics) compiled in \directlua{tex.print(math.round(100*globalTimeIntroPicture)/100)} seconds on a 2020 intel macbook air laptop.
+\item The first tiling illustration of this documentation (hyperbolic 2-4-5 tiling with 2361 geodesics) compiled in \directlua{tex.print(math.round(100*globalTimeIntroPicture)/100)} seconds on a 2020 intel macbook air laptop.
 \item This entire documentation including all pictures compiles in approx. 15 seconds on the same machine, the majority of the time weing spent on the tilings. The package is suitable for producing lecture notes in hyperbolic geometry, which was the reason for all of this. For an entire book with dozens of pictures, you may need to externalize some of the pictures.
 \item Tests show that the bottleneck is TikZ, not Lua. In a future version, some future maintainer may add other fontends to the library, including drawing directly to the pdf with pdf primitives wich are several orders of magnitude faster than tikz.
 \end{itemize}
@@ -190,7 +182,8 @@ It will declare two lua globals : \texttt{complex} and \texttt{hyper}, and defin
 If the sty file is not in the same directory as your tex file, you can write \verb+\usepackage{../luahyperbolic}+
 
 
-\subsubsection*{CTAN} Not  available yet.
+\subsubsection*{CTAN} 
+
 
 \subsection{Dependencies}
 
@@ -201,34 +194,44 @@ The package luahyperbolic  requires the following packages:
 \end{itemize}
 It loads them if they are not loaded already.
 
- The latex files must be compiled with the lualatex engine.
+ The latex files must be compiled with the \textbf{lualatex} engine.
 
 \subsection{How to customize the package}
 
-The \texttt{luahyperbolic.sty}  is generated from three lua modules : \texttt{complex.lua}, \texttt{luahyperbolic-core.lua} and \texttt{luahyperbolic-tikz.lua}. These files are in the \texttt{lua/} subdirectory of the package repo. 
+The \texttt{luahyperbolic.sty}  is pre-generated from a template sty file and four lua modules :
+\begin{enumerate}
+\item \texttt{complex.lua}
+\item \texttt{luahyperbolic-core.lua}
+\item \texttt{luahyperbolic-tikz.lua}
+\item \texttt{luahyperbolic-tilings.lua}
+\end{enumerate}
 
-To build the \texttt{luahyperbolic.sty} from lua source files, execute \texttt{lua build.lua} in the root directory of the package. This will backup the old sty file to the \texttt{backup/} directory, then buid and replace the existing sty file.
+These files are in the \texttt{lua/} subdirectory of the package repo. 
 
-\subsection{Environment hyperbolicdisk}
-The package provides the latex environment \verb+\begin{hyperbolicdisk} ... \end{hyperbolicdisk}+ which is defined as follows:
+To build the \texttt{luahyperbolic.sty} from lua source files, execute \texttt{lua build.lua} in the root directory of the package.
+This will buid and replace the existing sty file.
 
-\begin{verbatim}
-\newenvironment{hyperbolicdisk}[1][scale=3]{%
-  \begin{tikzpicture}[#1]
-    \draw[very thick] (0,0) circle (1);
-    \clip (0,0) circle (1);
-}{%
-  \end{tikzpicture}
-}
-\end{verbatim}
 
-In this documentation, we prefer to use the lua functions 
- \verb+hyper.tikzBegin(options)+ and \verb+hyper.tikzEnd(export_file)+, that enable export functionalities, see below.
- 
+%\subsection{Environment hyperbolicdisk}
+%The package provides the latex environment \verb+\begin{hyperbolicdisk} ... \end{hyperbolicdisk}+ which is defined as follows:
+%
+%\begin{verbatim}
+%\newenvironment{hyperbolicdisk}[1][scale=3]{%
+%  \begin{tikzpicture}[#1]
+%    \draw[very thick] (0,0) circle (1);
+%    \clip (0,0) circle (1);
+%}{%
+%  \end{tikzpicture}
+%}
+%\end{verbatim}
+%
+%In this documentation, we prefer to use the lua functions 
+% \verb+hyper.tikzBegin(options)+ and \verb+hyper.tikzEnd(export_file)+, that enable export functionalities, see below.
+% 
 
  
 \subsection{Exporting the pictures}
-
+\index{tikzExport}
 Simply add a filename to the closing \texttt{hyper.tikzEnd()} instruction, as below:
 \begin{center}
 \texttt{hyper.tikzEnd("myfile.tikz")}
@@ -252,18 +255,18 @@ This allows exporting images in loops, or drawing several steps of the same pict
 
 \subsection{Draw and label points}
 
-
-\begin{codeandresult}{Draw and label points}
+\subsubsection{Draw and label points}
+\index{drawPoint}\index{drawPoints}\index[fields]{DRAW\_POINT\_RADIUS}
+\index{labelPoint}\index{labelPoints}
+\begin{codeandresult}
 \begin{luacode*}
-local O = 0
 local A = complex(0.3,0.2)
 local B = 2*A
 local I, J = complex.I, complex.J
-local C, D = I*A, I*B
+local C, D, E = I*A, I*B, J*B
 hyper.tikzBegin()
-hyper.drawPoint(O,"white, draw=red")
+hyper.drawPoint(0,"white, draw=red")
 hyper.drawPoints(A, B, C, "teal")
-hyper.DRAW_POINT_RADIUS = .04
 hyper.drawPoints(D, E)
 hyper.labelPoint(A,"$A$", "below right, blue")
 hyper.labelPoints(B,"$B$", C, "$C$")
@@ -274,10 +277,11 @@ hyper.tikzEnd()
 
 
 
-\subsection{Draw, mabel and mark geodesic segments, lines and rays}
+\subsection{Draw/label/mark  segments/lines/rays}
 
-
-\begin{codeandresult}{Segments lines and rays (through two points)}
+\subsubsection{Segments lines and rays (through two points)}
+\index{drawLine}\index{drawSegment}\index{drawRay}
+\begin{codeandresult}
 \begin{luacode*}
 local A = -complex.I/2
 local B = (1+complex.I)/2
@@ -286,7 +290,7 @@ local D = complex(-0.7,-0.3)
 hyper.tikzBegin()
 hyper.drawLine(A, B, "red")
 hyper.drawSegment(B,C,"dashed, ForestGreen")
-hyper.drawRay(C,D,"double,double distance=2pt")
+hyper.drawRay(C,D,"double,double distance=1pt")
 hyper.drawLine(D,-D, "green!50!black")
 hyper.drawLine(A, 1, "gray, line width=2pt")
 hyper.drawLine(1, complex.I, "teal")
@@ -298,17 +302,20 @@ hyper.tikzEnd()
 
 
 
-
-\begin{codeandresult}{Triangles and polygons}
+\subsubsection{Triangles and polygons}
+\index{drawTriangle}\index{drawPolygon}\index{drawPolygonFromTable}
+\begin{codeandresult}
 \begin{luacode*}
+local A = complex(.9,.2)
+local B = complex(.5,.7)
+local C = complex(0,.9)
 hyper.tikzBegin()
-hyper.drawTriangle(
-	complex(.9,.2),
-	complex(.5,.7),
-	complex(.7,-.2), "red")
+hyper.drawTriangle(A, B, C)
+hyper.drawTriangle(-A, -B, -C, "red")
+hyper.drawPolygon(-.9, -.7, complex(-.7,.4), complex(-.9,.3), "blue")
 local points={}
 for k=1,5 do
-	table.insert(points, complex.polar(.5,k*2*math.pi/5))
+	table.insert(points, complex.polar(.4,k*2*math.pi/5))
 end
 hyper.drawPolygonFromTable(points,"teal")
 hyper.tikzEnd()
@@ -316,7 +323,36 @@ hyper.tikzEnd()
 \end{codeandresult}
 
 
-\begin{codeandresult}{Label and mark segments}
+\subsubsection{Triangles with prescribed angles}
+\index{triangleWithAngles}
+\begin{codeandresult}
+\begin{luacode*}
+local function myTriangle(a, b, c, color)
+	hyper.tikzBegin("scale=1.4")
+	local A, B, C = hyper.triangleWithAngles(a, b, c)
+	hyper.drawTriangle(A, B, C, color)
+	hyper.tikzEnd()
+end
+
+local PI = math.pi
+
+myTriangle(PI/2, PI/6, PI/10, "red")
+myTriangle(2*PI/5, PI/4, PI/5, "red!50!blue")
+tex.print("\\par")
+
+myTriangle(2*PI/3, PI/8, PI/20, "blue")
+myTriangle(PI/3, PI/4, 0, "blue!50!green")
+tex.print("\\par")
+
+myTriangle(PI/3, 0, 0, "ForestGreen")
+myTriangle(0, 0, 0, "green!50!red")
+\end{luacode*}
+\end{codeandresult}
+
+
+\subsubsection{Label and mark segments}
+\index{markSegment}\index{labelSegment}
+\begin{codeandresult}
 \begin{luacode*}
 local A = -complex.I/2
 local B = (1+complex.I)/2
@@ -330,14 +366,15 @@ local position = 0.7
 hyper.markSegment(B,C,marking, position)
 hyper.labelSegment(C,D,"$3$", "fill=white, draw=blue")
 hyper.labelSegment(D, A,"$\\alpha$", "below")
-hyper.labelPoint(A, "$A$", "below right")
-
+hyper.labelPoint(A, "$A$", "below")
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
 
-\begin{codeandresult}{Regular polygons}
+\subsubsection{Regular polygons}
+\index{drawRegularPolygon}
+\begin{codeandresult}
 \begin{luacode*}
 local O1 = complex(.5,.2)
 local A1 = complex(.7,.3)
@@ -346,7 +383,7 @@ local A2 = complex(-.4,.3)
 local O3 = complex(0,.7)
 local A3 = complex(0,.9)
 hyper.tikzBegin()
-hyper.drawRegularPolygon(O1, A1, 3, "red")
+hyper.drawRegularPolygon(O1, A1, 3)
 hyper.drawRegularPolygon(O2, A2, 5, "blue")
 hyper.drawRegularPolygon(O3, A3, 8, "green!50!black")
 hyper.drawPoints(O1,O2,O3)
@@ -355,15 +392,18 @@ hyper.tikzEnd()
 \end{codeandresult}
 
 
-\begin{codeandresult}{Polygonal lines}
+\subsubsection{Polygonal lines}
+\index{drawPolyline}\index{drawPolylineFromTable}
+\begin{codeandresult}
 \begin{luacode*}
 hyper.tikzBegin()
 -- drawPolyline : 
 hyper.drawPolyline(0, 1, complex.I, -1, "red")
 -- drawPolylineFromTable : 
 local points={}
-for k=1, 15 do
-	table.insert(points, complex.polar(k/15, k))
+local N=30
+for k=1, N do
+	table.insert(points, complex.polar(k/N, k*math.pi/3))
 end
 hyper.drawPolylineFromTable(points,"teal")
 hyper.tikzEnd()
@@ -373,7 +413,10 @@ hyper.tikzEnd()
 
 
 
-\begin{codeandresult}{Lines and rays (point and tangent vector)}
+\subsubsection{Lines and rays (point and tangent vector)}
+\index{drawLineFromVector}\index{drawRayFromVector}
+\index{drawTangentVector}
+\begin{codeandresult}
 \begin{luacode*}
 local A = complex(-0.2,-0.5)
 local B = complex(-0.5,0.5)
@@ -398,7 +441,9 @@ hyper.tikzEnd()
 
 
 
-\begin{codeandresult}{Perpendicular bisector}
+\subsubsection{Perpendicular bisector}
+\index{drawPerpendicularBisector}
+\begin{codeandresult}
 \begin{luacode*}
 local A = complex(-0.2,-0.5)
 local B = complex(-0.7,0.3)
@@ -412,7 +457,9 @@ hyper.tikzEnd()
 \end{codeandresult}
 
 
-\begin{codeandresult}{Angle bisector}
+\subsubsection{Angle bisector}
+\index{drawAngleBisector}
+\begin{codeandresult}
 \begin{luacode*}
 local A = complex(-0.2,-0.6)
 local O = complex(0.3,0.3)
@@ -428,7 +475,9 @@ hyper.tikzEnd()
 
 \subsection{Circles, semicircles, arcs}
 
-\begin{codeandresult}{Center and radius}
+\subsubsection{Center and radius}
+\index{drawCircle}
+\begin{codeandresult}
 \begin{luacode*}
 local points = {
 	complex(0,0),
@@ -447,7 +496,9 @@ hyper.tikzEnd()
 \end{codeandresult}
 
 
-\begin{codeandresult}{Circle through point}
+\subsubsection{Circle through point}
+\index{drawCircleThrough}
+\begin{codeandresult}
 \begin{luacode*}
 local O = complex(0.3,0.2)
 local P = complex(0.7,-0.4)
@@ -462,7 +513,9 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-\begin{codeandresult}{Semicircles}
+\subsubsection{Semicircles}
+\index{drawSemicircle}
+\begin{codeandresult}
 \begin{luacode*}
 local O = complex(0,0)
 local A = complex(-0.3,0)
@@ -479,19 +532,24 @@ hyper.tikzEnd()
 \end{codeandresult}
 
 
-\begin{codeandresult}{Arc (center and endpoints)}
+\subsubsection{Arc (center and endpoints)}
+\index{drawArc}
+\begin{codeandresult}
 \begin{luacode*}
 local O = complex(0,0)
 local A = complex(0.5,0)
 local B = complex.polar(0.5,math.pi/3)
 hyper.tikzBegin()
-hyper.drawArc(O,A,B, "red")
+hyper.drawArc(O, A, B, "very thick, red")
+hyper.drawArc(O, B, A, "dashed")
 hyper.drawPoints(O,A,B)
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-\begin{codeandresult}{Angles}
+\subsubsection{Angles}
+\index{drawAngle}
+\begin{codeandresult}
 \begin{luacode*}
 local A = complex(-.5,-.3)
 local B = complex(0.5,0)
@@ -510,7 +568,9 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-\begin{codeandresult}{Tangent at point}
+\subsubsection{Tangent (line) at point}
+\index{drawTangentAt}
+\begin{codeandresult}
 \begin{luacode*}
 local O = complex(0.3,0.2)
 local P = complex(-0.1,0)
@@ -530,7 +590,9 @@ hyper.tikzEnd()
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Horocycles and hypercycles}
 
-\begin{codeandresult}{Horocycles}
+\subsubsection{Horocycles}
+\index{drawHorocycle}
+\begin{codeandresult}
 \begin{luacode*}
 local theta=math.pi/3
 local idealPoint = complex.exp_i(theta)
@@ -547,7 +609,9 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-\begin{codeandresult}{Hypercycles}
+\subsubsection{Hypercycles}
+\index{drawHypercycleThrough}
+\begin{codeandresult}
 \begin{luacode*}
 hyper.tikzBegin()
 local A = 1
@@ -567,8 +631,8 @@ hyper.tikzEnd()
  
  In case you want to insert custom TikZ instructions into the TikZ picture, the library provides a \texttt{tikzPintf()} function, which  is essentially \texttt{tex.print} composed with \texttt{string.format()}, but also saves the printed string to the tikz buffer.
 
-For example, you can write 
-\begin{codeandresult}{Printing custom strings to TikZ}
+\index{tikzPrintf}\index[fields]{complex!ONE}
+\begin{codeandresult}
 \begin{luacode*}
 local A = complex.ONE
 local B = complex.I
@@ -593,9 +657,10 @@ Users should write TikZ directly in the picture as above with \texttt{tikzPrintf
 
 \section{Defining points}
 
-\subsection{Random points}
+\subsection{Random points with uniform density}
 
-\begin{codeandresult}{Random points with uniform density}
+\index{randomPoint}
+\begin{codeandresult}
 \begin{luacode*}
 local rMin, rMax = .3, .8
 hyper.tikzBegin()
@@ -609,9 +674,32 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-\subsection{Midpoint, interpolate, barycenter}
+\subsection{Endpoints, midpoint, interpolate, barycenter}
 
-\begin{codeandresult}{Midpoint}
+
+
+\subsubsection{Endpoints}
+\index{endpoints}
+\begin{codeandresult}
+\begin{luacode*}
+local A = complex(.4,.5)
+local B = complex(-.5,0)
+local AA, BB = hyper.endpoints(A,B)
+hyper.tikzBegin()
+hyper.drawSegment(A,B, "very thick, teal")
+hyper.drawSegments(AA,A, B, BB, "dashed, red")
+hyper.labelPoints(A, "$A$", B, "$B$")
+hyper.labelPoint(AA, "$A'$", "red, below")
+hyper.labelPoint(BB, "$B'$", "red, below right")
+hyper.drawPoints(A, B)
+hyper.drawPoints(AA,BB,"white, draw=red")
+hyper.tikzEnd()
+\end{luacode*}
+\end{codeandresult}
+
+\subsubsection{Midpoint}
+\index{midpoint}
+\begin{codeandresult}
 \begin{luacode*}
 local A = complex(0.4,0.6)
 local B = complex(-0.8,-0.3)
@@ -628,26 +716,28 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-\begin{codeandresult}{Interpolate and barycenter}
+\subsubsection{Interpolate and barycenter}
+\index{interpolate}
+\begin{codeandresult}
 \begin{luacode*}
 local A = complex(0.3,0.8)
-local B = complex(-0.7,-0.4)
-local N = 10
+local B = complex(-0.6,-0.3)
+local P1 = hyper.interpolate(A, B, 1/3)
+local P2 = hyper.interpolate(A, B, 2/3)
 hyper.tikzBegin()
 hyper.drawSegment(A,B, "thick, teal")
-hyper.drawPoints(A, B, "teal")
 hyper.labelPoints(A, "$A$", B, "$B$")
-for k=1,N-1 do
-	local M = hyper.interpolate(A, B, k/N)
-	hyper.drawPoint(M, "white, draw=red")
-end
+hyper.markSegments(A, P1, P1, P2, P2, B, "||")
+hyper.drawPoints(A, B, P1, P2)
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
 \subsection{Intersections}
 
-\begin{codeandresult}{Line-Line (LL) intersection}
+\subsubsection{Line-Line (LL) intersection}
+\index{interLL}
+\begin{codeandresult}
 \begin{luacode*}
 local A = complex(0.4,0.3)
 local B = complex(-0.4,-0.7)
@@ -669,7 +759,9 @@ hyper.tikzEnd()
 
 
 
-\begin{codeandresult}{Line-circle (LC) intersection}
+\subsubsection{Line-circle (LC) intersection}
+\index{interLC}
+\begin{codeandresult}
 \begin{luacode*}
 local A = complex(0.5,0.4)
 local B = complex(-0.3,-0.7)
@@ -690,11 +782,13 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-\begin{codeandresult}{Circle-circle (CC) intersection}
+\subsubsection{Circle-circle (CC) intersection}
+\index{interCC}
+\begin{codeandresult}
 \begin{luacode*}
 local A = complex(-0.5,-.3)
 local B = complex(0.3,0)
-local r = hyper.dist(A, B)
+local r = hyper.distance(A, B)
 local P, Q = hyper.interCC(A, r, B, r)
 hyper.tikzBegin()
 hyper.drawCircle(A, r, "teal")
@@ -716,7 +810,9 @@ hyper.tikzEnd()
 \subsection{Reflections and projections}
 
 
-\begin{codeandresult}{Reflection across a geodesic line}
+\subsubsection{Reflection across a geodesic line}
+\index{reflection}\index{drawRightAngle}
+\begin{codeandresult}
 \begin{luacode*}
 local A = complex(0.8,0.2)
 local B = complex(-0.3,0.5)
@@ -737,7 +833,9 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-\begin{codeandresult}{Projection onto a geodesic line}
+\subsubsection{Projection onto a geodesic line}
+\index{projection}
+\begin{codeandresult}
 \begin{luacode*}
 local A = complex(0.8,0.2)
 local B = complex(-0.3,0.5)
@@ -758,30 +856,34 @@ hyper.tikzEnd()
 \subsection{Automorphisms (direct isometries)}
 
 
-\begin{codeandresult}{(Elliptic) rotation around a point (regular octogon)}
+\subsubsection{(Elliptic) Rotation by $60^\circ$}
+\index{rotation}
+\begin{codeandresult}
 \begin{luacode*}
-local O = complex(0.3,0.2)
-local M = complex(0.5,-0.4)
+local O = complex(0.3,0.3)
+local r = hyper.rotation(O,math.pi/3)
+local points = {0, -.8, complex.J/2, -complex.I/2, complex(-.5,-.3), complex(.7,.3)}
 hyper.tikzBegin()
-hyper.drawPoints(O)
-for k=1,8 do
-	local P = (hyper.rotation(O,2*math.pi/8))(M)
-	hyper.drawSegment(M, P, "red")
-	hyper.drawSegment(O,M, "dashed,red")
-	M = P
+for _,P in ipairs(points) do
+	local rP = r(P)
+	hyper.drawCircleThrough(O,P, "gray!10")
+	hyper.drawArc(O,P,rP,"->, red, thick")
+	hyper.drawPolyline(P,O,rP, "red!10")
+	hyper.drawPoint(P)
 end
-hyper.drawCircle(O,hyper.distance(O,M),"thin,gray")
+hyper.drawPoint(O,"black")
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-\begin{codeandresult}{Symmetry around a point (rotation by $180^\circ$)}
+\subsubsection{Symmetry around a point (rotation by $180^\circ$)}
+\index{symmetry}
+\begin{codeandresult}
 \begin{luacode*}
 local O = complex(0.2,0.2)
 local s = hyper.symmetry(O)
 local points={complex(-.8,.1), complex(.6,0), complex(0,-.5)}
 hyper.tikzBegin()
-hyper.drawPoint(O)
 for k, P in ipairs(points) do
 	hyper.drawCircleThrough(O, P, "gray!10")
 	local sP = s(P)
@@ -790,31 +892,35 @@ for k, P in ipairs(points) do
 	hyper.labelPoint(P, "$P_{".. k .."}$")
 	hyper.labelPoint(sP, "$\\sigma(P_{".. k .."})$")
 end
-hyper.tikzEnd()
-\end{luacode*}
-\end{codeandresult}
-
-
-\begin{codeandresult}{Rotation by $60^\circ$}
-\begin{luacode*}
-local O = complex(0.2,0.2)
-local r = hyper.rotation(O,math.pi/3)
-hyper.tikzBegin()
-for k=1,5 do
-	local P = hyper.randomPoint(0.3,0.9)
-	local rP = r(P)
-	hyper.drawCircleThrough(O,P, "gray!10")
-	hyper.drawArc(O,P,rP,"->, red, thick")
-	hyper.drawPolyline(P,O,rP, "red!10")
-	hyper.drawPoint(P)
-end
 hyper.drawPoint(O)
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
+\index{symmetryAroundMidpoint}
+\begin{codeandresult}
+\begin{luacode*}
+local A, B = complex.J/2, -complex.I/2
+local s = hyper.symmetryAroundMidpoint(A,B)
+local points={complex(-.7,.3), complex(.4,.2)}
+hyper.tikzBegin()
+for k, P in ipairs(points) do
+	local sP = s(P)
+	hyper.drawSegment(P,sP, "red, dashed")
+	hyper.drawPoints(P,sP)
+	hyper.labelPoint(P, "$P_{".. k .."}$")
+	hyper.labelPoint(sP, "$\\sigma(P_{".. k .."})$")
+end
+hyper.drawPoints(A, B, "black")
+hyper.labelPoints(A, "$A$", B, "$B$") 
+hyper.tikzEnd()
+\end{luacode*}
+\end{codeandresult}
 
-\begin{codeandresult}{Hyperbolic automorphims}
+
+\subsubsection{Hyperbolic automorphims}
+\index{automorphism}
+\begin{codeandresult}
 \begin{luacode*}
 local A = complex(0.4,0.3)
 local phi = hyper.automorphism(A,0)
@@ -840,7 +946,9 @@ hyper.tikzEnd()
 \subsection{Orbits under automorphisms}
 
 
-\begin{codeandresult}{Orbit under elliptic automorphism (rotation)}
+\subsubsection{Orbit under elliptic automorphism (rotation)}
+\index{drawPointOrbit}
+\begin{codeandresult}
 \begin{luacode*}
 local nbPoints = 7
 local nbIterations = 10
@@ -858,7 +966,8 @@ hyper.tikzEnd()
 \end{codeandresult}
 
 
-\begin{codeandresult}{Orbit under hyperbolic automorphism}
+\subsubsection{Orbit under hyperbolic automorphism}
+\begin{codeandresult}
 \begin{luacode*}
 local nbPoints = 10
 local nbIterations = 10
@@ -866,8 +975,9 @@ local A = complex(0.05,0.05)
 local phi = hyper.automorphism(A,0)
 local X, Y = hyper.endpoints(A,0)
 hyper.tikzBegin()
+hyper.drawLine(A,0,"red!50")
 for k=1,nbPoints do
-	local P = hyper.randomPoint(0,.9)
+	local P = hyper.randomPoint(0,.8)
 	hyper.drawHypercycleThrough(P,X,Y,"gray")
 	hyper.drawPointOrbit(P, phi, nbIterations) 
 end
@@ -879,7 +989,9 @@ hyper.tikzEnd()
 \end{codeandresult}
 
 
-\begin{codeandresult}{Orbit under parabolic automorphism}
+\subsubsection{Orbit under parabolic automorphism}
+\index{parabolic}
+\begin{codeandresult}
 \begin{luacode*}
 local nbIterations = 10
 local limit = complex.exp_i(math.pi/3) -- on circle
@@ -901,7 +1013,9 @@ hyper.tikzEnd()
 
 \subsection{Triangle geometry (CAUTION)}
 
-\begin{codeandresult}{Centroid (intersection of medians)}
+\subsubsection{Centroid (intersection of medians)}
+\index{triangleCentroid}
+\begin{codeandresult}
 \begin{luacode*}
 hyper.tikzBegin()
 local A = complex(0.1,0.8)
@@ -923,7 +1037,9 @@ hyper.tikzEnd()
 \end{codeandresult}
 
 
-\begin{codeandresult}{Incenter and incircle}
+\subsubsection{Incenter and incircle}
+\index{triangleIncenter}\index{drawIncircle}
+\begin{codeandresult}
 \begin{luacode*}
 hyper.tikzBegin()
 local A = complex(0.1,0.8)
@@ -943,7 +1059,9 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-\begin{codeandresult}{Circumcenter and circumcircle (CAUTION : does not always exist)}
+\subsubsection{Circumcenter and circumcircle (CAUTION : does not always exist)}
+\index{triangleCircumcenter}\index{drawCircumcircle}
+\begin{codeandresult}
 \begin{luacode*}
 local A = complex(0.1,0.8)
 local B = complex(-0.6,-0.5)
@@ -969,7 +1087,9 @@ hyper.tikzEnd()
 \end{codeandresult}
 
 
-\begin{codeandresult}{Orthocenter (CAUTION : does not always exist)}
+\subsubsection{Orthocenter (CAUTION : does not always exist)}
+\index{triangleOrthocenter}\index{drawPerpendicularThrough}
+\begin{codeandresult}
 \begin{luacode*}
 local A = complex(0.1,0.8)
 local B = complex(-0.7,-0.4)
@@ -1000,18 +1120,21 @@ hyper.tikzEnd()
 \newpage
 
 \section{Tilings}
-The two following tilings  are drawn with \verb+TILING_DEPTH=12+
-\directlua{TILING_DEPTH = 12}
 
-\begin{codeandresult}{Triangle tiling}
+\subsection{Draw Tilings}
+
+\subsubsection{Triangle tiling (almost) by hand}
+\index{propagateGeodesics}\index{drawLinesFromTable}
+\begin{codeandresult}
 \begin{luacode*}
-local A, B, C = hyper.fundamentalRightTriangle(4,5)
+local PI = math.pi
+local A, B, C = hyper.triangleWithAngles(PI/2, PI/4, PI/5)
 local geodesics = {
-{hyper.endpoints(A,B)},
+	{hyper.endpoints(A,B)},
 	{hyper.endpoints(B,C)},
-	{hyper.endpoints(C,A)}}
-geodesics = hyper.propagateGeodesics(geodesics, TILING_DEPTH)
-
+	{hyper.endpoints(C,A)}
+}
+geodesics = hyper.propagateGeodesics(geodesics, 12) -- depth=12
 hyper.tikzBegin()
 hyper.drawLinesFromTable(geodesics, "green!50!black, draw opacity=.5")
 hyper.drawTriangle(A,B,C,"red, very thick")
@@ -1019,88 +1142,79 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-\begin{codeandresult}{Triangle tiling with one angle zero}
+\subsubsection{Triangle tiling with less code}
+\index{drawTilingFromTriangle}
+\begin{codeandresult}
 \begin{luacode*}
-local A, B, C = hyper.fundamentalIdealTriangle(3,2)
-local geodesics = {
-	{hyper.endpoints(A,B)},
-	{hyper.endpoints(B,C)},
-	{hyper.endpoints(C,A)}
-}
-geodesics = hyper.propagateGeodesics(geodesics, TILING_DEPTH)
+local PI = math.pi
+local A, B, C = hyper.triangleWithAngles(PI/2,PI/3,0)
 hyper.tikzBegin()
-hyper.drawLinesFromTable(geodesics, "teal, draw opacity=.5")
+hyper.drawTilingFromTriangle(A, B, C, 12, "teal, draw opacity=.5")
 hyper.drawTriangle(A,B,C,"red, very thick")
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
 
-\subsection{Source code of first picture}
-
-\begin{lstlisting}[
-	language=Lua,
-      tabsize=2,
-      basicstyle=\ttfamily\small,
-      keywordstyle=\color{blue!60!black}\bfseries,
-      commentstyle=\color{gray}\itshape,
-      stringstyle=\color{red!50!black},
-      emph={hyper},
-      emphstyle={\color{green!40!black}\bfseries},
-      showstringspaces=false,
-      breaklines=true,
-      postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}]
-
+\subsubsection{Triangle tiling with even less code}
+\index{drawTilingFromAngles}
+\begin{codeandresult}
 \begin{luacode*}
-local A, B, C = hyper.fundamentalRightTriangle(4,5)
-local phi = hyper.automorphism(C,0)
-A,B,C = phi(A), phi(B), phi(C) -- center on pentagon
-local geodesics = {
-	{hyper.endpoints(A,B)},
-	{hyper.endpoints(B,C)},
-	{hyper.endpoints(C,A)}
-}
-geodesics = hyper.propagateGeodesics(geodesics, 24)
-local shapes={}
-for k,pair in ipairs(geodesics) do
-	table.insert(shapes,hyper.shape_closed_line(pair[1], pair[2]))
-end
-shapes_string = table.concat(shapes, " ")
-hyper.tikzBegin("scale=6")
-hyper.tikzPrintf("\\fill[even odd rule] (0,0) circle (1) %s ;",shapes_string)
-hyper.drawRegularPolygon(complex.ZERO, B,5,  "line width=.15cm, cyan")
+local PI = math.pi
+hyper.tikzBegin()
+hyper.drawTilingFromAngles(PI/3, PI/5, PI/7, 12, "teal, draw opacity=.5")
 hyper.tikzEnd()
 \end{luacode*}
-\end{lstlisting}
+\end{codeandresult}
 
-\subsection{More images just for fun}
 
+\subsection{Fill tilings}
+
+\subsubsection{The 3--4--5 triangle tiling}
+\index{fillTilingFromTriangle}
+\begin{codeandresult}
 \begin{luacode*}
-local N=5
-local DEPTH=8
-for k=2,N do
-	for l=k, N do
-		if 1/k+1/l <1 then
-			local A, B, C = hyper.fundamentalIdealTriangle(k,l)
-			local geodesics = {
-				{hyper.endpoints(A,B)},
-				{hyper.endpoints(B,C)},
-				{hyper.endpoints(C,A)}
-			}
-			geodesics = hyper.propagateGeodesics(geodesics, DEPTH)
-			local shapes={}
-			for k,pair in ipairs(geodesics) do
-				table.insert(shapes,hyper.shape_closed_line(pair[1], pair[2]))
-			end
-			shapes_string = table.concat(shapes, " ")
-			hyper.tikzBegin("scale=2.7")
-			hyper.tikzPrintf("\\fill[even odd rule](0,0) circle (1) %s ; ", shapes_string)
-			hyper.tikzEnd()
-			tex.print("~")
-		end
-	end
-end 
+local PI = math.pi
+local DEPTH = 10
+local A, B, C = hyper.triangleWithAngles(PI/3, PI/4, PI/5)
+hyper.tikzBegin()
+hyper.fillTilingFromTriangle(A, B, C, DEPTH)
+-- default color is black
+hyper.drawPolygon(A, B, C, "thick, red")
+hyper.tikzEnd()
 \end{luacode*}
+\end{codeandresult}
+
+\subsubsection{Same 3--4--5 tiling centered on point $B$}
+\begin{codeandresult}
+\begin{luacode*}
+local PI = math.pi
+local DEPTH = 10
+local A, B, C = hyper.triangleWithAngles(PI/3, PI/4, PI/5)
+local phi = hyper.automorphism(B)
+A, B, C = phi(A), phi(B), phi(C) -- put B in the center
+hyper.tikzBegin()
+hyper.fillTilingFromTriangle(A, B, C, DEPTH, "fill opacity=.2, teal!80!black, draw=black")
+hyper.drawPolygon(A, B, C, "thick, red")
+hyper.tikzEnd()
+\end{luacode*}
+\end{codeandresult}
+
+\subsubsection{Same 3--4--5 tiling centered on point $C$}
+\begin{codeandresult}
+\begin{luacode*}
+local PI = math.pi
+local DEPTH = 10
+local A, B, C = hyper.triangleWithAngles(PI/3, PI/4, PI/5)
+local phi = hyper.automorphism(C)
+A, B, C = phi(A), phi(B), phi(C) -- put C in the center
+hyper.tikzBegin()
+hyper.tikzPrintf("\\fill[orange!30] (0,0) circle (1);")
+hyper.fillTilingFromTriangle(A, B, C, DEPTH, "teal")
+hyper.drawPolygon(A, B, C, "thick, red")
+hyper.tikzEnd()
+\end{luacode*}
+\end{codeandresult}
 
 \newpage
 \section{Overview of the lua libraries}
@@ -1160,5 +1274,7 @@ Functions beginning with underscore are available in the module but should not b
 
 \textbf{Tables : }
 \directlua{print_module_type(hyper, "table", ", ")}
+
+\printindex
 
 \end{document}
