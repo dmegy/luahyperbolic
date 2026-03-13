@@ -1,0 +1,19 @@
+\documentclass[margin=.2cm,multi,tikz]{standalone}
+%\usepackage{fontspec}
+%\setmainfont{Libertinus Serif}
+%\usepackage{mathtools,unicode-math}
+%\setmainfont{Libertinus Math}
+%\usepackage[dvipsnames]{xcolor}
+\usepackage{luacode}
+\usepackage{../luahyperbolic}
+\begin{document}
+\begin{luacode*}
+hyper.tikzBegin()
+local N = 30
+for k=1,N-1 do
+	local P = complex.exp_i(k*math.pi/N)
+	hyper.drawLine(P,complex.conj(P),"red")
+end
+hyper.tikzEnd()
+\end{luacode*}
+\end{document}

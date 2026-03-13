@@ -70,6 +70,7 @@ For more information on the license, see the `LICENSE` file or visit [CC0 1.0 Un
 
 ### In `luahyperbolic-tikz` :
 
+- more constants : distances for angle drawing/labelling etc,
 - function `drawExcircle` and variants
 - more triangle geometry ? Gergonne, Nagel etc ?
 - function `markAngle(A, O, B, options)`

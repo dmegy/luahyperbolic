@@ -1,0 +1,52 @@
+\documentclass[a4paper]{article}
+%\usepackage{fontspec}
+%\setmainfont{Libertinus Serif}
+%\usepackage{mathtools,unicode-math}
+%\setmainfont{Libertinus Math}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{luacode}
+\usepackage{../luahyperbolic}
+\usepackage{hyperref}
+\begin{document}
+\title{Hyperbolic random walks}
+\author{Damien Mégy}
+\date{}
+\maketitle
+\pagestyle{empty}
+\thispagestyle{empty}
+Drawn with the \textbf{\textsf{luahyperbolic}} package. (\url{https://github.com/dmegy/luahyperbolic}) Every segment is a geodesic segment for the hyperbolic metric on the disk.
+
+Notice how random walks in the hyperbolic disk tend to always escape to some point at infinity.
+For a mathematical statement and proof of this, see:  Marc Yor, \emph{Some Aspects of Brownian Motion , part II}, Birkhäuser, 1997.
+See also the  very nice animation at \url{https://www2.math.upenn.edu/~pstorm/hyperbolic_random_walk/}.
+\begin{center}
+\noindent
+\begin{luacode*}
+local speed = .5
+local N = 16
+local MAX_ITER = 300
+local EPS = 1e-2
+for i=1,N do
+	local P = complex(0,0)
+	local points = {P}
+	for k=1,MAX_ITER do
+		P =  hyper.expMap(
+			points[#points],
+			speed*complex.exp_i(2*math.pi*math.random())
+		)
+		table.insert(points, P)
+		if complex.abs(P)>1-EPS then
+			texio.write_nl("break at k=" .. k)
+			break
+		end
+	end
+	local mycolor = "red!" .. math.round(100*i/N).. "!blue"
+	hyper.tikzBegin("scale=2")
+	hyper.drawPolylineFromTable(points, mycolor)
+	hyper.drawPoint(0)
+	hyper.tikzEnd()
+end
+\end{luacode*}
+\end{center}
+\end{document}

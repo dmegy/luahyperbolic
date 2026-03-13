@@ -1,9 +1,4 @@
 \documentclass[margin=.2cm,multi,tikz]{standalone}
-%\usepackage{fontspec}
-%\setmainfont{Libertinus Serif}
-%\usepackage{mathtools,unicode-math}
-%\setmainfont{Libertinus Math}
-%\usepackage[dvipsnames]{xcolor}
 \usepackage{luacode}
 \usepackage{../luahyperbolic}
 \begin{document}
@@ -13,23 +8,8 @@ local DEPTH=20
 for k=2,N do
 	for l=k, N do
 		if 1/k+1/l <1 then
-			local A, B, C = hyper.fundamentalIdealTriangle(k,l)
-			local geodesics = {
-				{hyper.endpoints(A,B)},
-				{hyper.endpoints(B,C)},
-				{hyper.endpoints(C,A)}
-			}
-			geodesics = hyper.propagateGeodesics(geodesics, DEPTH, 0.005)
-			local shapes={}
-			for k,pair in ipairs(geodesics) do
-				table.insert(shapes,hyper.shape_closed_line(pair[1], pair[2]))
-			end
-			shapes_string = table.concat(shapes, " ")
-	
 			hyper.tikzBegin("scale=5")
-			hyper.tikzPrintf("\\fill[even odd rule](0,0) circle (1) ")
-			hyper.tikzPrintf(shapes_string)
-			hyper.tikzPrintf(";")
+			hyper.fillTilingFromAngles(math.pi/k,math.pi/l,0,DEPTH)
 			hyper.tikzEnd(string.format("tiling-triangle-%d-%d-inf.tikz",k,l))
 		end
 	end

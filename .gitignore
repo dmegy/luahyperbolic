@@ -8,6 +8,10 @@ references/
 *.DS_Store
 Thumbs.db
 
+*.idx
+*.ilg
+*.ind
+
 *.tikz
 *.aux
 *.log
