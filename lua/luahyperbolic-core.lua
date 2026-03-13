@@ -61,6 +61,7 @@ end
 -- precision
 m.EPS = 1e-10
 
+local PI = 3.1415926535898
 local random = math.random
 local min = math.min
 local max = math.max
@@ -88,12 +89,12 @@ local asinh = function(x)
 end
 
 -- public versions :
-m.cosh = cosh
-m.sinh = sinh
-m.tanh = tanh
-m.acosh = acosh
-m.asinh = asinh
-m.atanh = atanh
+-- m.cosh = cosh
+-- m.sinh = sinh
+-- m.tanh = tanh
+-- m.acosh = acosh
+-- m.asinh = asinh
+-- m.atanh = atanh
 
 
 
@@ -165,27 +166,24 @@ function m.randomPoint(rmin, rmax)
 
 	m._assert(rmin >= 0 and rmax > rmin, "randomPoint: require 0 ≤ rmin < rmax")
 
-	local theta = 2 * math.pi * random()
+	local theta = 2 * PI * random()
 	local u = random()
 	local r = sqrt(u * (rmax ^ 2 - rmin ^ 2) + rmin ^ 2)
 
 	return complex(r * cos(theta), r * sin(theta))
 end
 
--- =========================================================
--- ==================== HYPERBOLIC CALCULUS ================
--- =========================================================
 
 function m._in_disk(z)
-	return complex.abs(z) < 1 - m.EPS
+	return complex.abs2(z) < 1 - m.EPS
 end
 
 function m._in_closed_disk(z)
-	return complex.abs(z) < 1 + m.EPS
+	return complex.abs2(z) < 1 + m.EPS
 end
 
 function m._on_circle(z)
-	return abs(complex.abs(z) - 1) < m.EPS
+	return abs(complex.abs2(z) - 1) < m.EPS
 end
 
 function m._in_half_plane(z)
@@ -193,7 +191,9 @@ function m._in_half_plane(z)
 end
 
 
---------------------
+-- =========================================================
+-- ==================== HYPERBOLIC CALCULUS ================
+-- =========================================================
 
 function m._radial_half(r)
 	return r / (1 + sqrt(1 - r * r))
@@ -203,18 +203,17 @@ function m._radial_scale(r, t)
 	return tanh(t * atanh(r))
 end
 
-function m._distance_to_origin(z)
-	return 2 * atanh(complex.abs(z))
-end
 
 function m.distance(z, w)
-	return m._distance_to_origin(m.automorphism(z, 0)(w))
+	z, w = m._coerce_assert_in_disk(z,w)
+	-- send w to 0 and z to zz with isometry :
+	local zz = (z-w)/(1-complex.conj(w)*z)
+	-- return dist(zz,0)
+	return 2 * atanh(complex.abs(zz))
 end
 
--- shortcut:
-m.dist = m.distance
 
-function m._same_distance(A, B, C, D)
+local function same_distance(A, B, C, D)
 	local phiA = m.automorphism(A,0)
 	local phiC = m.automorphism(C,0)
 	local BB = phiA(B)
@@ -371,17 +370,16 @@ end
 -- =========== HYPERBOLIC ISOMETRES  =============
 
 function m.automorphism(a, theta)
-	a = complex(a.re, a.im) -- copie
-	theta = theta or 0
-	m._assert_in_disk(a)
-	if complex.abs(a) < m.EPS then
+	theta = theta or 0 -- default angle = 0
+	a = m._coerce_assert_in_disk(a) 
+	if a:isNear(0) then
 		return function(x)
 			return x
 		end
 	end
 	local rot = complex.exp_i(theta)
 	return function(z)
-		z = z -- coercion automatique
+		z = m._coerce_assert_in_closed_disk(z) 
 		local numerator = z - a
 		local denominator = 1 - complex.conj(a) * z
 		return rot * (numerator / denominator)
@@ -389,7 +387,7 @@ function m.automorphism(a, theta)
 end
 
 function m.rotation(center, theta)
-	m._assert_in_disk(center)
+	center = m._coerce_assert_in_disk(center)
 	theta = theta or 0
 	if abs(theta) < m.EPS then
 		return function(x)
@@ -405,14 +403,14 @@ function m.rotation(center, theta)
 end
 
 function m.symmetry(center)
-	return m.rotation(center, math.pi)
+	return m.rotation(center, PI)
 end
 
 function m.symmetryAroundMidpoint(a, b)
-	return m.rotation(m.midpoint(a, b), math.pi)
+	return m.rotation(m.midpoint(a, b), PI)
 end
 
-function m.parabolic_fix1(theta) -- angle in rad
+local function parabolic_fix1(theta) -- angle in rad
 	local P = (1 - complex.exp_i(-theta)) / 2 -- preimage of zero
 	local phi = m.automorphism(P, 0)
 	local u = phi(1)
@@ -424,7 +422,7 @@ end
 function m.parabolic(idealPoint, theta)
 	m._assert(idealPoint:isUnit(), "parabolic : ideal point must be at infinity")
 	return function(z)
-		return idealPoint * m.parabolic_fix1(theta)(z / idealPoint)
+		return idealPoint * parabolic_fix1(theta)(z / idealPoint)
 	end
 end
 
@@ -445,7 +443,7 @@ end
 
 function m.automorphismFromPairs(A, B, imageA, imageB)
 	m._assert(complex.distinct(A, B), "automorphism_from_pairs : startpoints must be different")
-	m._assert(m._same_distance(A, B, imageA, imageB), "automorphism_from_pairs : distances don't match") -- or return nil ?
+	m._assert(same_distance(A, B, imageA, imageB), "automorphism_from_pairs : distances don't match") -- or return nil ?
 
 	if A:isNear(imageA) and B:isNear(imageB) then
 		return function(z)
@@ -513,14 +511,22 @@ function m.mobiusTransformation(a, b, c, d)
 	end
 end
 
-function m.distance_to_geodesic(z, z1, z2)
+function m.distanceToLine(z, z1, z2)
 	local p = (m.projection(z1, z2))(z)
 	return m.distance(z, p)
 end
 
-function m._on_geodesic(z, z1, z2, eps)
+function m._on_line(z, a, b, eps)
 	eps = eps or m.EPS
-	return m.distance_to_geodesic(z, z1, z2) < eps
+	local phi = m.automorphism(a,0)
+	local zz = phi(z)
+	local bb = phi(b)
+	return abs(complex.det(zz,bb)) < eps
+end
+
+function m._on_segment(z, a, b, eps)
+	eps = eps or m.EPS
+	return abs(m.distance(a,b) - m.distance(a,z) - m.distance(z,b)) < eps
 end
 
 -- ========== EXPONENTIAL MAPS (vector -> point) ==========
@@ -697,5 +703,63 @@ function m.triangleOrthocenter(A,B,C)
 	return m.interLL(A,AA,B,BB) -- can be nil
 end
 
+
+local function side_from_angles(opposite, other1, other2)
+    if opposite == 0 then return math.huge end
+    local cosh_a = (cos(opposite) + cos(other1)*cos(other2)) / (sin(other1)*sin(other2))
+    return acosh(cosh_a)
+end
+
+function m.triangleWithAngles(alpha, beta, gamma)
+    m._assert(alpha >= 0 and beta >= 0 and  gamma >= 0, "Angles must be >=0")
+    
+    m._assert(alpha + beta + gamma < math.pi,
+        "Sum of angles must be less than PI")
+
+    local angles = {alpha, beta, gamma}
+    table.sort(angles, function(x,y) return x > y end)
+    alpha, beta, gamma = angles[1], angles[2], angles[3]
+
+    if alpha == 0 then
+    	return complex(1,0), complex.J, complex.J^2
+    end
+
+    local A = complex(0,0)
+
+    if beta == 0 and gamma == 0 then
+        return A, complex(1, 0), complex.polar(1, alpha)
+    end
+
+    
+    if gamma == 0 then 
+    	local K = (cos(alpha)*cos(beta) + 1) / (sin(alpha)*sin(beta))
+    	local r2 = (K - 1) / (K + 1)
+    	local r = sqrt(r2)
+        return A, complex(r,0), complex.polar(1,alpha)
+    end
+
+    local c = side_from_angles(gamma, alpha, beta)
+    local rc = tanh(c/2)
+    local b = side_from_angles(beta, gamma, alpha)
+    local rb = tanh(b/2)
+    local B = complex.polar(rc, 0)
+    local C = complex.polar(rb, alpha)
+
+    return A,B,C
+end
+
+
+-- function m.triangleWithOrderedAngles(alpha, beta, gamma)
+--     local angles = {alpha, beta, gamma}
+--     local phi = {1,2,3}
+--     table.sort(phi, function(i,j) return angles[i] > angles[j] end)
+--     local p = {}
+--     p[1], p[2], p[3] = m.triangleWithAngles(angles[phi[1]], angles[phi[2]], angles[phi[3]])
+--     local psi = {} -- inverse of phi
+--     for i=1,3 do
+--         psi[p[i]] = i
+--     end
+--     return p[psi[1]], p[psi[2]], p[psi[3]]
+-- end
 
 return m

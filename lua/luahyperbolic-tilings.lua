@@ -1,3 +1,6 @@
+
+-- ============ BEGIN MODULE "LUAGYPERBOLIC-TILINGS" ============
+
 local complex = require("complex")
 local core = require("luahyperbolic-core")
 local tikz = require("luahyperbolic-tikz")
@@ -8,6 +11,7 @@ m.module = "luahyperbolic-tilings"
 -- for quantization (geodesic propagation)
 m.QUANTIZATION_SCALE = 1e9
 
+local PI = 3.1415926535898
 local min = math.min
 local max = math.max
 local sin = math.sin
@@ -20,6 +24,18 @@ local abs = math.abs
 local sinh = math.sinh
 local cosh = math.cosh
 local tanh = math.tanh
+
+local atanh = function(x)
+    return 0.5 * log((1 + x) / (1 - x))
+end
+
+local acosh = function(x)
+    return log(x + sqrt(x*x - 1))
+end
+
+local asinh = function(x)
+    return log(x + sqrt(x*x + 1))
+end
 
 
 
@@ -48,57 +64,6 @@ end
 
 -- ================== TILINGS ==============
 
--- TODO : function triangleWithAngles(alpha,beta,gamma)
-
-function m.fundamentalRightTriangle(p, q)
-	-- returns right triangle A=0, B, C with angles
-	-- alpha = pi/2, beta = pi/p, gamma = pi/q
-    core._assert(1/p + 1/q < 0.5, "triangle must be hyperbolic")
-    
-    local beta = math.pi / p
-    local gamma  = math.pi / q
-
-    -- hyperbolic side lengths opposite angles
-    local u = core.acosh(math.cos(gamma) / math.sin(beta))
-    local v = core.acosh(math.cos(beta)  / math.sin(gamma))
-
-    -- convert hyperbolic lengths to Euclidean radii in disk
-    local r = math.tanh(u / 2)
-    local s = math.tanh(v / 2)
-
-    core._assert(r > 0 and r < 1, "B not inside disk")
-    core._assert(s > 0 and s < 1, "C not inside disk")
-
-    local A = complex(0, 0)
-    local B = complex(r, 0)
-    local C = complex(0, s)
-
-    return A, B, C
-end
-
-function m.fundamentalIdealTriangle(p, q)
-    core._assert(p >= 2 and q >= 2,
-        "fundamentalIdealTriangle: p,q >= 2")
-
-    local alpha = math.pi / p
-    local beta  = math.pi / q
-
-    local A = complex(0, 0)
-    local C = complex(1, 0)
-
-    -- Compute K
-    local K = (math.cos(alpha)*math.cos(beta) + 1) /
-              (math.sin(alpha)*math.sin(beta))
-
-    local r2 = (K - 1) / (K + 1)
-    local r = math.sqrt(r2)
-
-    -- B in direction alpha
-    local B = r* complex.exp_i(alpha)
-
-    return A, B, C
-end
-
 
 -- TODO : use better algorithm... use the group and work with words
 function m.propagateGeodesics(geodesics, depth, MAX_ENDPOINT_DISTANCE)
@@ -113,7 +78,7 @@ function m.propagateGeodesics(geodesics, depth, MAX_ENDPOINT_DISTANCE)
     local seen = {}
     local frontier = {}
 
-    for i, g in ipairs(geodesics) do
+    for _, g in ipairs(geodesics) do
         local key = _quantize_normalize_pair(g[1], g[2])
         if not seen[key] then
             seen[key] = true
@@ -158,7 +123,58 @@ function m.propagateGeodesics(geodesics, depth, MAX_ENDPOINT_DISTANCE)
 end
 
 
+function m.fillTilingFromTriangle(A, B, C, depth, options)
+    -- fills with "even odd rule"
+    options = options or "black"
+    local geodesics = {
+        {core.endpoints(A,B)},
+        {core.endpoints(B,C)},
+        {core.endpoints(C,A)}
+    }
+    geodesics = m.propagateGeodesics(geodesics, depth)
+    local shapes = {}
+    for _,pair in ipairs(geodesics) do
+        table.insert(shapes,tikz.tikz_shape_closed_line(pair[1], pair[2]))
+    end
+    local shapes_string = table.concat(shapes, " ")
+    tikz.tikzPrintf(
+        "\\fill[even odd rule, %s] (0,0) circle (1) %s ;",
+        options,
+        shapes_string
+    )
+end
 
--- ====================== MODULE END
+function m.drawTilingFromTriangle(A, B, C, depth, options)
+    options = options or "black"
+    local geodesics = {
+        {core.endpoints(A,B)},
+        {core.endpoints(B,C)},
+        {core.endpoints(C,A)}
+    }
+    geodesics = m.propagateGeodesics(geodesics, depth)
+    local shapes = {}
+    for _,pair in ipairs(geodesics) do
+        table.insert(shapes,tikz.tikz_shape_segment(pair[1], pair[2]))
+    end
+    local shapes_string = table.concat(shapes, " ")
+    tikz.tikzPrintf(
+        "\\draw[%s] (0,0) circle (1) %s ;",
+        options,
+        shapes_string
+    )
+end
+
+function m.drawTilingFromAngles(alpha, beta, gamma, depth, options)
+    local A, B, C = core.triangleWithAngles(alpha, beta, gamma)
+    m.drawTilingFromTriangle(A, B, C, depth, options)
+end
+
+function m.fillTilingFromAngles(alpha, beta, gamma, depth, options)
+    local A, B, C = core.triangleWithAngles(alpha, beta, gamma)
+    m.fillTilingFromTriangle(A, B, C, depth, options)
+end
+
+
+-- ============ END MODULE "TILINGS" ============
 
 return m

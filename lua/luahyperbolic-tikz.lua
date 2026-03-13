@@ -1,3 +1,6 @@
+
+-- ============ BEGIN MODULE "LUAHYPERBOLIC-TIKZ" ============
+
 local complex = require("complex")
 local core = require("luahyperbolic-core")
 local m = {}
@@ -6,9 +9,18 @@ m.module = "luahyperbolic-tikz"
 
 m.TIKZ_CLIP_DISK = true -- can be modified by user.
 m.TIKZ_BEGIN_DISK = [[
-\draw[very thick] (0,0) circle (1);
+\begin{scope}
 \clip (0,0) circle (1);
 ]]
+
+m.GEODESIC_STYLE = "black"
+m.CIRCLE_OSTYLE = "black"
+m.HOROCYCLE_OSTYLE = "black"
+m.HYPERCYCLE_STYLE = "black"
+m.ANGLE_STYLE = "black"
+m.MARKING_STYLE = "black"
+m.LABEL_STYLE = "above left"
+
 
 m._DRAW_POINT_DEFAULT_RADIUS = 0.02
 m._DRAW_POINT_DEFAULT_STYLE = "white, draw=black"
@@ -16,9 +28,13 @@ m._DRAW_POINT_DEFAULT_STYLE = "white, draw=black"
 m.DRAW_POINT_RADIUS = m._DRAW_POINT_DEFAULT_RADIUS -- can be modified by user
 m.DRAW_POINT_STYLE = m._DRAW_POINT_DEFAULT_STYLE -- can be modified by user
 
+m.DRAW_ANGLE_DIST = 1/5
+
+m._DRAW_STYLE_BOUNDARY_CIRCLE = "very thick, black"
 
 
--- ========= REDEFINE ERROR (TeX error) =====================
+
+-- ========= REDEFINE ERROR (TeX error) 
 
 function m._error(msg)
 	tex.error("Package " .. m.module .. " Error ", { msg })
@@ -28,9 +44,10 @@ function m._warning(msg)
 	texio.write_nl("[WARNING] " .. msg)
 end
 
--- ================= HELPERS (EUCLIDEAN GEOM AND OTHER)
+-- ========= HELPERS (EUCLIDEAN GEOM AND OTHER)
 
-
+local PI = 3.1415926535898
+local deg = math.deg
 local min = math.min
 local max = math.max
 local sin = math.sin
@@ -47,7 +64,7 @@ local tanh = math.tanh
 
 local function euclidean_circumcenter(a, b, c)
 	a, b, c = complex.coerce(a, b, c)
-    core._assert(math.abs(complex.det(b-a,c-a)) > core.EPS, "points must not be aligned")
+    core._assert(abs(complex.det(b-a,c-a)) > core.EPS, "points must not be aligned")
     local ma2 = complex.abs2(a)
     local mb2 = complex.abs2(b)
     local mc2 = complex.abs2(c)
@@ -82,8 +99,9 @@ local function parse_points_with_options(...)
 end
 
 
--- TikZ API --------------------------------
-m.tikzOptions = ""
+-- ========== TikZ API 
+
+m.tikzpictureOptions = ""
 m.tikzBuffer = {}
 m.tikzNbPicturesExported = 0
 
@@ -91,7 +109,7 @@ m.tikzNbPicturesExported = 0
 function m.tikzGetFirstLines()
 	local firstLines = string.format(
 		"\\begin{tikzpicture}[%s]\n",
-		m.tikzOptions
+		m.tikzpictureOptions
 	)
 	if m.TIKZ_CLIP_DISK then
 		firstLines = firstLines .. m.TIKZ_BEGIN_DISK
@@ -101,7 +119,7 @@ end
 
 function m.tikzBegin(options)
 	-- without drawing circle and clipping disk
-	m.tikzOptions = options or "scale=3"
+	m.tikzpictureOptions = options or "scale=3"
 	tex.print(m.tikzGetFirstLines())
 	m.tikzClearBuffer()
 	-- reset point styles:
@@ -125,6 +143,8 @@ function m.tikzExport(filename)
 	for _, line in ipairs(m.tikzBuffer) do
 	  f:write(line, "\n")
 	end
+	f:write("\\end{scope}\n")
+	f:write("\\draw[".. m._DRAW_STYLE_BOUNDARY_CIRCLE .."] (0,0) circle (1);\n")
 	f:write("\\end{tikzpicture}\n")
 	f:close()
 	-- doesn't clear buffer, do it manually if wanted
@@ -133,6 +153,8 @@ end
 
 
 function m.tikzEnd(filename)
+	tex.print("\\end{scope}")
+	tex.print("\\draw[".. m._DRAW_STYLE_BOUNDARY_CIRCLE .."] (0,0) circle (1);")
 	tex.print("\\end{tikzpicture}")
 	if filename ~= nil then
 		m.tikzExport(filename)
@@ -147,7 +169,8 @@ function m.tikzPrintf(fmt, ...)
     table.insert(m.tikzBuffer, line)
 end
 
-function m.tikz_define_nodes(table)
+function m.tikzDefineNodes(table)
+	-- table of complex numbers
 	for name, z in pairs(table) do
 		core._assert(z ~= nil, "nil point for " .. name)
 		core._assert(z.re ~= nil and z.im ~= nil, "not a complex for " .. name)
@@ -155,19 +178,17 @@ function m.tikz_define_nodes(table)
 	end
 end
 
--- ==== DRAW POINT(S) ===============
+-- ========== DRAW POINT(S) ==========
 
 
 function m.drawPoint(z, options)
     options = options or m.DRAW_POINT_STYLE
-
     -- accept nil point (circumcenter can be nil)
     if z == nil then
         m._warning("drawPoint : point is nil, aborting")
         return
     end
-    z = complex.coerce(z)
-    core._assert_in_disk(z)
+    z = core._coerce_assert_in_closed_disk(z)
     m.tikzPrintf("\\fill[%s] (%f,%f) circle (%f);", options, z.re, z.im, m.DRAW_POINT_RADIUS)
 end
 
@@ -194,13 +215,13 @@ function m.drawPointOrbit(point, func, n, options)
 	end
 end
 
--- ===== DRAW LINES, SEGMENTS ETC ========
+-- ========== DRAW LINES, SEGMENTS ETC ==========
 
 function m.drawSegment(z, w, options)
-	options = options or ""
+	options = options or m.GEODESIC_STYLE
 	z,w = complex.coerce(z,w)
 	core._assert(z:isNot(w), "points must be distinct")
-	local shape = m.shape_segment(z,w)
+	local shape = m.tikz_shape_segment(z,w)
 	m.tikzPrintf("\\draw[%s] %s;",options, shape)
 end
 
@@ -209,7 +230,7 @@ function m.markSegment(z, w, markString, position)
 	size ="small" -- add to function input ?
 	z,w = complex.coerce(z,w)
 	core._assert(z:isNot(w), "points must be distinct")
-	local shape = m.shape_segment(z,w)
+	local shape = m.tikz_shape_segment(z,w)
 	m.tikzPrintf("\\path[postaction={decorate,decoration={markings, mark=at position %f with {\\node[transform shape,sloped,font=\\%s] {%s};}}}] %s;",
   		position,
   		size,
@@ -218,7 +239,7 @@ function m.markSegment(z, w, markString, position)
   	)
 end
 
-function m.shape_segment(z, w)
+function m.tikz_shape_segment(z, w)
 	core._assert(z:isNot(w), "points must be distinct")
 	local g = core._geodesic_data(z, w)
 
@@ -228,17 +249,17 @@ function m.shape_segment(z, w)
 	else
 		local a1 = complex.arg(z - g.center)
 		local a2 = complex.arg(w - g.center)
-		local delta = math.atan2(math.sin(a2 - a1), math.cos(a2 - a1))
+		local delta = atan2(sin(a2 - a1), cos(a2 - a1))
 		local a_end = a1 + delta
-		local deg = 180 / math.pi
+		local degPerRad = 180 / PI
 		return string.format(
 			"(%f,%f) ++(%f:%f) arc (%f:%f:%f)",
 			g.center.re,
 			g.center.im,
-			a1 * deg,
+			a1 * degPerRad,
 			g.radius,
-			a1 * deg,
-			a_end * deg,
+			a1 * degPerRad,
+			a_end * degPerRad,
 			g.radius
 		)
 	end
@@ -246,7 +267,7 @@ end
 
 
 
-function m.shape_closed_line(a,b)
+function m.tikz_shape_closed_line(a,b)
 	-- todo : add "close" flag to decide if we close diameters ? 
 	core._assert(a:isNot(b), "points must be distinct")
 	if not a:isUnit() or not b:isUnit() then
@@ -272,19 +293,19 @@ end
 
 
 function m.drawLine(a, b, options)
-	options = options or ""
+	options = options or m.GEODESIC_STYLE
 
 	a, b = core._coerce_assert_in_closed_disk(a,b)
 	core._assert(not a:isNear(b), "drawLine : points must be distinct")
 	
 	local end_a, end_b = core.endpoints(a,b)
-	local shape = m.shape_segment(end_a,end_b)
+	local shape = m.tikz_shape_segment(end_a,end_b)
 	m.tikzPrintf("\\draw[%s] %s;", options, shape)
 end
 
 
 function m.drawLinesFromTable(pairs, options)
-	options = options or ""
+	options = options or m.GEODESIC_STYLE
 	for _, pair in ipairs(pairs) do
 		m.drawLine(pair[1], pair[2], options)
 	end
@@ -292,7 +313,7 @@ end
 
 function m.drawPerpendicularThrough(P,A,B,options)
 	-- perpendicular through P to geodesic (A,B)
-	options = options or ""
+	options = options or m.GEODESIC_STYLE
 	P, A, B = core._coerce_assert_in_closed_disk(P, A, B)
 	core._assert(A:isNot(B), "A and B must be distinct")
 	local H = core.projection(A,B)(P)
@@ -301,24 +322,10 @@ function m.drawPerpendicularThrough(P,A,B,options)
 	m.drawLine(P,H,options)
 end
 
-function m.drawHypercycleThrough(P, A, B, options)
-	options = options or ""
-	P, A, B = complex.coerce(P, A, B)
-	if not A:isUnit() or not B:isUnit() then
-		A, B = core.endpoints(A, B)
-	end
-	if math.abs(complex.det(P-A, P-B)) < core.EPS then
-		m.tikzPrintf("\\draw[%s] (%f,%f) -- (%f,%f);", options, A.re, A.im, B.re, B.im)
-		return
-	end
-	local O = euclidean_circumcenter(P, A, B)
-	local radius = complex.abs(O-A)
-	m.tikzPrintf("\\draw[%s] (%f,%f) circle (%f);", options, O.re, O.im, radius)
-end
 
 
 function m.drawPerpendicularBisector(A, B, options)
-	options = options or ""
+	options = options or m.GEODESIC_STYLE
 	A, B = core._coerce_assert_in_closed_disk(A, B)
 
 	core._assert(A:isNot(B), "drawPerpendicularBisector: A and B must be distinct")
@@ -328,7 +335,7 @@ function m.drawPerpendicularBisector(A, B, options)
 end
 
 function m.drawAngleBisector(A, O, B, options)
-	options = options or ""
+	options = options or m.GEODESIC_STYLE
 	A, O, B = core._coerce_assert_in_closed_disk(A, O, B)
 
 	core._assert(complex.distinct(O,A) and complex.distinct(O,B),
@@ -340,7 +347,7 @@ end
 
 --- Draw a hyperbolic ray from two points: start at p1, through p2
 function m.drawRayFromPoints(p1, p2, options)
-	options = options or ""
+	options = options or m.GEODESIC_STYLE
 	local _, e2 = core.endpoints(p1, p2) -- e2 is the "ahead" endpoint
 	m.drawSegment(p1, e2, options)
 end
@@ -349,7 +356,7 @@ m.drawRay = m.drawRayFromPoints
 
 --- Draw a hyperbolic ray from a start point p along a tangent vector v
 function m.drawRayFromVector(p, v, options)
-	options = options or ""
+	options = options or m.GEODESIC_STYLE
 	p = core._coerce_assert_in_disk(p)
 	-- TODO : allow point at infinity (check vector direction) FIX/TEST
 	local q = core.expMap(p, v) -- move along v in hyperbolic space
@@ -358,7 +365,7 @@ function m.drawRayFromVector(p, v, options)
 end
 
 function m.drawLineFromVector(p, v, options)
-	options = options or ""
+	options = options or m.GEODESIC_STYLE
 	-- TODO : allow point at infinity
 	local q = core.expMap(p, v) -- move along v in hyperbolic space
 	m.drawLine(p, q, options)
@@ -366,9 +373,9 @@ end
 
 function m.drawTangentAt(center, point, options)
 	-- draw tangent line of circle of center 'center' passing through 'point'
-	options = options or ""
+	options = options or m.GEODESIC_STYLE
 	center, point = core._coerce_assert_in_disk(center, point)
-	local Q = core.rotation(point, math.pi / 2)(center)
+	local Q = core.rotation(point, PI / 2)(center)
 	m.drawLine(point, Q, options)
 end
 
@@ -377,10 +384,10 @@ end
 --	return
 -- end
 
--- ==== VECTORS =============
+-- ========== VECTORS =============
 
 
-function m.shape_euclidean_segment(a,b)
+function m.tikz_shape_euclidean_segment(a,b)
 	return string.format(
 			"(%f,%f) -- (%f,%f)",a.re, a.im, b.re, b.im)
 end
@@ -391,12 +398,12 @@ function m.drawTangentVector(p, v, options)
 	core._assert(norm_v > core.EPS, "drawTangentVector : vector must not be zero")
 	local u = v / norm_v
 	local factor = (1 - complex.abs2(p))
-	local euclid_vec = math.tanh(factor * norm_v / 2) * u
-    local shape = m.shape_euclidean_segment(p, p+euclid_vec)
+	local euclid_vec = tanh(factor * norm_v / 2) * u
+    local shape = m.tikz_shape_euclidean_segment(p, p+euclid_vec)
 	m.tikzPrintf("\\draw[->,%s] %s;",options,shape)
 end
 
--- ============= FOR CONVENIENCE (draw multiple objets/segments etc
+-- ========== FOR CONVENIENCE (draw multiple objets/segments etc
 
 function m.drawLines(...)
 	local points, options = parse_points_with_options(...)
@@ -437,26 +444,24 @@ function m.drawTriangle(...)
 end
 
 -- Draw a polyline from a table of points (open chain)
-function m.drawPolySegFromTable(points, options)
-	options = options or ""
-	core._assert(#points >= 2, "drawPolySegFromTable expects at least 2 points, got " .. #points)
+function m.drawPolylineFromTable(points, options)
+	options = options or m.GEODESIC_STYLE
+	core._assert(#points >= 2, "drawPolylineFromTable expects at least 2 points, got " .. #points)
 
 	for i = 1, #points - 1 do
 		m.drawSegment(points[i], points[i + 1], options)
 	end
 end
 
-function m.drawPolySeg(...)
+function m.drawPolyline(...)
 	local points, options = parse_points_with_options(...)
-	core._assert(#points >= 2, "drawPolySeg expects at least 2 points, got " .. #points)
-	m.drawPolySegFromTable(points, options)
+	core._assert(#points >= 2, "drawPolyline expects at least 2 points, got " .. #points)
+	m.drawPolylineFromTable(points, options)
 end
 
-m.drawPolylineFromTable = m.drawPolySegFromTable
-m.drawPolyline = m.drawPolySeg
 
 function m.drawPolygonFromTable(points, options)
-	options = options or ""
+	options = options or m.GEODESIC_STYLE
 	core._assert(#points >= 2, "drawPolygonFromTable expects at least 2 points, got " .. #points)
 
 	for i = 1, #points do
@@ -475,12 +480,12 @@ function m.drawPolygon(...)
 end
 
 function m.drawRegularPolygon(center, point, nbSides, options)
-	options = options or ""
+	options = options or m.GEODESIC_STYLE
 	core._assert(nbSides>1, "drawRegularPolygon : expects >=2 sides, got " .. nbSides)
 	core._assert_in_disk(center)
 	core._assert_in_disk(point)
 	core._assert(complex.distinct(center, point), "drawRegularPolygon : center and point must be distinct")
-	local rot = core.rotation(center, 2*math.pi/nbSides)
+	local rot = core.rotation(center, 2*PI/nbSides)
 	local vertices = {}
 	for k=1,nbSides do
 		point = rot(point)
@@ -489,10 +494,10 @@ function m.drawRegularPolygon(center, point, nbSides, options)
 	m.drawPolygonFromTable(vertices, options)
 end
 
--- ====== DRAW CIRCLES, SEMICIRCLES, ARCS ==========
+-- ========== DRAW CIRCLES, SEMICIRCLES, ARCS ==========
 
 function m.drawCircleRadius(z0, r, options)
-	options = options or ""
+	options = options or m.CIRCLE_STYLE
 	z0 = core._coerce_assert_in_disk(z0)
 	local c, R = core._circle_to_euclidean(z0, r)
 
@@ -502,14 +507,14 @@ end
 m.drawCircle = m.drawCircleRadius
 
 function m.drawCircleThrough(center, point, options)
-	options = options or ""
+	options = options or m.CIRCLE_STYLE
 	center, point = core._coerce_assert_in_disk(center, point)
 	local r = core.distance(center, point)
 	m.drawCircle(center, r, options)
 end
 
 function m.drawIncircle(A, B, C, options)
-	options = options or ""
+	options = options or m.CIRCLE_STYLE
 	A, B, C = core._coerce_assert_in_disk(A, B, C)
 	local I = core.triangleIncenter(A, B, C)
 	local a = core.projection(B, C)(I)
@@ -517,7 +522,7 @@ function m.drawIncircle(A, B, C, options)
 end
 
 function m.drawCircumcircle(A, B, C, options)
-	options = options or ""
+	options = options or m.CIRCLE_STYLE
 	A, B, C = core._coerce_assert_in_disk(A, B, C)
 	local O = core.triangleCircumcenter(A, B, C)
 	if O ~= nil then
@@ -530,19 +535,19 @@ end
 
 
 function m.drawArc(O, A, B, options)
-	options = options or ""
+	options = options or m.CIRCLE_STYLE
 	O, A, B = core._coerce_assert_in_disk(O, A, B)
 
 	-- Check points are on same hyperbolic circle
 	local rA = core.distance(O, A)
 	local rB = core.distance(O, B)
-	core._assert(math.abs(rA - rB) < core.EPS, "drawArc: points A and B are not on the same hyperbolic circle")
+	core._assert(abs(rA - rB) < core.EPS, "drawArc: points A and B are not on the same hyperbolic circle")
 
 	local c, R = core._circle_to_euclidean(O, rA)
 
 	-- Compute angles of A and B on the Euclidean circle
 	local function angleOnCircle(p)
-		return math.deg(math.atan2(p.im - c.im, p.re - c.re)) % 360
+		return deg(atan2(p.im - c.im, p.re - c.re)) % 360
 	end
 	local a1 = angleOnCircle(A)
 	local a2 = angleOnCircle(B)
@@ -557,21 +562,65 @@ function m.drawArc(O, A, B, options)
 end
 
 function m.drawSemicircle(center, startpoint, options)
-	options = options or ""
+	options = options or m.CIRCLE_STYLE
 	local endpoint = (core.symmetry(center))(startpoint)
 	m.drawArc(center, startpoint, endpoint, options)
 end
 
+
+
+
+
+-- ========== HOROCYCLES AND HYPERCYCLES
+
+function m.drawHorocycle(idealPoint, point, options)
+	options = options or m.HOROCYCLE_STYLE
+
+	core._assert(complex.isClose(complex.abs(idealPoint), 1), "drawHorocycle: ideal point must be on unit circle")
+	core._assert(core._in_disk(point), "drawHorocycle: second point must be in disk")
+	-- rotate :
+	local w = point / idealPoint
+	local x, y = w.re, w.im
+	-- compute center and radius
+	local a = (x ^ 2 + y ^ 2 - 1) / (2 * (x - 1))
+	local r = abs(a - 1)
+	local center = complex.new(a, 0)
+	-- rotate back
+	center = center * idealPoint
+
+	m.tikzPrintf("\\draw[%s] (%f,%f) circle (%f);", options, center.re, center.im, r)
+end
+
+
+function m.drawHypercycleThrough(P, A, B, options)
+	options = options or m.HYPERCYCLE_STYLE
+	P, A, B = complex.coerce(P, A, B)
+	if not A:isUnit() or not B:isUnit() then
+		A, B = core.endpoints(A, B)
+	end
+	if abs(complex.det(P-A, P-B)) < core.EPS then
+		m.tikzPrintf("\\draw[%s] (%f,%f) -- (%f,%f);", options, A.re, A.im, B.re, B.im)
+		return
+	end
+	local O = euclidean_circumcenter(P, A, B)
+	local radius = complex.abs(O-A)
+	m.tikzPrintf("\\draw[%s] (%f,%f) circle (%f);", options, O.re, O.im, radius)
+end
+
+
+
+-- ========== DRAW ANGLES, RIGHT ANGLES
+
 function m.drawAngle(A, O, B, options, distFactor)
-	distFactor = distFactor or 1/4
-	options = options or ""
+	distFactor = distFactor or m.DRAW_ANGLE_DIST
+	options = options or m.ANGLE_STYLE
 	core._assert_in_disk(A)
 	core._assert_in_disk(O)
 	core._assert_in_disk(B)
 
 	local dOA = core.distance(O,A)
 	local dOB = core.distance(O,B)
-	local minDist = math.min(dOA,dOB)
+	local minDist = min(dOA,dOB)
 	local radius= minDist*distFactor
 	local AA = core.interpolate(O,A,radius / dOA)
 	local BB = core.interpolate(O,B,radius/ dOB)
@@ -580,14 +629,14 @@ end
 
 function m.drawRightAngle(A, O, B, options, distFactor)
 	-- assumes angle(AOB) = +90 deg !
-	distFactor = distFactor or 1/5
-	options = options or ""
+	distFactor = distFactor or m.DRAW_ANGLE_DIST
+	options = options or m.ANGLE_STYLE
 	core._assert_in_disk(A)
 	core._assert_in_disk(O)
 	core._assert_in_disk(B)
 	local dOA = core.distance(O,A)
 	local dOB = core.distance(O,B)
-	local minDist = math.min(dOA, dOB)
+	local minDist = min(dOA, dOB)
 	local radius = minDist*distFactor
 	local AA = core.interpolate(O,A,radius / dOA)
 	local BB = core.interpolate(O,B,radius / dOB)
@@ -606,36 +655,11 @@ function m.drawRightAngle(A, O, B, options, distFactor)
 	)
 end
 
+-- ========== LABEL OBJETS ==================
 
--- ====== HOROCYCLES =======================
-
-function m.drawHorocycle(idealPoint, point, options)
-	options = options or ""
-
-	core._assert(complex.isClose(complex.abs(idealPoint), 1), "drawHorocycle: ideal point must be on unit circle")
-	core._assert(core._in_disk(point), "drawHorocycle: second point must be in disk")
-	-- rotate :
-	local w = point / idealPoint
-	local x, y = w.re, w.im
-	-- compute center and radius
-	local a = (x ^ 2 + y ^ 2 - 1) / (2 * (x - 1))
-	local r = math.abs(a - 1)
-	local center = complex.new(a, 0)
-	-- rotate back
-	center = center * idealPoint
-
-	m.tikzPrintf("\\draw[%s] (%f,%f) circle (%f);", options, center.re, center.im, r)
-end
-
--- ===== LABEL OBJETS ==================
-
-function m.drawLabeledPoint(z, options, label, label_options)
-	options = options or ""
-	m.tikzPrintf("\\fill[%s] (%f,%f) circle (0.02) node[%s]{%s};", options, z.re, z.im, label_options, label)
-end
 
 function m.labelPoint(z, label, options)
-	options = options or "above left"
+	options = options or m.LABEL_STYLE
 	-- accept nil point (circumcenter can be nil)
 	if z == nil then
 		m._warning("labelPoint : point is nil, aborting")
@@ -645,9 +669,10 @@ function m.labelPoint(z, label, options)
 end
 
 function m.labelPoints(...)
+	-- always above left ! 
 	local args = { ... }
 	local n = #args
-	local options = "above left"
+	local options = m.LABEL_STYLE -- default : "above left"
 
 	if n >= 3 and type(args[n]) == "string" and (n % 2 == 1) then
 		options = args[n]
@@ -662,10 +687,11 @@ function m.labelPoints(...)
 end
 
 function m.labelSegment(A, B, label, options)
-	options = options or "above left"
+	options = options or m.LABEL_STYLE
 	local midpoint = core.midpoint(A, B)
 	m.labelPoint(midpoint, label,options)
 end
+
 
 -- ====================== MODULE END
 
