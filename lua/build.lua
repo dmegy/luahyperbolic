@@ -43,22 +43,22 @@ end
 --------------------------------------------------
 
 local complex_code = process_module(
-  "lua/complex.lua",
+  "complex.lua",
   "complex"
 )
 
 local core_code = process_module(
-  "lua/luahyperbolic-core.lua",
+  "luahyperbolic-core.lua",
   "core"
 )
 
 local tikz_code = process_module(
-  "lua/luahyperbolic-tikz.lua",
+  "luahyperbolic-tikz.lua",
   "tikz"
 )
 
 local tilings_code = process_module(
-  "lua/luahyperbolic-tilings.lua",
+  "luahyperbolic-tilings.lua",
   "tilings"
 )
 
@@ -121,7 +121,7 @@ api_code
 -- insert into template and write template
 --------------------------------------------------
 
-local template = read("lua/luahyperbolic.template.sty")
+local template = read("luahyperbolic.template.sty")
 
 template = template:gsub("===TIMESTAMPPLACEHOLDER===", timestamp)
 
@@ -129,6 +129,6 @@ local final_sty = template:gsub("%-%- ===LUACODEPLACEHOLDER===", function()
   return all_code
 end)
 
-write("luahyperbolic.sty", final_sty)
+write("../luahyperbolic.sty", final_sty)
 
 print("luahyperbolic.sty written successfully")

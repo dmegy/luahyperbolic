@@ -2,7 +2,7 @@
 
 **luahyperbolic** is a LaTeX package and a Lua library for performing operations and drawing pictures in hyperbolic geometry, intended for use with LuaLaTeX. The package provides complex number manipulation and hyperbolic geometric functions.
 
-![triangle_tiling_5_4](examples/triangle-tiling-2-3-7.png)
+![triangle_tiling_5_4](triangle-tiling-2-4-5.png)
 
 ## Installation
 
@@ -39,11 +39,11 @@ hyper.tikzEnd("myfile.tikz")
 
 Compiling that file with `lualatex` produces the following output:
 
-![minimal example](examples/minimal_example.png)
+![minimal example](minimal-example.png)
 
 It also saves the TikZ picture to `myfile.tikz`, for later use. (Optional)
 
-See the [package manual (pdf)](doc/documentation-luahyperbolic.pdf) for numerous examples.
+See the [package documentation (pdf)](documentation-luahyperbolic.pdf) for numerous examples.
 
 More examples in [examples/](examples/)
 

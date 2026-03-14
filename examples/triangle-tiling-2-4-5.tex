@@ -1,0 +1,17 @@
+\documentclass[margin=.2cm,multi,tikz]{standalone}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{luacode}
+\usepackage{../luahyperbolic}
+\begin{document}
+\begin{luacode*}
+local DEPTH = 24
+local PI = math.pi
+local A, B, C = hyper.triangleWithAngles(PI/2,PI/4,PI/5)
+local phi = hyper.automorphism(C,0)
+A,B,C = phi(A), phi(B), phi(C)
+hyper.tikzBegin("scale=6")
+hyper.fillTilingFromTriangle(A,B,C,DEPTH)
+hyper.drawRegularPolygon(complex.ZERO, B, 5,  "line width=.15cm, cyan")
+hyper.tikzEnd()
+\end{luacode*}
+\end{document}
