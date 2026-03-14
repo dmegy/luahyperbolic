@@ -159,7 +159,7 @@ end
 
 
 --- Compare unordered pairs with tolerance.
-function m.isClosePair(a, b, c, d)
+local function isClosePair(a, b, c, d)
     return
         (m.isClose(a, c) and m.isClose(b, d)) or
         (m.isClose(a, d) and m.isClose(b, c))
@@ -266,7 +266,7 @@ function m:isNot(w, eps)
 	return not m.isClose(self, w, eps)
 end
 
--- integer check, no tolerance
+-- Integer check, no tolerance
 function m:isInteger()
     return self.im == 0 and self.re % 1 == 0
 end

@@ -38,7 +38,7 @@ m.DRAW_POINT_RADIUS = 0.02 -- can be modified by user
 m.DRAW_POINT_STYLE = "white, draw=black" -- can be modified by user
 
 m.DRAW_ANGLE_DIST = 1/5
-m.MARKING_SIZE = "small"
+m.MARKING_SIZE = "footnotesize"
 
 m.BOUNDARY_CIRCLE_STYLE = "very thick, black"
 
@@ -232,17 +232,16 @@ function m.drawSegment(z, w, options)
 	m.tikzPrintf("\\draw[%s] %s;",options, shape)
 end
 
-function m.markSegment(z, w, markString, position)
-	position = position or 0.5 -- midway
-	size = m.MARKING_SIZE -- add to function input ?
+function m.markSegment(z, w, markString)
+	size = m.MARKING_SIZE
 	z,w = complex.coerce(z,w)
 	core._assert(z:isNot(w), "points must be distinct")
 	local shape = m.tikz_shape_segment(z,w)
-	m.tikzPrintf("\\path[postaction={decorate,decoration={markings, mark=at position %f with {\\node[transform shape,sloped,font=\\%s] {%s};}}}] %s;",
-  		position,
+	m.tikzPrintf("\\path %s node[sloped,midway,font=\\%s] {%s} ;",
+	-- m.tikzPrintf("\\path[postaction={decorate,decoration={markings, mark=at position %f with {\\node[transform shape,sloped,font=\\%s] {%s};}}}] %s;",
+  		shape,
   		size,
-  		markString,
-  		shape
+  		markString
   	)
 end
 

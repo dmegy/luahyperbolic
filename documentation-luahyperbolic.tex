@@ -361,8 +361,7 @@ hyper.tikzBegin()
 hyper.drawPolygon(A, B, C, D, "teal")
 hyper.markSegment(A,B,"|")
 local marking = "\\textcolor{red}{||}"
-local position = 0.7
-hyper.markSegment(B,C,marking, position)
+hyper.markSegment(B,C,marking)
 hyper.labelSegment(C,D,"$3$", "fill=white, draw=blue")
 hyper.labelSegment(D, A,"$\\alpha$", "below")
 hyper.labelPoint(A, "$A$", "below")
@@ -1201,7 +1200,7 @@ hyper.tikzEnd()
 
 The Lua files are in the \verb+lua/+ subdirectory of the repo.
 
-To build the \verb+luahyperbolic.sty+ from the lua source files, run \verb+lua build.lua+ on the root directory. (Lua must be installed)
+To build the \verb+luahyperbolic.sty+ from the lua source files, run \verb+lua build.lua+ on the \verb+lua/+ directory. (Lua must be installed.)
 
 The Lua source files are not needed to compile a latex document using luahyperbolic, only the sty file is necessary.
 

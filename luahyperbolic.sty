@@ -1,7 +1,7 @@
 %===========================================================================
 % luahyperbolic.sty
 % LuaLaTeX package for hyperbolic geometry
-% Version : 2026/03/14 20:00:37
+% Version : 2026/03/14 20:56:03
 % Automatically generated from the following files:
 % - complex.lua
 % - luahyperbolic-core.lua
@@ -16,12 +16,12 @@
 
 \RequirePackage{luacode} %  ou luaextra ??
 \RequirePackage{tikz}
-\usetikzlibrary{decorations.markings}
+%\usetikzlibrary{decorations.markings}
 
 \begin{luacode*}
 -- AUTO-GENERATED FILE
 -- DO NOT EDIT
--- DATE: 2026/03/14 20:00:37
+-- DATE: 2026/03/14 20:56:03
 
 -- internal modules
 local core
@@ -190,7 +190,7 @@ end
 
 
 --- Compare unordered pairs with tolerance.
-function m.isClosePair(a, b, c, d)
+local function isClosePair(a, b, c, d)
     return
         (m.isClose(a, c) and m.isClose(b, d)) or
         (m.isClose(a, d) and m.isClose(b, c))
@@ -297,7 +297,7 @@ function m:isNot(w, eps)
 	return not m.isClose(self, w, eps)
 end
 
--- integer check, no tolerance
+-- Integer check, no tolerance
 function m:isInteger()
     return self.im == 0 and self.re % 1 == 0
 end
@@ -1276,7 +1276,7 @@ m.DRAW_POINT_RADIUS = 0.02 -- can be modified by user
 m.DRAW_POINT_STYLE = "white, draw=black" -- can be modified by user
 
 m.DRAW_ANGLE_DIST = 1/5
-m.MARKING_SIZE = "small"
+m.MARKING_SIZE = "footnotesize"
 
 m.BOUNDARY_CIRCLE_STYLE = "very thick, black"
 
@@ -1470,17 +1470,16 @@ function m.drawSegment(z, w, options)
 	m.tikzPrintf("\\draw[%s] %s;",options, shape)
 end
 
-function m.markSegment(z, w, markString, position)
-	position = position or 0.5 -- midway
-	size = m.MARKING_SIZE -- add to function input ?
+function m.markSegment(z, w, markString)
+	size = m.MARKING_SIZE
 	z,w = complex.coerce(z,w)
 	core._assert(z:isNot(w), "points must be distinct")
 	local shape = m.tikz_shape_segment(z,w)
-	m.tikzPrintf("\\path[postaction={decorate,decoration={markings, mark=at position %f with {\\node[transform shape,sloped,font=\\%s] {%s};}}}] %s;",
-  		position,
+	m.tikzPrintf("\\path %s node[sloped,midway,font=\\%s] {%s} ;",
+	-- m.tikzPrintf("\\path[postaction={decorate,decoration={markings, mark=at position %f with {\\node[transform shape,sloped,font=\\%s] {%s};}}}] %s;",
+  		shape,
   		size,
-  		markString,
-  		shape
+  		markString
   	)
 end
 
