@@ -15,7 +15,6 @@
 \usepackage[dvipsnames]{xcolor}
 \usepackage{multicol}
 \usepackage[normalem]{ulem}
-\usepackage{luacode}
 \usepackage{tcolorbox}
 \tcbuselibrary{listings}
 \tcbuselibrary{skins,breakable}
@@ -23,7 +22,6 @@
 
 \hbadness=10000
 \hfuzz=3pt
-
 \usepackage{luahyperbolic}
 \usepackage{imakeidx}
 \makeindex[title=Index of functions used in this documentation]
@@ -133,7 +131,7 @@ Do it right there in your TeX file without having to include external files :
 
 \begin{codeandresult}
 \begin{luacode*}
-hyper.tikzBegin("scale=2.5")
+hyper.tikzBegin("scale=2")
 local P = complex(0.5,-0.2)
 local A = complex.exp_i(math.pi/20)
 for k=1,10 do
@@ -147,8 +145,13 @@ hyper.tikzEnd()
 \end{codeandresult}
 \index[fields]{complex!I}\index[fields]{complex!J}
 \index{complex!exp\_i}\index{tikzBegin}\index{tikzEnd}
-
+\item Draw Tilings in one line, without any Lua code :
+\begin{codeandresult}
+\hyperbolicTiling{3}{4}{7}[scale=1.4]
+\hyperbolicTiling{4}{4}{inf}[scale=1.4, color=violet, backgroundcolor=pink!20, depth=6]
+\end{codeandresult}
 \end{enumerate}
+
 
 \subsection{What this package cannot do for you}
 
@@ -162,7 +165,7 @@ hyper.tikzEnd()
 For heavy computations, please use a \sout{Python} C library. Nevertheless, this library is still reasonably efficient and usable:
 \begin{itemize}
 \item The first tiling illustration of this documentation (hyperbolic 2-4-5 tiling with 2361 geodesics) compiled in \directlua{tex.print(math.round(100*globalTimeIntroPicture)/100)} seconds on a 2020 intel macbook air laptop.
-\item This entire documentation including all pictures compiles in approx. 15 seconds on the same machine, the majority of the time weing spent on the tilings. The package is suitable for producing lecture notes in hyperbolic geometry, which was the reason for all of this. For an entire book with dozens of pictures, you may need to externalize some of the pictures.
+\item This entire documentation including all pictures compiles in approx. 20 seconds on the same machine, the majority of the time weing spent on the tilings. The package is suitable for producing lecture notes in hyperbolic geometry, which was the reason for all of this. For an entire book with dozens of pictures, you may need to externalize some of the pictures.
 \item Tests show that the bottleneck is TikZ, not Lua. In a future version, some future maintainer may add other fontends to the library, including drawing directly to the pdf with pdf primitives wich are several orders of magnitude faster than tikz.
 \end{itemize}
 
@@ -1195,6 +1198,39 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
+\subsection{Tilings without any Lua code}
+
+The package provides a TeX macro for users who want to completely avoid  Lua. 
+\bigskip
+
+\noindent
+\hyperbolicTiling{3}{4}{5}[scale=4]\hfill
+\hyperbolicTiling{3}{3}{4}[scale=4,depth=12]
+\\
+\hyperbolicTiling{2}{3}{7}[scale=2.5, color=teal, depth=16]\hfill
+\hyperbolicTiling{2}{5}{9}[scale=2.5, depth=8, color=gray]\hfill
+\hyperbolicTiling{4}{4}{4}[scale=2.5, depth=6, color=purple,backgroundcolor=pink!30]
+\\
+\hyperbolicTiling{2}{5}{inf}[scale=2, depth=6, color=brown]\hfill
+\hyperbolicTiling{2}{inf}{inf}[scale=2, depth=6, color=olive]\hfill
+\hyperbolicTiling{3}{inf}{inf}[scale=2, depth=6, color=orange]\hfill
+\hyperbolicTiling{inf}{inf}{inf}[scale=2, depth=5, color=violet]
+
+The syntax is \verb+\hyperbolicTiling{p}{q}{r}[options]+ with $p, q, r$ positive integers or  \texttt{inf} satisfying $\frac1p + \frac1q+\frac1r < 1$. The associated hyperbolic triangle has angles $\frac{\pi}{p}$, $\frac{\pi}{q}$,  and $\frac{\pi}{r}$. 
+
+The above tilings were obtained with the following commands:
+\begin{verbatim}
+\hyperbolicTiling{3}{4}{5}[scale=4]
+\hyperbolicTiling{3}{3}{4}[scale=4,depth=12]
+\hyperbolicTiling{2}{3}{7}[scale=2.5, color=teal, depth=16]
+\hyperbolicTiling{2}{5}{9}[scale=2.5, color=gray]
+\hyperbolicTiling{4}{4}{4}[scale=2.5, depth=6, color=purple,backgroundcolor=pink!30]
+\hyperbolicTiling{2}{5}{inf}[scale=2, depth=6, color=brown]
+\hyperbolicTiling{2}{inf}{inf}[scale=2, depth=6, color=olive]
+\hyperbolicTiling{3}{inf}{inf}[scale=2, depth=6, color=orange]
+\hyperbolicTiling{inf}{inf}{inf}[scale=2, depth=5, color=violet]
+\end{verbatim}
+Default values are : scale=3, depth=8, color=black, backgroundcolor=white.
 \newpage
 \section{Overview of the lua libraries}
 

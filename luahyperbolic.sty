@@ -1,7 +1,7 @@
 %===========================================================================
 % luahyperbolic.sty
 % LuaLaTeX package for hyperbolic geometry
-% Version : 2026/03/14 20:56:03
+% Version : 2026/03/15 02:37:17
 % Automatically generated from the following files:
 % - complex.lua
 % - luahyperbolic-core.lua
@@ -12,16 +12,26 @@
 % -- 2026 Damien Mégy
 %===========================================================================
 
-\ProvidesPackage{luahyperbolic}[Lua hyperbolic geometry package.]
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{luahyperbolic}[2026/03/15 02:37:17  Hyperbolic geometry package written in Lua.]
 
-\RequirePackage{luacode} %  ou luaextra ??
+\RequirePackage{iftex}
+\ifluatex
+    \RequirePackage{luacode}
+\else
+    {\PackageError{luahyperbolic}
+    {Not running under LuaLaTeX}
+    {This package requires LuaLaTeX. Try compiling this document with\MessageBreak 'lualatex' instead of 'latex', 'pdflatex' or 'xelatex'. This is a fatal error; I'm aborting now.}%
+    }\stop
+\fi
+
 \RequirePackage{tikz}
 %\usetikzlibrary{decorations.markings}
 
 \begin{luacode*}
 -- AUTO-GENERATED FILE
 -- DO NOT EDIT
--- DATE: 2026/03/14 20:56:03
+-- DATE: 2026/03/15 02:37:17
 
 -- internal modules
 local core
@@ -2166,5 +2176,72 @@ merge(hyper, tilings)
 }{%
   \end{tikzpicture}
 }
+
+
+\begin{luacode*}
+function parseKeyValueString(str)
+    local options = {}
+    
+    str = str:gsub("%s+", "") -- Remove all spaces
+    str = str:gsub(",%s*$", "") -- Remove trailing comma if any
+    
+    for key, value in string.gmatch(str, "([%w_]+)=([%w_%-%.!0-9]+)") do
+        options[key] = value
+    end
+    
+    return options
+end
+\end{luacode*}
+
+
+
+\DeclareDocumentCommand{\hyperbolicTiling}{ m m m O{} }{%
+  % #1 = P, #2 = Q, #3 = R (mandatory)
+  % #4 = options (optional, key-value string)
+  \directlua{
+    local function isInfinite(value)
+      local infinity_values = {"inf", "infty", "infinity", "math.huge"}
+      for _, v in ipairs(infinity_values) do
+        if value == v then
+          return true
+        end
+      end
+      return false
+    end
+
+    local function validate(arg)
+      if isInfinite(arg) then
+        return math.huge
+       elseif tonumber(arg) and tonumber(arg) > 0 then
+        return tonumber(arg)
+      else
+        error("Invalid value for argument: "..tostring(arg)..". Must be a positive integer or one of the allowed infinity values (inf, infty, infinity, math.huge).")
+      end
+    end
+
+    local P = "#1"
+    local Q = "#2"
+    local R = "#3"
+    
+    P = validate(P)
+    Q = validate(Q)
+    R = validate(R)
+    local options = "#4" 
+    local parsedOptions = parseKeyValueString(options)
+
+    local depth = tonumber(parsedOptions.depth) or 8
+    local scale = tonumber(parsedOptions.scale) or 3
+    local color = parsedOptions.color or "black"
+    local backgroundcolor = parsedOptions.backgroundcolor or "white"
+    
+    hyper.tikzBegin("scale="..scale)
+    hyper.tikzPrintf("\\fill[color=" .. backgroundcolor .."] (0,0) circle (1);")
+    hyper.fillTilingFromAngles(math.pi/P, math.pi/Q, math.pi/R, depth,color)
+    hyper.tikzEnd()
+  }%
+}
+
+
+
 
 % End of luahyperbolic.sty
