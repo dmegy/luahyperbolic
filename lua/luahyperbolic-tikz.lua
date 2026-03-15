@@ -33,13 +33,10 @@ m.HYPERCYCLE_STYLE = "black"
 m.ANGLE_STYLE = "black"
 m.MARKING_STYLE = "black"
 m.LABEL_STYLE = "above left"
-
-m.DRAW_POINT_RADIUS = 0.02 -- can be modified by user
-m.DRAW_POINT_STYLE = "white, draw=black" -- can be modified by user
-
+m.DRAW_POINT_RADIUS = 0.02
+m.DRAW_POINT_STYLE = "white, draw=black"
 m.DRAW_ANGLE_DIST = 1/5
 m.MARKING_SIZE = "footnotesize"
-
 m.BOUNDARY_CIRCLE_STYLE = "very thick, black"
 
 
@@ -398,10 +395,10 @@ function m.tikz_shape_euclidean_segment(a,b)
 			"(%f,%f) -- (%f,%f)",a.re, a.im, b.re, b.im)
 end
 
-function m.drawTangentVector(p, v, options)
+function m.drawVector(p, v, options)
 	options = options or ""
 	local norm_v = complex.abs(v)
-	core._assert(norm_v > core.EPS, "drawTangentVector : vector must not be zero")
+	core._assert(norm_v > core.EPS, "drawVector : vector must not be zero")
 	local u = v / norm_v
 	local factor = (1 - complex.abs2(p))
 	local euclid_vec = tanh(factor * norm_v / 2) * u

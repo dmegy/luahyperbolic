@@ -33,15 +33,6 @@
 \end{luacode*}
 
 
-\newenvironment{hyperbolicdisk}[1][scale=3]{%
-  \begin{tikzpicture}[#1]
-    \draw[very thick] (0,0) circle (1);
-    \clip (0,0) circle (1);
-}{%
-  \end{tikzpicture}
-}
-
-
 \begin{luacode*}
 function parseKeyValueString(str)
     local options = {}

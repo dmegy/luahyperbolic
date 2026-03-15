@@ -9,7 +9,7 @@
 \usepackage{../luahyperbolic}
 \usepackage{hyperref}
 \begin{document}
-\title{Triangle groupes / tilings}
+\title{Triangle groups and tilings}
 \author{Damien Mégy}
 \date{}
 \maketitle
@@ -18,8 +18,28 @@
 Drawn with the \textbf{\textsf{luahyperbolic}} package. (\url{https://github.com/dmegy/luahyperbolic}) 
 
 
+\subsection*{Triangle tilings of type $(p,\infty,\infty)$ for $p\leq 6$}
 
-\subsection*{Gallery of triangle tilings of type $(p,q,\infty)$}
+\begin{luacode*}
+local PI = math.pi
+local N=6
+local DEPTH=8
+for k=2,N do
+			tex.print("\\begin{tikzpicture}[scale=1.5]")
+			tex.print("\\begin{scope}")
+			tex.print("\\draw[very thick] (0,0) circle (1);\\clip (0,0) circle (1);")
+			local A, B, C = hyper.triangleWithAngles(PI/k,0, 0)
+			hyper.fillTilingFromTriangle(A, B, C, DEPTH)			
+			hyper.drawPolygon(A, B, C, "thick, red")
+			tex.print("\\end{scope}")
+			tex.print(string.format("\\draw (0,-1.2) node {$(%d, \\infty, \\infty)$} ;", k))
+			tex.print("\\end{tikzpicture}")
+			tex.print("~")
+end 
+\end{luacode*}
+
+
+\subsection*{Triangle tilings of type $(p,q,\infty)$ for $2\leq p\leq q \leq 5$}
 
 \begin{luacode*}
 local PI = math.pi
@@ -44,17 +64,17 @@ end
 \end{luacode*}
 
 
-\subsection*{Gallery of triangle tilings of type $(p,q,r)$}
+\subsection*{Triangle tilings of type $(p,q,r)$ for $2\leq p\leq q\leq r \leq 6$}
 
 \begin{luacode*}
 local PI = math.pi
-local N=7
+local N=6
 for k=2,N do
 	for l=k, N do
 	for m=l,N do
 		local t = 1/k+1/l +1/m
 		if t<0.99 then
-			local DEPTH=math.round(15*t)
+			local DEPTH=1+math.round(15*t)
 			tex.print("\\begin{tikzpicture}[scale=1.5]")
 			tex.print("\\begin{scope}")
 			tex.print("\\draw[very thick] (0,0) circle (1);\\clip (0,0) circle (1);")

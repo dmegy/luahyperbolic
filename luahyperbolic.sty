@@ -1,7 +1,7 @@
 %===========================================================================
 % luahyperbolic.sty
 % LuaLaTeX package for hyperbolic geometry
-% Version : 2026/03/15 02:37:17
+% Version : 2026/03/15 15:52:10
 % Automatically generated from the following files:
 % - complex.lua
 % - luahyperbolic-core.lua
@@ -13,7 +13,7 @@
 %===========================================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{luahyperbolic}[2026/03/15 02:37:17  Hyperbolic geometry package written in Lua.]
+\ProvidesPackage{luahyperbolic}[2026/03/15 15:52:10  Hyperbolic geometry package written in Lua.]
 
 \RequirePackage{iftex}
 \ifluatex
@@ -31,7 +31,7 @@
 \begin{luacode*}
 -- AUTO-GENERATED FILE
 -- DO NOT EDIT
--- DATE: 2026/03/15 02:37:17
+-- DATE: 2026/03/15 15:52:10
 
 -- internal modules
 local core
@@ -1281,13 +1281,10 @@ m.HYPERCYCLE_STYLE = "black"
 m.ANGLE_STYLE = "black"
 m.MARKING_STYLE = "black"
 m.LABEL_STYLE = "above left"
-
-m.DRAW_POINT_RADIUS = 0.02 -- can be modified by user
-m.DRAW_POINT_STYLE = "white, draw=black" -- can be modified by user
-
+m.DRAW_POINT_RADIUS = 0.02
+m.DRAW_POINT_STYLE = "white, draw=black"
 m.DRAW_ANGLE_DIST = 1/5
 m.MARKING_SIZE = "footnotesize"
-
 m.BOUNDARY_CIRCLE_STYLE = "very thick, black"
 
 
@@ -1646,10 +1643,10 @@ function m.tikz_shape_euclidean_segment(a,b)
 			"(%f,%f) -- (%f,%f)",a.re, a.im, b.re, b.im)
 end
 
-function m.drawTangentVector(p, v, options)
+function m.drawVector(p, v, options)
 	options = options or ""
 	local norm_v = complex.abs(v)
-	core._assert(norm_v > core.EPS, "drawTangentVector : vector must not be zero")
+	core._assert(norm_v > core.EPS, "drawVector : vector must not be zero")
 	local u = v / norm_v
 	local factor = (1 - complex.abs2(p))
 	local euclid_vec = tanh(factor * norm_v / 2) * u
@@ -2167,15 +2164,6 @@ merge(hyper, tilings)
 
 
 \end{luacode*}
-
-
-\newenvironment{hyperbolicdisk}[1][scale=3]{%
-  \begin{tikzpicture}[#1]
-    \draw[very thick] (0,0) circle (1);
-    \clip (0,0) circle (1);
-}{%
-  \end{tikzpicture}
-}
 
 
 \begin{luacode*}
