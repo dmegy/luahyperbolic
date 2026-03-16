@@ -1,5 +1,7 @@
 # Lua Hyperbolic Geometry
 
+Version : 2026/03/16
+
 **luahyperbolic** is a LaTeX package and a Lua library for performing operations and drawing pictures in hyperbolic geometry, intended for use with LuaLaTeX. The package provides complex number manipulation and hyperbolic geometric functions.
 
 ![triangle_tiling_5_4](triangle-tiling-2-4-5.png)

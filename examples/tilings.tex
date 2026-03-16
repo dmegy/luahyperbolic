@@ -74,7 +74,7 @@ for k=2,N do
 	for m=l,N do
 		local t = 1/k+1/l +1/m
 		if t<0.99 then
-			local DEPTH=1+math.round(15*t)
+			local DEPTH=1+math.round(12*t)
 			tex.print("\\begin{tikzpicture}[scale=1.5]")
 			tex.print("\\begin{scope}")
 			tex.print("\\draw[very thick] (0,0) circle (1);\\clip (0,0) circle (1);")
