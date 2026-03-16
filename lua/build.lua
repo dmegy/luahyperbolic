@@ -94,12 +94,13 @@ merge(hyper, tilings)
 --------------------------------------------------
 
 local timestamp = os.date("%Y/%m/%d %H:%M:%S")
+local today = os.date("%Y/%m/%d")
 
 local all_code = table.concat({
 
 "-- AUTO-GENERATED FILE",
 "-- DO NOT EDIT",
-"-- DATE: " .. timestamp,
+"-- TIMESTAMP : " .. timestamp,
 "",
 
 "-- internal modules",
@@ -124,6 +125,7 @@ api_code
 local template = read("luahyperbolic.template.sty")
 
 template = template:gsub("===TIMESTAMPPLACEHOLDER===", timestamp)
+template = template:gsub("===DATEPLACEHOLDER===", today)
 
 local final_sty = template:gsub("%-%- ===LUACODEPLACEHOLDER===", function()
   return all_code

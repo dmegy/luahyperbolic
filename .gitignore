@@ -3,6 +3,7 @@
 # -----------------------
 
 references/
+releases/
 
 .vscode/
 *.DS_Store

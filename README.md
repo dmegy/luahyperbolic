@@ -59,7 +59,7 @@ For more information on the license, see the `LICENSE` file or visit [CC0 1.0 Un
 
 - function distance_between_geodesics(z1, z2, w1, w2)
 - function closest_points_between_geodesics(z1, z2, w1, w2)
-- triangle intouch points, extouchpoints
+- triangle intouch points, extouchpoints, excenters
 - hide functions metric_factor, circle_to_euclidean
 - get rif of cosh, sinh, tanh
 - IMPORTANT write function that computes triangle with given angles. Necessary for (p,q,r) tilings.
@@ -69,7 +69,7 @@ For more information on the license, see the `LICENSE` file or visit [CC0 1.0 Un
 - hyper.getFixedPoints(phi) for automorphism
 - symmetrySending (A to B)
 - reflectionSending (A to B)
-- intouch points, extouch points, excenters
+- expMap : transforme into function of type point -> (vector -> point) instead of (point, vector) -> point
 
 ### In `luahyperbolic-tikz` :
 
