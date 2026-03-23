@@ -542,19 +542,21 @@ end
 
 --- Exponential map at a point P
 -- @param P complex
--- @param vector  complex (vector)
--- @return complex
-function m.expMap(P, vector)
-	P, vector = complex.coerce(P, vector)
+-- returns function vector->point
+function m.expMap(P)
+	P = complex.coerce(P)
 	m._assert_in_disk(P)
-	if vector:isNear(0) then
-		return P
+	return function(vector)
+		vector = complex.coerce(vector)
+		if vector:isNear(0) then
+			return P
+		end
+		local w = exp_map_at_origin(vector)
+		if P:isNear(0) then
+			return w
+		end
+		return m.automorphism(-P, 0)(w)
 	end
-	local w = exp_map_at_origin(vector)
-	if P:isNear(0) then
-		return w
-	end
-	return m.automorphism(-P, 0)(w)
 end
 
 

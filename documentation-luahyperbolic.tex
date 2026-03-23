@@ -80,7 +80,7 @@ righthand width=0.36\linewidth
 
 \title{The \textbf{\textsf{luahyperbolic}} latex package}
 \author{Damien Mégy}
-\date{Version : \the\year/\the\month/\the\day}
+\date{Version : \the\year/\the\month/\the\day \quad (version on CTAN : 2026-03-16)}
 \begin{document}
 \maketitle
 % - - - - - TITLE PICTURE
@@ -862,7 +862,7 @@ local vect = complex.exp_i(math.pi/4)
 hyper.tikzBegin()
 hyper.drawRayFromVector(P, vect, "gray")
 for k=1,5 do
-	local A = hyper.expMap(P,k*vect)
+	local A = hyper.expMap(P)(k*vect)
 	hyper.drawPoint(A, "white, draw=red")
 end
 hyper.drawPoint(P)

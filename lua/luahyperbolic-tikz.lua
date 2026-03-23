@@ -362,7 +362,7 @@ function m.drawRayFromVector(p, v, options)
 	options = options or m.GEODESIC_STYLE
 	p = core._coerce_assert_in_disk(p)
 	-- TODO : allow point at infinity (check vector direction) FIX/TEST
-	local q = core.expMap(p, v) -- move along v in hyperbolic space
+	local q = core.expMap(p)(v) -- move along v in hyperbolic space
 	local _, e2 = core.endpoints(p, q)
 	m.drawSegment(p, e2, options)
 end
@@ -370,7 +370,7 @@ end
 function m.drawLineFromVector(p, v, options)
 	options = options or m.GEODESIC_STYLE
 	-- TODO : allow point at infinity
-	local q = core.expMap(p, v) -- move along v in hyperbolic space
+	local q = core.expMap(p)(v) -- move along v in hyperbolic space
 	m.drawLine(p, q, options)
 end
 
@@ -646,8 +646,8 @@ function m.drawRightAngle(A, O, B, options, distFactor)
 
 	local v = core.tangentVector(AA,A)*complex.I
 	local w = core.tangentVector(BB,B)*(-complex.I)
-	local VV = core.expMap(AA,v)
-	local WW = core.expMap(BB,w)
+	local VV = core.expMap(AA)(v)
+	local WW = core.expMap(BB)(w)
 	local P = core.interLL(AA,VV, BB, WW)
 	-- fast&lazy : euclidean polyline instead of geodesic:
 	m.tikzPrintf("\\draw[%s] (%f,%f) -- (%f,%f) -- (%f,%f);",

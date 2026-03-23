@@ -1,7 +1,7 @@
 %===========================================================================
 % luahyperbolic.sty
 % LuaLaTeX package for hyperbolic geometry
-% Version : 2026/03/16
+% Version : 2026/03/23
 % Automatically generated from the following files:
 % - complex.lua
 % - luahyperbolic-core.lua
@@ -13,7 +13,7 @@
 %===========================================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{luahyperbolic}[2026/03/16  Hyperbolic geometry package written in Lua.]
+\ProvidesPackage{luahyperbolic}[2026/03/23  Hyperbolic geometry package written in Lua.]
 
 \RequirePackage{iftex}
 \ifluatex
@@ -31,7 +31,7 @@
 \begin{luacode*}
 -- AUTO-GENERATED FILE
 -- DO NOT EDIT
--- TIMESTAMP : 2026/03/16 15:39:02
+-- TIMESTAMP : 2026/03/23 17:46:48
 
 -- internal modules
 local core
@@ -1024,19 +1024,21 @@ end
 
 --- Exponential map at a point P
 -- @param P complex
--- @param vector  complex (vector)
--- @return complex
-function m.expMap(P, vector)
-	P, vector = complex.coerce(P, vector)
+-- @return function
+function m.expMap(P)
+	P = complex.coerce(P)
 	m._assert_in_disk(P)
-	if vector:isNear(0) then
-		return P
+	return function(vector)
+		vector = complex.coerce(vector)
+		if vector:isNear(0) then
+			return P
+		end
+		local w = exp_map_at_origin(vector)
+		if P:isNear(0) then
+			return w
+		end
+		return m.automorphism(-P, 0)(w)
 	end
-	local w = exp_map_at_origin(vector)
-	if P:isNear(0) then
-		return w
-	end
-	return m.automorphism(-P, 0)(w)
 end
 
 
@@ -1610,7 +1612,7 @@ function m.drawRayFromVector(p, v, options)
 	options = options or m.GEODESIC_STYLE
 	p = core._coerce_assert_in_disk(p)
 	-- TODO : allow point at infinity (check vector direction) FIX/TEST
-	local q = core.expMap(p, v) -- move along v in hyperbolic space
+	local q = core.expMap(p)(v) -- move along v in hyperbolic space
 	local _, e2 = core.endpoints(p, q)
 	m.drawSegment(p, e2, options)
 end
@@ -1618,7 +1620,7 @@ end
 function m.drawLineFromVector(p, v, options)
 	options = options or m.GEODESIC_STYLE
 	-- TODO : allow point at infinity
-	local q = core.expMap(p, v) -- move along v in hyperbolic space
+	local q = core.expMap(p)(v) -- move along v in hyperbolic space
 	m.drawLine(p, q, options)
 end
 
@@ -1894,8 +1896,8 @@ function m.drawRightAngle(A, O, B, options, distFactor)
 
 	local v = core.tangentVector(AA,A)*complex.I
 	local w = core.tangentVector(BB,B)*(-complex.I)
-	local VV = core.expMap(AA,v)
-	local WW = core.expMap(BB,w)
+	local VV = core.expMap(AA)(v)
+	local WW = core.expMap(BB)(w)
 	local P = core.interLL(AA,VV, BB, WW)
 	-- fast&lazy : euclidean polyline instead of geodesic:
 	m.tikzPrintf("\\draw[%s] (%f,%f) -- (%f,%f) -- (%f,%f);",

@@ -1,6 +1,6 @@
 # Lua Hyperbolic Geometry
 
-Version on CTAN: 2026/03/16
+Version on CTAN: 2026/03/16 (commit 19a9fd9915fb2824c35f4fb73e823789f0cf7cd9)
 
 > [!Note]
 > Luahyperbolic is still in an early development phase.

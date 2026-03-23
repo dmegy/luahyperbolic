@@ -1,1 +1,2 @@
-- First version (2026-03-16)
+- 2026-03-23 : expMap now takes only one argument, a point, and returns a function. Syntax is `newPoint = hyper.expMap(Point)(vector)`
+- 2026-03-16 : first version uploaded to CTAN
