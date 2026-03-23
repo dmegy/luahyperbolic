@@ -1,25 +1,16 @@
 # Lua Hyperbolic Geometry
 
-Version : 2026/03/16
+Version on CTAN: 2026/03/16
+
+> [!Note]
+> Luahyperbolic is still in an early development phase.
+> Changes and bug fixes are happening frequently, check the [CHANGELOG.md](CHANGELOG.md).
 
 **luahyperbolic** is a LaTeX package and a Lua library for performing operations and drawing pictures in hyperbolic geometry, intended for use with LuaLaTeX. The package provides complex number manipulation and hyperbolic geometric functions.
 
 ![triangle_tiling_5_4](triangle-tiling-2-4-5.png)
 
-## Installation
-
-### Manual Installation (for now)
-
-If you wish to install the package manually, follow these steps:
-
-- Put the file `luahyperbolic.sty` in your working directory
-- Include the package in your document by adding:
-
-  ```latex
-  \usepackage{luahyperbolic}
-  ```
-
-### Example Usage
+## Example Usage
 
 A minimal working example is (see `minimal_example.tex`in `examples/`) :
 
@@ -54,6 +45,63 @@ More examples in [examples/](examples/)
 This package is released under the **Public Domain (CC0 1.0 Universal License)**. You may use, modify, and distribute it freely, without restriction.
 
 For more information on the license, see the `LICENSE` file or visit [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
+
+## Installation
+
+### Quick use (no installation)
+
+The simplest way to use the package is to place the file: `luahyperbolic.sty` in the same directory as your `.tex` document.
+
+Then include it with:
+
+```latex
+\usepackage{luahyperbolic}
+```
+
+---
+
+### User installation (recommended)
+
+To make the package available to all your documents, install it in your personal TEXMF tree.
+
+1. Find your TEXMFHOME directory:
+
+   ```bash
+   kpsewhich -var-value=TEXMFHOME
+   ```
+
+2. Copy the file to:
+
+   ```
+   <TEXMFHOME>/tex/latex/luahyperbolic/
+   ```
+
+If the directory does not exist, create it.
+
+3. No further action is usually required; LaTeX will automatically find the package.
+
+---
+
+### System-wide installation (advanced)
+
+To install the package for all users, place it in the local TeX tree (requires administrative privileges):
+
+```
+/usr/local/texlive/texmf-local/tex/latex/luahyperbolic/
+```
+
+Then refresh the file database:
+
+```bash
+sudo mktexlsr
+```
+
+---
+
+### Notes
+
+- Do **not** place files in `texmf-dist`, as this directory is managed by your TeX distribution and may be overwritten during updates.
+- This package is not currently part of TeX Live or MiKTeX.
 
 ## Todo
 
@@ -94,7 +142,7 @@ For more information on the license, see the `LICENSE` file or visit [CC0 1.0 Un
 
 ### In documentation
 
-links to math articles on wikipedia for definitions ?
+- links to math articles on wikipedia for definitions ?
 
 ### More examples
 

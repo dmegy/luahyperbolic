@@ -5,7 +5,7 @@ PKG="luahyperbolic"
 VERSION=$(date +%Y-%m-%d)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-$
+
 ROOT="$(dirname "$SCRIPT_DIR")"
 
 OUTDIR="$ROOT/releases"

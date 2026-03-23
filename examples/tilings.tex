@@ -23,7 +23,7 @@ Drawn with the \textbf{\textsf{luahyperbolic}} package. (\url{https://github.com
 \begin{luacode*}
 local PI = math.pi
 local N=6
-local DEPTH=8
+local DEPTH=7
 for k=2,N do
 			tex.print("\\begin{tikzpicture}[scale=1.5]")
 			tex.print("\\begin{scope}")
@@ -44,7 +44,7 @@ end
 \begin{luacode*}
 local PI = math.pi
 local N=5
-local DEPTH=8
+local DEPTH=7
 for k=2,N do
 	for l=k, N do
 		if 1/k+1/l <1 then
@@ -52,7 +52,7 @@ for k=2,N do
 			tex.print("\\begin{scope}")
 			tex.print("\\draw[very thick] (0,0) circle (1);\\clip (0,0) circle (1);")
 			local A, B, C = hyper.triangleWithAngles(PI/k, PI/l, 0)
-			hyper.fillTilingFromTriangle(A, B, C, DEPTH, "even odd rule")			
+			hyper.fillTilingFromTriangle(A, B, C, DEPTH)			
 			hyper.drawPolygon(A, B, C, "thick, red")
 			tex.print("\\end{scope}")
 			tex.print(string.format("\\draw (0,-1.2) node {$(%d, %d, \\infty)$} ;", k, l))
@@ -74,7 +74,7 @@ for k=2,N do
 	for m=l,N do
 		local t = 1/k+1/l +1/m
 		if t<0.99 then
-			local DEPTH=1+math.round(12*t)
+			local DEPTH=2+math.round(9*t)
 			tex.print("\\begin{tikzpicture}[scale=1.5]")
 			tex.print("\\begin{scope}")
 			tex.print("\\draw[very thick] (0,0) circle (1);\\clip (0,0) circle (1);")
