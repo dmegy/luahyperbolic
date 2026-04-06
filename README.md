@@ -105,6 +105,10 @@ sudo mktexlsr
 
 ## Todo
 
+### In `complex` :
+
+- `complex.round(z,nb_decimals)` and similar functions ? The, replace quantization in `luahyperbolic-tilings`.
+
 ### In `luahyperbolic-core` :
 
 - function distance_between_geodesics(z1, z2, w1, w2)
@@ -123,22 +127,24 @@ sudo mktexlsr
 
 ### In `luahyperbolic-tikz` :
 
-- more constants : distances for angle drawing/labelling etc,
-- function `drawExcircle` and variants
-- more triangle geometry ? Gergonne, Nagel etc ?
-- function `markAngle(A, O, B, options)`
-- function `labelSegment(A, B, label)`
-- function `labelAngle(A, O, B, label)`
+- add more constants : distances for angle drawing/labelling etc,
+- add function `drawExcircle` and variants
+- add function `markAngle(A, O, B, options)`
+- add function `labelSegment(A, B, label)`
+- add function `labelAngle(A, O, B, label)`
+- add function fillTriangle, fillPolygon, fillCircle, fillHalfSpace
 - more tikz shapes if necessary
 - draw external angle bisector ?
-- replace old `complex.isClose(z,w)` etc with `z:isNear(w)` etc.
-- fillTriangle, fillPolygon etc ?
 - drawExcircle
+- more triangle geometry ? Gergonne, Nagel etc ?
+- replace old `complex.isClose(z,w)` etc with `z:isNear(w)` etc.
 
 ### In `luahyperbolic-tilings`
 
 - faster tiling generation
 - draw tiling step by step, triangle by triangle
+- draw uniform tiling
+- draw circle packing
 
 ### In documentation
 

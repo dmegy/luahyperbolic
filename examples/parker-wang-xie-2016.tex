@@ -1,0 +1,93 @@
+\documentclass[a4paper]{article}
+%\usepackage{fontspec}
+%\setmainfont{Libertinus Serif}
+%\usepackage{mathtools,unicode-math}
+%\setmainfont{Libertinus Math}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{luacode}
+\usepackage{../luahyperbolic}
+
+
+\usepackage[normalem]{ulem} 
+\usepackage{tcolorbox}
+\tcbuselibrary{listings}
+\tcbuselibrary{skins,breakable}
+\usepackage{fancyvrb}
+\lstdefinelanguage{Lua}{
+  morekeywords={and,break,do,else,elseif,end,false,for,function,if,in,
+    local,nil,not,or,repeat,return,then,true,until,while},
+  sensitive=true,
+  morecomment=[l]{--},
+  morestring=[b]",
+  morestring=[b]'
+}
+
+\tcbset{
+  myluacolors/.style={
+    listing options={
+      language=Lua,
+      tabsize=2,
+      basicstyle=\ttfamily\small,
+      keywordstyle=\color{blue!60!black}\bfseries,
+      commentstyle=\color{gray}\itshape,
+      stringstyle=\color{red!50!black},
+      emph={hyper},
+      emphstyle={\color{green!40!black}\bfseries},
+      showstringspaces=false,
+      breaklines=true,
+      postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}
+    }
+  }
+}
+
+
+\newtcblisting{codeandresult}{%
+myluacolors,
+colback=white,
+colframe=gray!20,
+fonttitle=\bfseries,
+}
+
+
+
+\usepackage{hyperref}
+
+
+\begin{document}
+\title{Triangle groups and tilings}
+\author{Damien Mégy}
+\date{}
+\maketitle
+\pagestyle{empty}
+\thispagestyle{empty}
+Drawn with the \textbf{\textsf{luahyperbolic}} package. (\url{https://github.com/dmegy/luahyperbolic}) 
+
+The picture is a reproduction of fig.1 p. 442 in Parker, Wang, Xie, \emph{Complex Hyperbolic $(3,3,n)$ Triangle Groups}, Pacific Journal of Math., vol 289 no. 2 (2016), available at \url{https://msp.org/pjm/2016/280-2/pjm-v280-n2-p08-p.pdf}.
+
+\begin{codeandresult}
+\begin{luacode*}
+local PI = math.pi
+local A, B, C = hyper.triangleWithAngles(PI/3, PI/3, PI/5)
+local polygon = {}
+for k=1,10 do
+	table.insert(polygon, hyper.rotation(A,k*PI/5)(C))
+end
+hyper.tikzBegin("scale=4,rotate=190")
+for i=1,10 do
+	hyper.drawSegment(A, polygon[i])
+	hyper.drawSegment(polygon[i], polygon[i%10+1], "very thick")
+end
+for i=1,4 do
+	local P,Q = polygon[i],polygon[i+1]
+	hyper.drawLine(P,Q)
+	hyper.labelPoint((P+Q)/1.8,"$\\mathcal{B}_{".. (i-2).."}$","")
+	hyper.labelPoint((P+Q)/6.5,"$n$","")
+	hyper.labelPoint((5*P+Q)/6.8,"$3$","")
+	hyper.labelPoint((P+5*Q)/6.8,"$3$","")
+end
+hyper.tikzEnd()
+\end{luacode*}
+\end{codeandresult}
+
+\end{document}
