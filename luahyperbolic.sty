@@ -1,7 +1,7 @@
 %===========================================================================
 % luahyperbolic.sty
 % LuaLaTeX package for hyperbolic geometry
-% Version : 2026/03/23
+% Version : 2026/04/12
 % Automatically generated from the following files:
 % - complex.lua
 % - luahyperbolic-core.lua
@@ -13,7 +13,7 @@
 %===========================================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{luahyperbolic}[2026/03/23  Hyperbolic geometry package written in Lua.]
+\ProvidesPackage{luahyperbolic}[2026/04/12  Hyperbolic geometry package written in Lua.]
 
 \RequirePackage{iftex}
 \ifluatex
@@ -31,7 +31,7 @@
 \begin{luacode*}
 -- AUTO-GENERATED FILE
 -- DO NOT EDIT
--- TIMESTAMP : 2026/03/23 17:46:48
+-- TIMESTAMP : 2026/04/12 17:56:31
 
 -- internal modules
 local core
@@ -1024,7 +1024,7 @@ end
 
 --- Exponential map at a point P
 -- @param P complex
--- @return function
+-- returns function vector->point
 function m.expMap(P)
 	P = complex.coerce(P)
 	m._assert_in_disk(P)
@@ -1289,7 +1289,13 @@ m.DRAW_ANGLE_DIST = 1/5
 m.MARKING_SIZE = "footnotesize"
 m.BOUNDARY_CIRCLE_STYLE = "very thick, black"
 
+local default_options = {}
 
+m.options = default_options
+
+function m.options.reset()
+	m.options = default_options
+end
 
 -- ========= REDEFINE ERROR (TeX error) 
 
@@ -1749,7 +1755,7 @@ end
 
 -- ========== DRAW CIRCLES, SEMICIRCLES, ARCS ==========
 
-function m.drawCircleRadius(z0, r, options)
+function m.drawCircle(z0, r, options)
 	options = options or m.CIRCLE_STYLE
 	z0 = core._coerce_assert_in_disk(z0)
 	local c, R = core._circle_to_euclidean(z0, r)
@@ -1757,7 +1763,16 @@ function m.drawCircleRadius(z0, r, options)
 	m.tikzPrintf("\\draw[%s] (%f,%f) circle (%f);", options, c.re, c.im, R)
 end
 
-m.drawCircle = m.drawCircleRadius
+m.options.fillCircle = "gray"
+
+function m.fillCircle(z0, r, options)
+	options = options or m.options.fillCircle
+	z0 = core._coerce_assert_in_disk(z0)
+	local c, R = core._circle_to_euclidean(z0, r)
+
+	m.tikzPrintf("\\fill[%s] (%f,%f) circle (%f);", options, c.re, c.im, R)
+end
+
 
 function m.drawCircleThrough(center, point, options)
 	options = options or m.CIRCLE_STYLE

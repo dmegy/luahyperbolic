@@ -39,7 +39,13 @@ m.DRAW_ANGLE_DIST = 1/5
 m.MARKING_SIZE = "footnotesize"
 m.BOUNDARY_CIRCLE_STYLE = "very thick, black"
 
+local default_options = {}
 
+m.options = default_options
+
+function m.options.reset()
+	m.options = default_options
+end
 
 -- ========= REDEFINE ERROR (TeX error) 
 
@@ -499,7 +505,7 @@ end
 
 -- ========== DRAW CIRCLES, SEMICIRCLES, ARCS ==========
 
-function m.drawCircleRadius(z0, r, options)
+function m.drawCircle(z0, r, options)
 	options = options or m.CIRCLE_STYLE
 	z0 = core._coerce_assert_in_disk(z0)
 	local c, R = core._circle_to_euclidean(z0, r)
@@ -507,7 +513,16 @@ function m.drawCircleRadius(z0, r, options)
 	m.tikzPrintf("\\draw[%s] (%f,%f) circle (%f);", options, c.re, c.im, R)
 end
 
-m.drawCircle = m.drawCircleRadius
+m.options.fillCircle = "gray"
+
+function m.fillCircle(z0, r, options)
+	options = options or m.options.fillCircle
+	z0 = core._coerce_assert_in_disk(z0)
+	local c, R = core._circle_to_euclidean(z0, r)
+
+	m.tikzPrintf("\\fill[%s] (%f,%f) circle (%f);", options, c.re, c.im, R)
+end
+
 
 function m.drawCircleThrough(center, point, options)
 	options = options or m.CIRCLE_STYLE

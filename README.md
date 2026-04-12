@@ -1,10 +1,9 @@
 # Lua Hyperbolic Geometry
 
-Version on CTAN: 2026/03/16 (commit 19a9fd9915fb2824c35f4fb73e823789f0cf7cd9)
 
 > [!Note]
 > Luahyperbolic is still in an early development phase.
-> Changes and bug fixes are happening frequently, check the [CHANGELOG.md](CHANGELOG.md).
+> Changes and bug fixes are happening frequently, check the changelog in the documentation.
 
 **luahyperbolic** is a LaTeX package and a Lua library for performing operations and drawing pictures in hyperbolic geometry, intended for use with LuaLaTeX. The package provides complex number manipulation and hyperbolic geometric functions.
 
@@ -132,7 +131,8 @@ sudo mktexlsr
 - add function `markAngle(A, O, B, options)`
 - add function `labelSegment(A, B, label)`
 - add function `labelAngle(A, O, B, label)`
-- add function fillTriangle, fillPolygon, fillCircle, fillHalfSpace
+- add function fillTriangle, fillPolygon, fillHalfSpace
+- change polygon and polyline drawing mechanism : build entire tikz shape the draw/fill
 - more tikz shapes if necessary
 - draw external angle bisector ?
 - drawExcircle
@@ -149,6 +149,8 @@ sudo mktexlsr
 ### In documentation
 
 - links to math articles on wikipedia for definitions ?
+- put changelog inside documentation
+- add disclaimer
 
 ### More examples
 

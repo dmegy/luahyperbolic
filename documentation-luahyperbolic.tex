@@ -80,7 +80,7 @@ righthand width=0.36\linewidth
 
 \title{The \textbf{\textsf{luahyperbolic}} latex package}
 \author{Damien Mégy}
-\date{Version : \the\year/\the\month/\the\day \quad (version on CTAN : 2026-03-16)}
+\date{Version : \the\year/\the\month/\the\day}
 \begin{document}
 \maketitle
 % - - - - - TITLE PICTURE
@@ -90,13 +90,17 @@ texio.write_nl(string.format("[TIMING] %.2f s: beginning title picture",  t1))
 \end{luacode*}
 \begin{center}
 \begin{luacode*}
-hyper.tikzBegin("scale=5")
+hyper.tikzBegin("scale=4")
 hyper.fillTilingFromAngles(math.pi/2, math.pi/4, math.pi/5, 24,"teal")
 hyper.tikzEnd()
 \end{luacode*}
 \par
 LaTeX code for above tiling : \verb+\hyperbolicTiling{2}{4}{5}[scale=5,color=teal,depth=24]+ \\
-The latest version of this documentation is available at:
+Luahyperbolic is still in an early development phase.
+Changes and bug fixes are happening frequently, check the \hyperlink{section:changelog}{changelog}.
+This is version \the\year/\the\month/\the\day. 
+At the time this pdf was compiled, the last version on CTAN was version 2026-03-16.
+The latest version of this package is available at:
 \href{https://github.com/dmegy/luahyperbolic}{github.com/dmegy/luahyperbolic}.
 \end{center}
 
@@ -231,8 +235,8 @@ The \texttt{luahyperbolic.sty}  is pre-generated from a template sty file and fo
 
 These files are in the \texttt{lua/} subdirectory of the package repo. 
 
-To build the \texttt{luahyperbolic.sty} from lua source files, execute \texttt{lua build.lua} in the root directory of the package.
-This will buid and replace the existing sty file.
+To build the \texttt{luahyperbolic.sty} from lua source files, execute \texttt{lua build.lua} in the \texttt{lua} subdirectory of the package.
+This will build and update (replace) the existing sty file.
 
 
 
@@ -462,22 +466,22 @@ hyper.tikzEnd()
 
 \subsection{Circles, semicircles, arcs}
 
-\subsubsection{Center and radius}
-\index{drawCircle}
+\subsubsection{Center and radius : drawCircle and fillCircle}
+\index{drawCircle} \index{fillCircle}
 \begin{codeandresult}
 \begin{luacode*}
-local points = {
-	complex(0,0),
-	complex(-0.5,-0.4),
-	complex(0.8,0.1),
-	complex(0,0.9)
-}
+local A = complex(0,0)
+local B = complex(-0.5,-0.4)
+local C = complex(0.8,0.1)
+local D = .8*complex.I
+local E = complex.polar(.6,math.rad(130))
+
 hyper.tikzBegin()
-for _,point in ipairs(points) do
-	hyper.drawCircle(point,1,"teal")
-	hyper.drawPoint(point)
-end
--- NOTE : all circles have same radius=1 !
+hyper.drawCircle(A,1) -- default : black
+hyper.drawCircle(B,1,"dashed, blue")
+hyper.drawCircle(C,1,"thick, red, fill=red!20")
+hyper.fillCircle(D, 1) -- default : gray
+hyper.fillCircle(E, 1,"ForestGreen!20")
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
@@ -1310,6 +1314,15 @@ Functions beginning with underscore are available in the module but should not b
 
 \textbf{Tables : }
 \directlua{print_module_type(hyper, "table", ", ")}
+
+\section{Changelog}
+\label{section:changelog}
+
+\begin{itemize}
+\item 2026-04-12 : added function \verb+fillCircle(center, radius, options)+
+\item 2026-03-23 : expMap now takes only one argument, a point, and returns a function. New syntax is \verb+newPoint = hyper.expMap(Point)(vector)+
+\item 2026-03-16 : first version uploaded to CTAN
+\end{itemize}
 
 \section{Known bugs}
 
