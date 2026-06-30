@@ -11,7 +11,7 @@
     thin/.style={line width=0.8pt},
     thick/.style={line width=1pt},
 }
-
+\usepackage[detect-all = true]{siunitx}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{multicol}
 \usepackage[normalem]{ulem} 
@@ -27,7 +27,7 @@
 \makeindex[title=Index of functions used in this documentation]
 \makeindex[name=fields, title=Index of constants and parameters]
 \usepackage[colorlinks]{hyperref}
-
+\newcommand{\TikZ}{Ti\emph{k}Z}
 \lstdefinelanguage{Lua}{
   morekeywords={and,break,do,else,elseif,end,false,for,function,if,in,
     local,nil,not,or,repeat,return,then,true,until,while},
@@ -67,7 +67,7 @@ righthand width=0.36\linewidth
 }
 
 
-\newtcbinputlisting{codefromfile}[2][]{%
+\newtcbinputlisting{\codefromfile}[2][]{%
   myluacolors,           % shared coloring options
   colback=white,
   colframe=black,
@@ -78,9 +78,9 @@ righthand width=0.36\linewidth
 }
 
 
-\title{The \textbf{\textsf{luahyperbolic}} latex package}
+\title{The \textbf{\textsf{luahyperbolic}} LaTeX package}
 \author{Damien Mégy}
-\date{Version : \the\year/\the\month/\the\day}
+\date{Version: \the\year/\the\month/\the\day}
 \begin{document}
 \maketitle
 % - - - - - TITLE PICTURE
@@ -95,11 +95,11 @@ hyper.fillTilingFromAngles(math.pi/2, math.pi/4, math.pi/5, 24,"teal")
 hyper.tikzEnd()
 \end{luacode*}
 \par
-LaTeX code for above tiling : \verb+\hyperbolicTiling{2}{4}{5}[scale=5,color=teal,depth=24]+ \\
+LaTeX code for above tiling: \verb+\hyperbolicTiling{2}{4}{5}[scale=5,color=teal,depth=24]+ \\
 Luahyperbolic is still in an early development phase.
 Changes and bug fixes are happening frequently, check the \hyperlink{section:changelog}{changelog}.
 This is version \the\year/\the\month/\the\day. 
-At the time this pdf was compiled, the last version on CTAN was version 2026-03-16.
+At the time this PDF was compiled, the last version on CTAN was version 2026-03-16.
 The latest version of this package is available at:
 \href{https://github.com/dmegy/luahyperbolic}{github.com/dmegy/luahyperbolic}.
 \end{center}
@@ -124,15 +124,15 @@ texio.write_nl(string.format("[TIMING] %.2f s: finished title picture in %.2f  s
 
 \subsection{What you can do with this package}
 \begin{enumerate}
-\item Draw hyperbolic geometry pictures, high precision (pdf output).
-\item Use an easy syntax. At least, easier than with \LaTeX macros and bloody pgf.
+\item Draw hyperbolic geometry pictures, high precision (PDF output).
+\item Use an easy syntax. At least, easier than with \LaTeX{} macros and bloody PGF.
 \item Export generated pictures to external tikz files if you want.
 \item Read the source code and learn hyperbolic geometry.
-\item Compile **without** installing python packages or lua packages etc.
-\item Compile **without**  "shell-escape" mode.
+\item Compile \textbf{without} installing python packages or lua packages etc.
+\item Compile \textbf{without}  "shell-escape" mode.
 \item Compile everything in a single pass. No (Leeloo Dallas) multipass.
-Want to illustrate Euclid's fifth postulate ?
-Do it right there in your TeX file without having to include external files :
+Want to illustrate Euclid's fifth postulate?
+Do it right there in your TeX file without having to include external files:
 
 \begin{codeandresult}
 \begin{luacode*}
@@ -150,7 +150,7 @@ hyper.tikzEnd()
 \end{codeandresult}
 \index[fields]{complex!I}\index[fields]{complex!J}
 \index{complex!exp\_i}\index{tikzBegin}\index{tikzEnd}
-\item Draw Tilings in one line, without any Lua code :
+\item Draw Tilings in one line, without any Lua code:
 \begin{codeandresult}
 \hyperbolicTiling{3}{4}{7}[scale=1.4]
 \hyperbolicTiling{4}{4}{inf}[scale=1.4, color=violet, backgroundcolor=pink!20, depth=6]
@@ -162,32 +162,32 @@ hyper.tikzEnd()
 
 \begin{enumerate}
 \item Really intensive computations, millions of geodesics etc.  Source code is not optimized to keep maximum readability. All computations involve automorphisms. See other remarks below.
-\item Coffee
+\item Coffee.
 \end{enumerate}
 
 \subsection{Efficiency}
 
 For heavy computations, please use a \sout{Python} C library. Nevertheless, this library is still reasonably efficient and usable:
 \begin{itemize}
-\item The first tiling illustration of this documentation (hyperbolic 2-4-5 tiling with 2361 geodesics) compiled in \directlua{tex.print(math.round(100*(t2-t1))/100)} seconds on a 2020 intel macbook air laptop.
+\item The first tiling illustration of this documentation (hyperbolic 2-4-5 tiling with 2361 geodesics) compiled in \directlua{tex.print(math.round(100*(t2-t1))/100)} seconds on a 2020 Intel MacBook Air laptop.
 \item This entire documentation including all pictures compiles in approx. 20 seconds on the same machine, the majority of the time spent on the tilings. The package is suitable for producing lecture notes in hyperbolic geometry, which was the reason for all of this. For an entire book with dozens of pictures, you may need to externalize some of the pictures.
-\item Tests show that the bottleneck is TikZ, not Lua. In a future version, some future maintainer may add other fontends to the library, including drawing directly to the pdf with pdf primitives wich are several orders of magnitude faster than tikz.
+\item Tests show that the bottleneck is \TikZ, not Lua. In a future version, some future maintainer may add other fontends to the library, including drawing directly to the PDF with PDF primitives wich are several orders of magnitude faster than \TikZ.
 \end{itemize}
 
 
 \subsection{How to load the package}
 
 \subsubsection*{Local install}
-Simply put the \verb+luahyperbolic.sty+ file in your working directory and  add the following line to your tex preamble :
+Simply put the \verb+luahyperbolic.sty+ file in your working directory and add the following line to your .tex preamble:
 \begin{verbatim}
 \usepackage{luahyperbolic}
 \end{verbatim}
 
 The single file \texttt{luahyperbolic.sty} contains everything needed, including the necessary library for complex numbers.  It can be sent to colleagues by email, etc.
 
-It will declare two lua globals : \texttt{complex} and \texttt{hyper}, and define a \texttt{hyperbolicTiling} command for convenience.
+It will declare two Lua globals: \texttt{complex} and \texttt{hyper}, and define a \texttt{hyperbolicTiling} command for convenience.
 
-If the sty file is not in the same directory as your tex file, you can write \verb+\usepackage{../luahyperbolic}+.
+If the .sty file is not in the same directory as your .tex file, you can write \verb+\usepackage{../luahyperbolic}+.
 
 
 %\subsubsection*{CTAN} 
@@ -202,7 +202,7 @@ The package luahyperbolic  requires the following packages:
 \end{itemize}
 It loads them if they are not loaded already.
 
- The latex files must be compiled with the \textbf{lualatex} engine.
+ The LaTeX files must be compiled with the \textbf{lualatex} engine.
 
  
 \subsection{Exporting the pictures}
@@ -216,7 +216,7 @@ Simply add a filename to the closing \texttt{hyper.tikzEnd()} instruction, as be
 
 This will save the current picture (including \verb+\begin{tikzpicture}[options]+ and \verb+\end{tikzpicture}+).
 
-\subsubsection{In the middle of the TikZpicture}
+\subsubsection{In the middle of the tikzpicture}
 
 It is also possible to export the current picture at any point with \verb+hyper.tikzExport(optional-filename)+.
 If no filename is provided, the package will name it \verb+hyper_picture_N+ with \texttt{N} the picture counter. Luahyperbolic keeps count of how many pictures have been produced in the document.
@@ -225,7 +225,7 @@ This allows exporting images in loops, or drawing several steps of the same pict
 
 \subsection{(Advanced users) Build from source}
 
-The \texttt{luahyperbolic.sty}  is pre-generated from a template sty file and four lua modules :
+The \texttt{luahyperbolic.sty}  is pre-generated from a template .sty file and four .lua modules :
 \begin{enumerate}
 \item \texttt{complex.lua}
 \item \texttt{luahyperbolic-core.lua}
@@ -235,8 +235,8 @@ The \texttt{luahyperbolic.sty}  is pre-generated from a template sty file and fo
 
 These files are in the \texttt{lua/} subdirectory of the package repo. 
 
-To build the \texttt{luahyperbolic.sty} from lua source files, execute \texttt{lua build.lua} in the \texttt{lua} subdirectory of the package.
-This will build and update (replace) the existing sty file.
+To build the \texttt{luahyperbolic.sty} from .lua source files, execute \texttt{lua build.lua} in the \texttt{lua} subdirectory of the package.
+This will build and update (replace) the existing .sty file.
 
 
 
@@ -466,7 +466,7 @@ hyper.tikzEnd()
 
 \subsection{Circles, semicircles, arcs}
 
-\subsubsection{Center and radius : drawCircle and fillCircle}
+\subsubsection{Center and radius: drawCircle and fillCircle}
 \index{drawCircle} \index{fillCircle}
 \begin{codeandresult}
 \begin{luacode*}
@@ -618,9 +618,9 @@ hyper.tikzEnd()
 \end{codeandresult}
 
 
-\subsection{Printing custom strings to TikZ}
+\subsection{Printing custom strings to \TikZ}
  
- In case you want to insert custom TikZ instructions into the TikZ picture, the library provides a \texttt{tikzPintf()} function, which  is essentially \texttt{tex.print} composed with \texttt{string.format()}, but also saves the printed string to the tikz buffer.
+ In case you want to insert custom \TikZ{} instructions into the \TikZ{} picture, the library provides a \texttt{tikzPintf()} function, which  is essentially \texttt{tex.print} composed with \texttt{string.format()}, but also saves the printed string to the \TikZ{} buffer.
 
 \index{tikzPrintf}\index[fields]{complex!ONE}
 \begin{codeandresult}
@@ -641,13 +641,13 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-The package doesn't expose euclidean drawing functions.
-Users should write TikZ directly in the picture as above with \texttt{tikzPrintf}, or use some other library, for example the amazing library \texttt{tkz-euclide}. 
+The package doesn't expose Euclidean drawing functions.
+Users should write \TikZ{} directly in the picture as above with \texttt{tikzPrintf}, or use some other library, for example the amazing library \texttt{tkz-euclide}. 
 
  
 \subsection{Modifying default styles}
 
-The drawing default styles are defined in lua constants that the user can modify. Keys and default values include:
+The drawing default styles are defined in Lua constants that the user can modify. Keys and default values include:
 \begin{lstlisting}[language=Lua]
 hyper.LABEL_STYLE = "above left"
 hyper.DRAW_POINT_RADIUS = 0.02
@@ -880,7 +880,7 @@ hyper.tikzEnd()
 \subsection{Automorphisms (direct isometries)}
 
 
-\subsubsection{(Elliptic) Rotation by $60^\circ$}
+\subsubsection{(Elliptic) Rotation by \ang{60}}
 \index{rotation}
 \begin{codeandresult}
 \begin{luacode*}
@@ -900,7 +900,7 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-\subsubsection{Symmetry around a point (rotation by $180^\circ$)}
+\subsubsection{Symmetry around a point (rotation by \ang{180})}
 \index{symmetry}
 \begin{codeandresult}
 \begin{luacode*}
@@ -1061,7 +1061,7 @@ hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
 
-\subsubsection{Circumcenter and circumcircle (CAUTION : does not always exist)}
+\subsubsection{Circumcenter and circumcircle (CAUTION: does not always exist)}
 \index{triangleCircumcenter}\index{drawCircumcircle}
 \begin{codeandresult}
 \begin{luacode*}
@@ -1089,7 +1089,7 @@ hyper.tikzEnd()
 \end{codeandresult}
 
 
-\subsubsection{Orthocenter (CAUTION : does not always exist)}
+\subsubsection{Orthocenter (CAUTION: does not always exist)}
 \index{triangleOrthocenter}\index{drawPerpendicularThrough}
 \begin{codeandresult}
 \begin{luacode*}
@@ -1251,7 +1251,7 @@ The above tilings were obtained with the following commands:
 \hyperbolicTiling{3}{inf}{inf}[scale=2, depth=6, color=orange]
 \hyperbolicTiling{inf}{inf}{inf}[scale=2, depth=5, color=violet]
 \end{verbatim}
-Default values are : scale=3, depth=8, color=black, backgroundcolor=white.
+Default values are : \texttt{scale=3}, \texttt{depth=8}, \texttt{color=black}, \texttt{backgroundcolor=white}.
 
 
 
@@ -1261,9 +1261,9 @@ Default values are : scale=3, depth=8, color=black, backgroundcolor=white.
 
 The Lua files are in the \verb+lua/+ subdirectory of the repo.
 
-To build the \verb+luahyperbolic.sty+ from the lua source files, run \verb+lua build.lua+ on the \verb+lua/+ directory. (Lua must be installed.)
+To build the \verb+luahyperbolic.sty+ from the Lua source files, run \verb+lua build.lua+ on the \verb+lua/+ directory. (Lua must be installed.)
 
-The Lua source files are not needed to compile a latex document using luahyperbolic, only the sty file is necessary.
+The Lua source files are not needed to compile a LaTeX document using luahyperbolic, only the .sty file is necessary.
 
 \begin{luacode*}
 -- Print all entries of a given type in a module
@@ -1306,22 +1306,22 @@ Functions beginning with underscore are available in the module but should not b
 \noindent\directlua{print_module_type(hyper, "function", "\\\\")}
 \end{multicols}
 \subsubsection*{Constants}
-\textbf{Numbers : }
+\textbf{Numbers: }
 \directlua{print_module_type(hyper, "number", ", ")}
 
-\textbf{Strings : }
+\textbf{Strings: }
 \directlua{print_module_type(hyper, "string", ", ")}
 
-\textbf{Tables : }
+\textbf{Tables: }
 \directlua{print_module_type(hyper, "table", ", ")}
 
 \section{Changelog}
 \label{section:changelog}
 
 \begin{itemize}
-\item 2026-04-12 : added function \verb+fillCircle(center, radius, options)+
-\item 2026-03-23 : expMap now takes only one argument, a point, and returns a function. New syntax is \verb+newPoint = hyper.expMap(Point)(vector)+
-\item 2026-03-16 : first version uploaded to CTAN
+\item 2026-04-12: added function \verb+fillCircle(center, radius, options)+
+\item 2026-03-23: expMap now takes only one argument, a point, and returns a function. New syntax is \verb+newPoint = hyper.expMap(Point)(vector)+
+\item 2026-03-16: first version uploaded to CTAN
 \end{itemize}
 
 \section{Known bugs}
