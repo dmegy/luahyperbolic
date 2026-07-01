@@ -328,6 +328,11 @@ function m.exp_i(theta)
 	return m.new(cos(theta), sin(theta))
 end
 
+--- e^{2iπx}
+function m.exp_2ipi(x)
+	return m.new(cos(2*math.pi*x), sin(2*math.pi*x))
+end
+
 
 --- Rotate by 90 degrees.
 function m:rotate90()
