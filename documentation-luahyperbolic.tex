@@ -169,8 +169,8 @@ hyper.tikzEnd()
 
 For heavy computations, please use a \sout{Python} C library. Nevertheless, this library is still reasonably efficient and usable:
 \begin{itemize}
-\item The first tiling illustration of this documentation (hyperbolic 2-4-5 tiling with 2361 geodesics) compiled in \directlua{tex.print(math.round(100*(t2-t1))/100)} seconds on a 2020 Intel MacBook Air laptop.
-\item This entire documentation including all pictures compiles in approx. 20 seconds on the same machine, the majority of the time spent on the tilings. The package is suitable for producing lecture notes in hyperbolic geometry, which was the reason for all of this. For an entire book with dozens of pictures, you may need to externalize some of the pictures.
+\item The first tiling illustration of this documentation (hyperbolic 2-4-5 tiling with 2361 geodesics) just compiled in \directlua{tex.print(math.round(100*(t2-t1))/100)} seconds on a 2020 Intel MacBook Air laptop. (Other users report 1.48 second on a MacBook Air M1, and .99 second on a Mac Studio M4 Max.)
+\item This entire documentation including all pictures compiles in approx. 20 seconds on the same 2020 Intel MacBook Air (17 seconds on a Mac Studio M4 Max), the majority of the time spent on the tilings. The package is suitable for producing lecture notes in hyperbolic geometry, which was the reason for all of this. For an entire book with dozens of pictures, you may need to externalize some of the pictures.
 \item Tests show that the bottleneck is \TikZ, not Lua. In a future version, some future maintainer may add other frontends to the library, including drawing directly to the PDF with PDF primitives which are several orders of magnitude faster than \TikZ.
 \end{itemize}
 
