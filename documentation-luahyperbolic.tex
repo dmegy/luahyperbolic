@@ -171,7 +171,7 @@ For heavy computations, please use a \sout{Python} C library. Nevertheless, this
 \begin{itemize}
 \item The first tiling illustration of this documentation (hyperbolic 2-4-5 tiling with 2361 geodesics) compiled in \directlua{tex.print(math.round(100*(t2-t1))/100)} seconds on a 2020 intel macbook air laptop.
 \item This entire documentation including all pictures compiles in approx. 20 seconds on the same machine, the majority of the time spent on the tilings. The package is suitable for producing lecture notes in hyperbolic geometry, which was the reason for all of this. For an entire book with dozens of pictures, you may need to externalize some of the pictures.
-\item Tests show that the bottleneck is TikZ, not Lua. In a future version, some future maintainer may add other fontends to the library, including drawing directly to the pdf with pdf primitives wich are several orders of magnitude faster than tikz.
+\item Tests show that the bottleneck is TikZ, not Lua. In a future version, some future maintainer may add other frontends to the library, including drawing directly to the pdf with pdf primitives which are several orders of magnitude faster than tikz.
 \end{itemize}
 
 
@@ -922,7 +922,7 @@ hyper.tikzEnd()
 \end{codeandresult}
 
 
-\subsubsection{Hyperbolic automorphims}
+\subsubsection{Hyperbolic automorphism}
 \index{automorphism}
 \begin{codeandresult}
 \begin{luacode*}
