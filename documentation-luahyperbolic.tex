@@ -19,6 +19,7 @@
 \tcbuselibrary{listings}
 \tcbuselibrary{skins,breakable}
 \usepackage{fancyvrb}
+\usepackage{microtype}
 
 \hbadness=10000
 \hfuzz=3pt
@@ -670,8 +671,9 @@ for k=1,100 do
 	local M = hyper.randomPoint(rMin,rMax)
 	hyper.drawPoint(M)
 end
-hyper.tikzPrintf("\\draw[dashed] (0,0) circle (%s) ;", rMin)
-hyper.tikzPrintf("\\draw[dashed] (0,0) circle (%s) ;", rMax)
+local fmt = "\\draw[red] (0,0) circle (%s);"
+hyper.tikzPrintf(fmt, rMin)
+hyper.tikzPrintf(fmt, rMax)
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
@@ -1276,11 +1278,20 @@ function print_module_type(module, wanted_type, sep)
         end
     end
     table.sort(names)
-    for i, name in ipairs(names) do
+    --[[for i, name in ipairs(names) do
         tex.sprint(-2, name)
         tex.sprint(sep)
-    end
-
+    end]]
+    
+    for i, name in ipairs(names) do
+        tex.sprint("\\texttt{")
+        tex.sprint(-2, name)
+        tex.sprint("}")
+       
+        if i < #names then
+            tex.sprint(sep)
+        end
+	end
 end
 \end{luacode*}
 
@@ -1306,13 +1317,16 @@ Functions beginning with underscore are available in the module but should not b
 \noindent\directlua{print_module_type(hyper, "function", "\\\\")}
 \end{multicols}
 \subsubsection*{Constants}
-\textbf{Numbers: }
+
+\noindent\textbf{Numbers: }
 \directlua{print_module_type(hyper, "number", ", ")}
 
-\textbf{Strings: }
-\directlua{print_module_type(hyper, "string", ", ")}
 
-\textbf{Tables: }
+\noindent\textbf{Strings: }
+{\sloppy\directlua{print_module_type(hyper, "string", ", ")}\par}
+
+
+\noindent\textbf{Tables: }
 \directlua{print_module_type(hyper, "table", ", ")}
 
 \section{Changelog}
