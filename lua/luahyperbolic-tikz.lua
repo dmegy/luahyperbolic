@@ -236,7 +236,7 @@ function m.drawSegment(z, w, options)
 end
 
 function m.markSegment(z, w, markString)
-	size = m.MARKING_SIZE
+	local size = m.MARKING_SIZE
 	z,w = complex.coerce(z,w)
 	core._assert(z:isNot(w), "points must be distinct")
 	local shape = m.tikz_shape_segment(z,w)
@@ -248,13 +248,18 @@ function m.markSegment(z, w, markString)
   	)
 end
 
-function m.tikz_shape_segment(z, w)
+function m.tikz_shape_segment(z,w)
+	core._assert(z:isNot(w), "points must be distinct")
+	return string.format("(%f,%f)", z.re, z.im) .. m.tikz_shape_segment_continuation(z, w)
+end
+
+function m.tikz_shape_segment_continuation(z, w)
 	core._assert(z:isNot(w), "points must be distinct")
 	local g = core._geodesic_data(z, w)
 
 	-- If the geodesic is (almost) a diameter, draw straight segment
 	if g.radius == math.huge or g.radius > 100 then
-		return string.format("(%f,%f)--(%f,%f)", z.re, z.im, w.re, w.im)
+		return string.format(" --(%f,%f)", w.re, w.im)
 	else
 		local a1 = complex.arg(z - g.center)
 		local a2 = complex.arg(w - g.center)
@@ -262,11 +267,7 @@ function m.tikz_shape_segment(z, w)
 		local a_end = a1 + delta
 		local degPerRad = 180 / PI
 		return string.format(
-			"(%f,%f) ++(%f:%f) arc (%f:%f:%f)",
-			g.center.re,
-			g.center.im,
-			a1 * degPerRad,
-			g.radius,
+			" arc (%f:%f:%f)",
 			a1 * degPerRad,
 			a_end * degPerRad,
 			g.radius
@@ -453,13 +454,27 @@ function m.drawTriangle(...)
 end
 
 -- Draw a polyline from a table of points (open chain)
+-- function m.drawPolylineFromTable(points, options)
+-- 	options = options or m.GEODESIC_STYLE
+-- 	core._assert(#points >= 2, "drawPolylineFromTable expects at least 2 points, got " .. #points)
+
+-- 	for i = 1, #points - 1 do
+-- 		m.drawSegment(points[i], points[i + 1], options)
+-- 	end
+-- end
+
 function m.drawPolylineFromTable(points, options)
 	options = options or m.GEODESIC_STYLE
+	points = {complex.coerce(table.unpack(points))}
 	core._assert(#points >= 2, "drawPolylineFromTable expects at least 2 points, got " .. #points)
 
-	for i = 1, #points - 1 do
-		m.drawSegment(points[i], points[i + 1], options)
+	local shape = m.tikz_shape_segment(points[1], points[2])
+	-- if  three points or more :
+	for i = 2, #points - 1 do
+		shape = shape .. m.tikz_shape_segment_continuation(points[i], points[i + 1])
 	end
+
+	m.tikzPrintf("\\draw[%s] %s ;", options, shape)
 end
 
 function m.drawPolyline(...)
