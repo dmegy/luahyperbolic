@@ -453,15 +453,6 @@ function m.drawTriangle(...)
 	m.drawSegment(c, a, options)
 end
 
--- Draw a polyline from a table of points (open chain)
--- function m.drawPolylineFromTable(points, options)
--- 	options = options or m.GEODESIC_STYLE
--- 	core._assert(#points >= 2, "drawPolylineFromTable expects at least 2 points, got " .. #points)
-
--- 	for i = 1, #points - 1 do
--- 		m.drawSegment(points[i], points[i + 1], options)
--- 	end
--- end
 
 function m.drawPolylineFromTable(points, options)
 	options = options or m.GEODESIC_STYLE
