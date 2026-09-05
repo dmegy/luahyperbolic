@@ -442,22 +442,13 @@ function m.markSegments(...)
 	end
 end
 
-function m.drawTriangle(...)
-	local points, options = parse_points_with_options(...)
 
-	core._assert(#points == 3, "drawTriangle expects exactly 3 points, got " .. #points)
-
-	local a, b, c = points[1], points[2], points[3]
-	m.drawSegment(a, b, options)
-	m.drawSegment(b, c, options)
-	m.drawSegment(c, a, options)
-end
 
 
 function m.drawPolylineFromTable(points, options)
+	core._assert(#points >= 2, "drawPolylineFromTable expects at least 2 points, got " .. #points)
 	options = options or m.GEODESIC_STYLE
 	points = {complex.coerce(table.unpack(points))}
-	core._assert(#points >= 2, "drawPolylineFromTable expects at least 2 points, got " .. #points)
 
 	local shape = m.tikz_shape_segment(points[1], points[2])
 	-- if  three points or more :
@@ -476,14 +467,17 @@ end
 
 
 function m.drawPolygonFromTable(points, options)
-	options = options or m.GEODESIC_STYLE
 	core._assert(#points >= 2, "drawPolygonFromTable expects at least 2 points, got " .. #points)
-
-	for i = 1, #points do
-		local z = points[i]
-		local w = points[i % #points + 1] -- wrap around to first point
-		m.drawSegment(z, w, options)
+	options = options or m.GEODESIC_STYLE
+	points = {complex.coerce(table.unpack(points))}
+	
+	local shape = m.tikz_shape_segment(points[1], points[2])
+	for i = 2, #points -1 do
+		shape = shape .. m.tikz_shape_segment_continuation(points[i], points[i + 1])
 	end
+	shape = shape .. m.tikz_shape_segment_continuation(points[#points], points[1])
+	shape = shape .. " -- cycle"
+	m.tikzPrintf("\\draw[%s] %s ;", options, shape)
 end
 
 function m.drawPolygon(...)
@@ -492,6 +486,14 @@ function m.drawPolygon(...)
 	-- a 2-gon is a polygon
 	core._assert(#points >= 2, "drawPolygon expects at least 2 points, got " .. #points)
 	m.drawPolygonFromTable(points, options)
+end
+
+
+function m.drawTriangle(...)
+	-- for convenience
+	local points, options = parse_points_with_options(...)
+	core._assert(#points == 3, "drawTriangle expects exactly 3 points, got " .. #points)
+	m.drawPolygonFromTable(points,options)
 end
 
 function m.drawRegularPolygon(center, point, nbSides, options)

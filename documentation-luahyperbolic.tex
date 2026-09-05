@@ -304,8 +304,8 @@ local B = complex(.5,.7)
 local C = complex(0,.9)
 hyper.tikzBegin()
 hyper.drawTriangle(A, B, C)
-hyper.drawTriangle(-A, -B, -C, "red")
-hyper.drawPolygon(-.9, -.7, complex(-.7,.4), complex(-.9,.3), "blue")
+hyper.drawTriangle(-A, -B, -C, "fill=red!20")
+hyper.drawPolygon(-.9, -.7, complex(-.7,.4), complex(-.9,.3), "blue, fill=cyan")
 local points={}
 for k=1,5 do
 	table.insert(points, complex.polar(.4,k*2*math.pi/5))
@@ -1333,6 +1333,7 @@ Functions beginning with underscore are available in the module but should not b
 \label{section:changelog}
 
 \begin{itemize}
+\item 2026-09-05: changed the way polylines and polygons are drawn : a single tikz shape is used. This allows to fill polygons.
 \item 2026-04-12: added function \verb+fillCircle(center, radius, options)+
 \item 2026-03-23: expMap now takes only one argument, a point, and returns a function. New syntax is \verb+newPoint = hyper.expMap(Point)(vector)+
 \item 2026-03-16: first version uploaded to CTAN

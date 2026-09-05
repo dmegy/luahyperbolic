@@ -7,7 +7,7 @@
 
 **luahyperbolic** is a LaTeX package and a Lua library for performing operations and drawing pictures in hyperbolic geometry, intended for use with LuaLaTeX. The package provides complex number manipulation and hyperbolic geometric functions.
 
-![triangle_tiling_5_4](triangle-tiling-2-4-5.png)
+![triangle_tiling_5_4](examples/triangle-tiling-2-4-5.png)
 
 ## Example Usage
 
@@ -106,7 +106,7 @@ sudo mktexlsr
 
 ### In `complex` :
 
-- `complex.round(z,nb_decimals)` and similar functions ? The, replace quantization in `luahyperbolic-tilings`.
+- `complex.round(z,nb_decimals)` and similar functions ? Then, replace quantization in `luahyperbolic-tilings`.
 
 ### In `luahyperbolic-core` :
 
@@ -122,7 +122,6 @@ sudo mktexlsr
 - hyper.getFixedPoints(phi) for automorphism
 - symmetrySending (A to B)
 - reflectionSending (A to B)
-- expMap : transforme into function of type point -> (vector -> point) instead of (point, vector) -> point
 
 ### In `luahyperbolic-tikz` :
 
@@ -131,9 +130,7 @@ sudo mktexlsr
 - add function `markAngle(A, O, B, options)`
 - add function `labelSegment(A, B, label)`
 - add function `labelAngle(A, O, B, label)`
-- add function fillTriangle, fillPolygon, fillHalfSpace
-- change polygon and polyline drawing mechanism : build entire tikz shape the draw/fill
-- more tikz shapes if necessary
+- add functions fillTriangle, fillPolygon, fillHalfSpace
 - draw external angle bisector ?
 - drawExcircle
 - more triangle geometry ? Gergonne, Nagel etc ?
@@ -149,8 +146,6 @@ sudo mktexlsr
 ### In documentation
 
 - links to math articles on wikipedia for definitions ?
-- put changelog inside documentation
-- add disclaimer
 
 ### More examples
 
@@ -158,4 +153,4 @@ sudo mktexlsr
 
 ## Contact
 
-Do you really need to contact me ? Please don't contact me.
+Do you really need to contact me ? ...

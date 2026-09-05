@@ -1,0 +1,19 @@
+\documentclass[tikz]{standalone}
+\usepackage{luacode}
+\usepackage{../luahyperbolic}
+\usepackage{hyperref}
+\begin{document}
+\begin{luacode*}
+local PI = math.pi
+local DEPTH = 23
+local A, B, C = hyper.triangleWithAngles(PI/2,PI/4,PI/5)
+local t = hyper.automorphism(C) -- send point C to zero
+A, B, C = t(A), t(B), t(C) -- translate everything so that the pentagon is centered
+
+hyper.tikzBegin("scale=6")
+hyper.fillTilingFromTriangle(A, B, C, DEPTH)
+hyper.drawRegularPolygon(C,B,5, "cyan, line width=4pt")
+hyper.tikzEnd()
+\end{luacode*}
+
+\end{document}
