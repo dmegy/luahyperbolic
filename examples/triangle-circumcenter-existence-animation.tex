@@ -1,0 +1,35 @@
+\documentclass[margin=.2cm,multi,tikz]{standalone}
+\usepackage{../luahyperbolic} %loads luacode package
+\usepackage[dvipsnames]{xcolor}
+\begin{document}
+\begin{luacode*}
+local A = complex(0.1,0.8)
+local B = complex(-0.6,-0.5)
+local C = complex(0.6,-0.2)
+for k=1,7 do
+		C = C - complex(0.04,0.02)
+	local O = hyper.triangleCircumcenter(A,B,C)
+	local BC = hyper.midpoint(B,C)
+	local CA = hyper.midpoint(C,A)
+	local AB = hyper.midpoint(A,B)
+	hyper.tikzBegin()
+	local mystyle = "dashed, red!50"
+	hyper.drawTriangle(A,B,C,"teal, very thick")
+	hyper.drawPerpendicularBisector(A, B, mystyle)
+	hyper.drawPerpendicularBisector(B, C, mystyle)
+	hyper.drawPerpendicularBisector(C, A, mystyle)
+	if O then 
+		hyper.drawCircumcircle(A,B,C,"red, thick")
+		hyper.labelPoint(O,"$O$", "below left")
+		hyper.drawRightAngle(O, CA, C,"red",1/8)
+		hyper.drawRightAngle(O,BC,B,"red",1/8)
+		hyper.drawPoint(O)
+	end
+	hyper.drawPoints(A,B,C,AB,BC,CA)
+	hyper.labelPoints(A, "$A$","above")
+	hyper.labelPoint(B,"$B$", "below left")
+	hyper.labelPoint(C,"$C$", "right")
+	hyper.tikzEnd()
+end
+\end{luacode*}
+\end{document}
