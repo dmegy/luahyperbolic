@@ -1,0 +1,30 @@
+\documentclass[margin=.2cm,multi,tikz]{standalone}
+\usepackage{../luahyperbolic} %loads luacode package
+\usepackage{mathtools}
+\usepackage{unicode-math}
+\begin{document}
+\begin{luacode*}
+local Omega = complex(0.2,0.2) -- center of "rotation"
+local N = 60 -- number of frames
+local nbPoints = 20
+
+local r = hyper.rotation(Omega,2*math.pi/N)
+local points = {}
+
+for k=1, nbPoints do
+	points[#points+1] = hyper.randomPoint(0,1)
+end
+for k=1,N do
+	hyper.tikzBegin()
+	for k=1,#points do
+		hyper.drawCircleThrough(Omega,points[k], "gray!10")
+	end
+	for k=1,#points do
+		hyper.drawPoint(points[k])
+		points[k] = r(points[k])
+	end
+	hyper.drawPoint(Omega,"red")
+	hyper.tikzEnd()
+end
+\end{luacode*}
+\end{document}
