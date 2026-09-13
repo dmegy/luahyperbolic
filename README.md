@@ -110,12 +110,16 @@ sudo mktexlsr
 
 ### In `luahyperbolic-core` :
 
+- modify endpointsAngleBisector(A,O,B) so that it accepts ideal points for A and B
+- modify drawAngleBisector(A,O,B) so that it accepts ideal points for A and B
+- some other functions should accept ideal points
+- these functions and many other do not assert and coerce points in disk (open or closed) : they should do it
 - function distance_between_geodesics(z1, z2, w1, w2)
 - function closest_points_between_geodesics(z1, z2, w1, w2)
-- triangle intouch points, extouchpoints, excenters
+- triangle intouch points, extouchpoints, excenters if they exist
 - hide functions metric_factor, circle_to_euclidean
 - get rif of cosh, sinh, tanh
-- IMPORTANT write function that computes triangle with given angles. Necessary for (p,q,r) tilings.
+- IMPORTANT: write function that computes triangle with given angles. Necessary for (p,q,r) tilings.
 - change name fundamentalIdealTriangle if only one angle is zero
 - power of a point, radical axis
 - hyper.getType(phi) for automorphism
@@ -138,8 +142,10 @@ sudo mktexlsr
 
 ### In `luahyperbolic-tilings`
 
+- rename drawHyperbolicTiling -> drawHyperbolicTriangleTiling ? 
 - faster tiling generation
 - draw tiling step by step, triangle by triangle
+- draw regular tilings, center on the polygon
 - draw uniform tiling
 - draw circle packing
 
