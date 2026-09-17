@@ -268,6 +268,8 @@ function m._geodesic_data(z, w)
 end
 
 function m.endpoints(a, b)
+  a = m._coerce_assert_in_closed_disk(a)
+  b = m._coerce_assert_in_closed_disk(b)
 	m._assert(complex.distinct(a,b), "endpoints : points must be distinct")
   if abs(complex.det(a,b)) < 100*m.EPS then
 		local dir = (a-b) / complex.abs(a-b)
@@ -372,12 +374,13 @@ end
 function m.automorphism(a, theta)
 	theta = theta or 0 -- default angle = 0
 	a = m._coerce_assert_in_disk(a) 
+	local rot = complex.exp_i(theta)
 	if a:isNear(0) then
-		return function(x)
-			return x
+		return function(z)
+       z = m._coerce_assert_in_closed_disk(z)
+			return rot * z
 		end
 	end
-	local rot = complex.exp_i(theta)
 	return function(z)
 		z = m._coerce_assert_in_closed_disk(z) 
 		local numerator = z - a
@@ -391,6 +394,7 @@ function m.rotation(center, theta)
 	theta = theta or 0
 	if abs(theta) < m.EPS then
 		return function(x)
+       x = m._coerce_assert_in_closed_disk(x)
 			return x
 		end
 	end
