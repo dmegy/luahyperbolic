@@ -1,0 +1,1 @@
+latexmk -lualatex -interaction=nonstopmode -halt-on-error

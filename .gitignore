@@ -9,6 +9,8 @@ releases/
 *.DS_Store
 Thumbs.db
 
+*.tikz
+
 *.idx
 *.ilg
 *.ind

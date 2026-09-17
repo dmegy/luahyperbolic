@@ -1,0 +1,35 @@
+\documentclass[margin=.2cm,multi,tikz]{standalone}
+\usepackage{../luahyperbolic}
+\begin{document}
+\begin{luacode*}
+local N = 30
+
+hyper.tikzBegin()
+for k=1,N-1 do
+	local P = complex.exp_i(k*math.pi/N)
+	hyper.drawLine(P,complex.conj(P),"red")
+end
+hyper.tikzEnd()
+
+-- second image :
+
+hyper.tikzBegin()
+for k=1,N-1 do
+local P = complex.exp_i(2*k*math.pi/N)
+hyper.drawLine(P,1,"teal")
+end
+hyper.tikzEnd()
+
+-- third image:
+
+local Omega = 0.2+0.3*complex.I
+hyper.tikzBegin()
+for k=0,N-1 do
+	local v = complex.exp_i(2*k*math.pi/N)
+	hyper.drawLineFromVector(Omega,v,"blue")
+end
+hyper.tikzEnd()
+
+
+\end{luacode*}
+\end{document}
