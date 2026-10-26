@@ -63,7 +63,6 @@ end
       end
       return false
     end
-
     local function validate(arg)
       if isInfinite(arg) then
         return math.huge
@@ -73,22 +72,18 @@ end
         error("Invalid value for argument: "..tostring(arg)..". Must be a positive integer or one of the allowed infinity values (inf, infty, infinity, math.huge).")
       end
     end
-
     local P = "#1"
     local Q = "#2"
     local R = "#3"
-    
     P = validate(P)
     Q = validate(Q)
     R = validate(R)
     local options = "#4" 
     local parsedOptions = parseKeyValueString(options)
-
     local depth = tonumber(parsedOptions.depth) or 8
     local scale = tonumber(parsedOptions.scale) or 3
     local color = parsedOptions.color or "black"
     local backgroundcolor = parsedOptions.backgroundcolor or "white"
-    
     hyper.tikzBegin("scale="..scale)
     hyper.tikzPrintf("\\fill[color=" .. backgroundcolor .."] (0,0) circle (1);")
     hyper.fillTilingFromAngles(math.pi/P, math.pi/Q, math.pi/R, depth,color)
