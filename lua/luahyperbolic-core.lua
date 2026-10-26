@@ -67,14 +67,23 @@ local min = math.min
 local max = math.max
 local sin = math.sin
 local cos = math.cos
-local atan2 = math.atan2
+--local atan2 = math.atan2
 local exp = math.exp
 local log = math.log
 local sqrt = math.sqrt
 local abs = math.abs
-local sinh = math.sinh
-local cosh = math.cosh
-local tanh = math.tanh
+local sinh = function(x)
+	return (exp(x) - exp(-x)) / 2
+end
+
+local cosh = function(x)
+	return (exp(x) + exp(-x)) / 2
+end
+
+local tanh = function(x)
+	return sinh(x) / cosh(x)
+end
+
 
 local atanh = function(x)
 	return 0.5 * log((1 + x) / (1 - x))
@@ -186,10 +195,12 @@ function m._on_circle(z)
 	return abs(complex.abs2(z) - 1) < m.EPS
 end
 
+--[[
+-- not used : 
 function m._in_half_plane(z)
 	return z.im > m.EPS
 end
-
+]]
 
 -- =========================================================
 -- ==================== HYPERBOLIC CALCULUS ================
@@ -208,12 +219,15 @@ function m.distance(z, w)
 	z, w = m._coerce_assert_in_disk(z,w)
 	-- send w to 0 and z to zz with isometry :
 	local zz = (z-w)/(1-complex.conj(w)*z)
-	-- return dist(zz,0)
+	-- return dist(zz,0) :
 	return 2 * atanh(complex.abs(zz))
+  -- multiplier '2' for curvature K=-1.
 end
 
 
 local function same_distance(A, B, C, D)
+  -- Returns dist_H(A,B) == dist_H(C,D) (modulo error margin)
+  -- Note : no need to commpute atanh(...)
 	local phiA = m.automorphism(A,0)
 	local phiC = m.automorphism(C,0)
 	local BB = phiA(B)
@@ -562,6 +576,37 @@ function m.expMap(P)
 		return m.automorphism(-P, 0)(w)
 	end
 end
+
+-- ! local !
+local function log_map_at_origin(z)
+    if z:isNear(0) then
+        return complex(0,0)
+    end
+
+    local norm_z = complex.abs(z)
+    return z / norm_z * (2 * atanh(norm_z))
+end
+
+--- Riemannian logarithm map at a point P
+-- @param P complex
+-- returns function point->vector
+function m.logMap(P)
+    P = complex.coerce(P)
+    m._assert_in_disk(P)
+
+    return function(Q)
+        Q = complex.coerce(Q)
+        m._assert_in_disk(Q)
+
+        if Q:isNear(P) then
+            return complex(0, 0)
+        end
+
+        local phi = m.automorphism(P, 0)
+        return log_map_at_origin(phi(Q))
+    end
+end
+
 
 
 -- ============  INTERPOLATE, BARYCENTERS OF 2 POINTS =====
