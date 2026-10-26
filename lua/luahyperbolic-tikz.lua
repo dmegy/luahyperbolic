@@ -133,7 +133,9 @@ end
 function m.tikzBegin(options)
 	-- without drawing circle and clipping disk
 	m.tikzpictureOptions = options or "scale=3"
-	tex.print(m.tikzGetFirstLines())
+	for line in m.tikzGetFirstLines():gmatch("[^\n]+") do
+		tex.print(line)
+	end
 	m.tikzClearBuffer()
 
 end

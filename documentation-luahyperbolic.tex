@@ -81,7 +81,8 @@ righthand width=0.36\linewidth
 
 \title{The \textbf{\textsf{luahyperbolic}} LaTeX package}
 \author{Damien Mégy}
-\date{Version: \the\year/\the\month/\the\day}
+\date{}
+%\date{Version: \the\year/\the\month/\the\day}
 \begin{document}
 \maketitle
 % - - - - - TITLE PICTURE
@@ -90,18 +91,11 @@ t1 = os.clock()
 texio.write_nl(string.format("[TIMING] %.2f s: beginning title picture",  t1))
 \end{luacode*}
 \begin{center}
-\begin{luacode*}
-hyper.tikzBegin("scale=4")
-hyper.fillTilingFromAngles(math.pi/2, math.pi/4, math.pi/5, 24,"teal")
-hyper.tikzEnd()
-\end{luacode*}
-\par
-LaTeX code for above tiling: \verb+\hyperbolicTiling{2}{4}{5}[scale=5,color=teal,depth=24]+ \\
-Luahyperbolic is still in an early development phase.
-Changes and bug fixes are happening frequently, check the \hyperlink{section:changelog}{changelog}.
-This is version \the\year/\the\month/\the\day. 
-At the time this PDF was compiled, the last version on CTAN was version 2026-03-16.
-The latest version of this package is available at:
+\hyperbolicTiling{2}{4}{5}[scale=5,color=teal,depth=24]\\
+\verb+\hyperbolicTiling{2}{4}{5}[scale=5,color=teal,depth=24]+ \\
+This is version \the\year/\the\month/\the\day. It may not be the same as the one available on CTAN.\\
+%At the time this PDF was compiled, the last version on CTAN was version 2026/03/16.
+Get the latest version of the \verb+.sty+ file, documentation and examples at:
 \href{https://github.com/dmegy/luahyperbolic}{github.com/dmegy/luahyperbolic}.
 \end{center}
 
@@ -170,8 +164,8 @@ hyper.tikzEnd()
 
 For heavy computations, please use a \sout{Python} C library. Nevertheless, this library is still reasonably efficient and usable:
 \begin{itemize}
-\item The first tiling illustration of this documentation (hyperbolic 2-4-5 tiling with 2361 geodesics) just compiled in \directlua{tex.print(math.round(100*(t2-t1))/100)} seconds on a 2020 Intel MacBook Air laptop. (Other users report 1.48 second on a MacBook Air M1, and .99 second on a Mac Studio M4 Max.)
-\item This entire documentation including all pictures compiles in approx. 20 seconds on the same 2020 Intel MacBook Air (17 seconds on a Mac Studio M4 Max), the majority of the time spent on the tilings. The package is suitable for producing lecture notes in hyperbolic geometry, which was the reason for all of this. For an entire book with dozens of pictures, you may need to externalize some of the pictures.
+\item The first tiling illustration of this documentation (hyperbolic 2-4-5 tiling with 2361 geodesics) just compiled in \directlua{tex.print(math.round(100*(t2-t1))/100)} seconds on a 2020 Intel MacBook Air laptop. (Other users report 1.48 second on a MacBook Air M1.)
+\item This entire documentation including all pictures compiles in approx. 20 seconds on the same 2020 Intel MacBook Air, the majority of the time spent on the tilings. The package is suitable for producing lecture notes in hyperbolic geometry, which was the reason for all of this. For an entire book with dozens of pictures, you may need to externalize some of the pictures.
 \item Tests show that the bottleneck is \TikZ, not Lua. In a future version, some future maintainer may add other frontends to the library, including drawing directly to the PDF with PDF primitives which are several orders of magnitude faster than \TikZ.
 \end{itemize}
 
@@ -1085,7 +1079,8 @@ hyper.labelPoint(O,"$O$", "below left")
 hyper.drawRightAngle(O, CA, C,"red",1/8)
 hyper.drawRightAngle(O,BC,B,"red",1/8)
 hyper.drawPoints(O,A,B,C,AB,BC,CA)
-hyper.labelPoints(A, "$A$", B, "$B$", C, "$C$","above")
+hyper.labelPoints(A, "$A$", B, "$B$", "above")
+hyper.labelPoints(C, "$C$", "right")
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
@@ -1113,7 +1108,8 @@ hyper.drawPerpendicularThrough(C,A,B,mystyle)
 hyper.drawRightAngle(A,AA,B,style2,1/15)
 hyper.drawRightAngle(B,BB,C,style2,1/8)
 hyper.drawRightAngle(C,CC,A,style2,1/12)
-hyper.labelPoints(A, "$A$", B, "$B$", C, "$C$")
+hyper.labelPoints(A, "$A$", B, "$B$")
+hyper.labelPoints(C, "$C$","below")
 hyper.drawPoints(AA,BB,CC,H,"above")
 hyper.tikzEnd()
 \end{luacode*}
@@ -1332,19 +1328,21 @@ Functions beginning with underscore are available in the module but should not b
 \section{Changelog}
 \label{section:changelog}
 
+Luahyperbolic is still in an early development phase.
+Changes and bug fixes are happening frequently.
+
 \begin{itemize}
-\item 2026-09-05: changed the way polylines and polygons are drawn : a single tikz shape is used. This allows to fill polygons.
+\item 2026-10-26: added \verb+logMap+.
+\item 2026-10-23: fixed bug: using \verb+\hyperbolicTiling+ inside a \verb+\begin{center}+ used to throw an error.
+\item 2026-09-17: fixed bug in \verb+automorphism(a,theta)+ function and added coercion.
+\item 2026-09-05: changed the way polylines and polygons are drawn : a single tikz shape is now used. This allows to fill polygons.
 \item 2026-04-12: added function \verb+fillCircle(center, radius, options)+
-\item 2026-03-23: expMap now takes only one argument, a point, and returns a function. New syntax is \verb+newPoint = hyper.expMap(Point)(vector)+
+\item 2026-03-23: expMap now takes only one argument (a point), and returns a function. New syntax is \verb+newPoint = hyper.expMap(Point)(vector)+
 \item 2026-03-16: first version uploaded to CTAN
 \end{itemize}
 
-\section{Known bugs}
-
-\begin{enumerate}
-\item Cannot use the TeX macro \verb+\hyperbolicTiling+ inside a \verb+begin{center}+ environment. Boxes and \verb+\centering+ don't work well either.
-\item This documentation sometimes errors during compilation with error \texttt{pgf : dimension too large} but a second compilation always succeeds.
-\end{enumerate}
+%\section{Known bugs}
+% pgf: dimension too large ?
 
 \section{Index}
 \printindex
