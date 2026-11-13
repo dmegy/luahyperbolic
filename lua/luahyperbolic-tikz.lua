@@ -25,7 +25,7 @@ m.TIKZ_BEGIN_DISK = [[
 \begin{scope}
 \clip (0,0) circle (1);
 ]]
-
+m.TIKZ_MAX_EXTENT = 576
 m.GEODESIC_STYLE = "black"
 m.CIRCLE_STYLE = "black"
 m.HOROCYCLE_STYLE = "black"
@@ -280,21 +280,34 @@ end
 
 
 function m.tikz_shape_closed_line(a,b)
-	-- todo : add "close" flag to decide if we close diameters ? 
+  -- usage :  filling with even-odd rule
 	core._assert(a:isNot(b), "points must be distinct")
 	if not a:isUnit() or not b:isUnit() then
 		a, b = core.endpoints(a,b)
 	end
-	if a:isNear(-b) then
-		-- WARNING :  HACK : close diameter as rectangle ! 
-		-- (for filling with even-odd rule)
-		local factor = 1.1
+  -- the center of the circle is c = 2ab/(a+b), radius is r = | c-a |
+  -- tikz limit for coordinates : 16384pt = 576 cm
+  -- in order to be able to draw that entire circle, 
+  -- we must have | c.re | + r < limit and | c.re | + r < limit
+  -- if a+b is too small, draw a Bezier curve instead of an circle :
+  local denominator = a+b
+	if math.abs(denominator.re) + math.abs(denominator.im) < 1e-2 then
+    -- Geodesic is almost a diameter. 
+    -- Approximate by a Bezier curve with control points at one third of the diameter
+		local factor = 1.1 -- ensure the border of the rectangle is strictly outside the unit circle
 		a, b = factor*a, factor*b
-		local c, d = b*complex(1,-1), a * complex(1,1)
-		return  string.format("(%f,%f) -- (%f,%f) -- (%f,%f) -- (%f,%f) -- cycle ",
-			a.re, a.im, b.re, b.im, c.re, c.im, d.re, d.im)
+		local c, d = b*complex(1,-2), a * complex(1,2) -- closed shape (almost a rectangle)
+		return  string.format(
+      "(%f,%f) .. controls (%f,%f) and (%f,%f) .. (%f,%f) -- (%f,%f) -- (%f,%f) -- cycle ",
+      a.re, a.im,
+      a.re/3, a.im/3,
+      b.re/3, b.im/3,
+      b.re, b.im,
+      c.re, c.im,
+      d.re, d.im)
 	else
-		local c = 2*a*b/(a+b)
+    -- draw entire circle :
+		local c = 2*a*b/denominator
 		local r = complex.abs(c-a)
 		-- rest of the circle will be clipped 
 		return  string.format("(%f,%f) circle (%f)", c.re, c.im, r)
