@@ -100,62 +100,7 @@ sudo mktexlsr
 ### Notes
 
 - Do **not** place files in `texmf-dist`, as this directory is managed by your TeX distribution and may be overwritten during updates.
-- This package is not currently part of TeX Live or MiKTeX.
 
-## Todo
-
-### In `complex` :
-
-- `complex.round(z,nb_decimals)` and similar functions ? Then, replace quantization in `luahyperbolic-tilings`.
-
-### In `luahyperbolic-core` :
-
-- modify endpointsAngleBisector(A,O,B) so that it accepts ideal points for A and B
-- modify drawAngleBisector(A,O,B) so that it accepts ideal points for A and B
-- some other functions should accept ideal points
-- these functions and many other do not assert and coerce points in disk (open or closed) : they should do it
-- function distance_between_geodesics(z1, z2, w1, w2)
-- function closest_points_between_geodesics(z1, z2, w1, w2)
-- triangle intouch points, extouchpoints, excenters if they exist
-- hide functions metric_factor, circle_to_euclidean
-- get rif of cosh, sinh, tanh
-- IMPORTANT: write function that computes triangle with given angles. Necessary for (p,q,r) tilings.
-- change name fundamentalIdealTriangle if only one angle is zero
-- power of a point, radical axis
-- hyper.getType(phi) for automorphism
-- hyper.getFixedPoints(phi) for automorphism
-- symmetrySending (A to B)
-- reflectionSending (A to B)
-
-### In `luahyperbolic-tikz` :
-
-- add more constants : distances for angle drawing/labelling etc,
-- add function `drawExcircle` and variants
-- add function `markAngle(A, O, B, options)`
-- add function `labelSegment(A, B, label)`
-- add function `labelAngle(A, O, B, label)`
-- add functions fillTriangle, fillPolygon, fillHalfSpace
-- draw external angle bisector ?
-- drawExcircle
-- more triangle geometry ? Gergonne, Nagel etc ?
-- replace old `complex.isClose(z,w)` etc with `z:isNear(w)` etc.
-
-### In `luahyperbolic-tilings`
-
-- rename drawHyperbolicTiling -> drawHyperbolicTriangleTiling ? 
-- faster tiling generation
-- draw tiling step by step, triangle by triangle
-- draw regular tilings, center on the polygon
-- draw uniform tiling
-- draw circle packing
-
-### In documentation
-
-- links to math articles on wikipedia for definitions ?
-
-### More examples
-
-- ex circles
 
 ## Contact
 
