@@ -19,6 +19,8 @@ hyper.drawLine(C,B,"gray,dashed")
 hyper.drawLine(e1,e2,"red")
 hyper.drawLine(f1,f2,"red")
 hyper.drawTriangle(A,B,C,"very thick, black")
+local myPoint = -complex.I/2
+hyper.labelPoint(myPoint,"External angle bisectors (in red) don't intersect.", "draw=black,fill=white")
 hyper.tikzEnd()
 \end{luacode*}
 
