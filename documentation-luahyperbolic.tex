@@ -1294,7 +1294,7 @@ function print_module_type(module, wanted_type, sep)
 end
 \end{luacode*}
 
-\subsection{complex.lua}
+\subsection{complex}
 \subsubsection*{Functions}
 \begin{multicols}{6}
 \noindent\directlua{print_module_type(complex, "function", "\\\\")}
@@ -1328,6 +1328,7 @@ Functions beginning with underscore are available in the module but should not b
 \noindent\textbf{Tables: }
 \directlua{print_module_type(hyper, "table", ", ")}
 
+
 \section{Changelog}
 \label{section:changelog}
 
@@ -1345,9 +1346,16 @@ Changes and bug fixes are happening regularly.
 \item 2026-03-16: first version uploaded to CTAN
 \end{itemize}
 
-%\section{Known bugs}
-% pgf: dimension too large ?
+\section*{Todo}
+\label{section:todo}
 
+\begin{itemize}
+\item add more default options and styles and put everything inside a single Lua table
+\item add uniform tilings
+\end{itemize}
+
+
+\newpage
 \section{Index}
 \printindex
 
