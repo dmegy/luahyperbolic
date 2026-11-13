@@ -252,12 +252,15 @@ local B = 2*A
 local I, J = complex.I, complex.J
 local C, D, E = I*A, I*B, J*B
 hyper.tikzBegin()
-hyper.drawPoint(0,"white, draw=red")
-hyper.drawPoints(A, B, C, "teal")
-hyper.drawPoints(D, E)
-hyper.labelPoint(A,"$A$", "below right, blue")
-hyper.labelPoints(B,"$B$", C, "$C$")
-hyper.labelPoint(D,"$D$","left=.4cm, red")
+hyper.drawPoints(A, B)
+hyper.drawPoints(C, D, "teal")
+hyper.drawPoint(E, "white, draw=red")
+hyper.labelPoint(A,"$A$") 
+-- (default options = "above left")
+hyper.labelPoints(B,"$B$", "right, draw=red")
+hyper.labelPoints(C,"$C$", "below, blue")
+hyper.labelPoint(D,"←$D$","right=.5cm")
+hyper.labelPoint(E,"\\textbf{E}","below left")
 hyper.tikzEnd()
 \end{luacode*}
 \end{codeandresult}
@@ -310,7 +313,7 @@ hyper.tikzEnd()
 \end{codeandresult}
 
 
-\subsubsection{Triangles with prescribed angles}
+\subsubsection{Triangles and ideal triangles with prescribed angles}
 \index{triangleWithAngles}
 \begin{codeandresult}
 \begin{luacode*}
@@ -1329,9 +1332,10 @@ Functions beginning with underscore are available in the module but should not b
 \label{section:changelog}
 
 Luahyperbolic is still in an early development phase.
-Changes and bug fixes are happening frequently.
+Changes and bug fixes are happening regularly.
 
 \begin{itemize}
+\item 2026-11-13: Bezier approximation for geodesics that are almost diameters.
 \item 2026-10-26: added \verb+logMap+.
 \item 2026-10-23: fixed bug: using \verb+\hyperbolicTiling+ inside a \verb+\begin{center}+ used to throw an error.
 \item 2026-09-17: fixed bug in \verb+automorphism(a,theta)+ function and added coercion.
